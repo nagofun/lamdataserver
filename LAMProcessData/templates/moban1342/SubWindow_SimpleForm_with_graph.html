@@ -141,6 +141,10 @@
             function(res, textStatus)
             {
                 this;
+                document.getElementById("progress_bar").style.width='100%';
+                clearInterval(sitv);
+                document.getElementById("progress_bar_bodybody").style.display="none";
+                document.getElementById("progress_bar_headdiv").style.display="none";
                 alert('Wait_And_Following');
                 <!--若返回为'Wait_And_Following'，则做相应处理-->
             }
@@ -327,10 +331,10 @@
 
                                 </table>
                             </div>
-                            <div class="panel-heading">
+                            <div class="panel-heading" id="progress_bar_headdiv">
                                 加载进度...
                             </div>
-                            <div class="panel-body">
+                            <div class="panel-body" id="progress_bar_bodybody">
                                 <div class="progress progress-striped active">
                                     <div class="progress-bar progress-bar-primary" id="progress_bar" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
                                         <span class="sr-only">0% Complete (success)</span>
