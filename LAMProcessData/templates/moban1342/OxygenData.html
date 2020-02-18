@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div id="page-inner">
+	<div class="row">
+		<div class="col-md-12">
+			<h3 class="page-header">
+				{{ PanelTitle|escape }}<small></small>
+			</h3>
+		</div>
+	</div>
+	<!-- /. ROW  -->
+	<div class="col-md-2">
+		<form role="form" action="." method="GET">
+			<div class="form-group">
+				<label>成形工段</label>
+				<select class="form-control" name="work_section_code" >
+					{% for work in worksectionList %}
+						<option value="{{ work.code }}" {% ifequal  work.code  worksectionCode %} selected="selected" {% endifequal %}>{{ work.name|escape }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label>起始日期</label>
+				<input class="form-control" placeholder="起始日期" name="startDate" type="datetime-local" value="{{ startDate|escape }}">
+			</div>
+			<div class="form-group">
+				<label>终止日期</label>
+				<input class="form-control" placeholder="终止日期" name="endDate" type="datetime-local" value="{{ endDate|escape }}">
+			</div>
+			<div class="form-group">
+				<label>容许间隔时间(s)</label>
+
+				<input class="form-control" placeholder="数据容许间隔时间(s)" name="seconds_delta" type="number" value="{{ seconds_delta|escape }}">
+			</div>
+			<div class="form-group">
+				<label>氧含量上限(ppm)</label>
+				<input class="form-control" placeholder="氧含量上限设定值(ppm)" name="oxy_set_value" type="number" value="{{ oxy_set_value|escape }}">
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary">查    询</button>
+				<button type="reset" class="btn btn-default">重    置</button>
+			</div>
+		</form>
+	</div>
+
+	<div class="col-md-10">
+		<div id = "main" style="width: 1200px;height:400px;">
+			<script type="text/javascript">
+				var myChart = echarts.init(document.getElementById('main'));
+				var option = {
+					tooltip: {
+						trigger: 'axis',
+						position: function (pt) {
+							return [pt[0], '10%'];
+						}
+					},
+					title: {
+						left: 'center',
+						text: '{{ txtFigTitle|escape }}',
+					},
+					toolbox: {
+						feature: {
+							dataZoom: {
+								yAxisIndex: 'none'
+							},
+							restore: {},
+							saveAsImage: {}
+						}
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						data: {{ RecordDateList|safe }}
+					},
+					yAxis: {
+						type: 'value',
+						boundaryGap: [0, '100%'],
+						scale: true
+					},
+					dataZoom: [{
+						type: 'inside',
+						start: 0,
+						end: 10
+					}, {
+						start: 0,
+						end: 10,
+						handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+						handleSize: '80%',
+						handleStyle: {
+							color: '#fff',
+							shadowBlur: 3,
+							shadowColor: 'rgba(0, 0, 0, 0.6)',
+							shadowOffsetX: 2,
+							shadowOffsetY: 2
+						}
+					}],
+					series: [
+						{
+							name: '{{ txtDataName|escape }}',
+							type:'line',
+							smooth:true,
+							symbol: 'none',
+							sampling: 'average',
+							itemStyle: {
+								normal: {
+									color: 'rgb(255, 70, 131)'
+								}
+							},
+							areaStyle: {
+								normal: {
+									color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+										offset: 0,
+										color: 'rgb(255, 158, 68)'
+									}, {
+										offset: 1,
+										color: 'rgb(255, 70, 131)'
+									}])
+								}
+							},
+							data: {{ RecordOxyvalueList|safe }}
+						}
+					]
+				};
+				myChart.setOption(option)
+			</script>
+		</div>
+
+	</div>
+
+	<div class="row">
+                <div class="col-md-12">
+                    <!-- Advanced Tables -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                             问题数据
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+
+								<table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                                    <thead>
+                                        <tr>
+                                            <th>开始时间</th>
+                                            <th>结束时间</th>
+											<th>时    长</th>
+                                            <th>问题类型</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      {% for record in badOxyList %}
+										<tr class="odd gradeX">
+											<td >{{ record.0|date:"Y-m-d H:i:s" }}</td>
+											<td >{{ record.1|date:"Y-m-d H:i:s" }}</td>
+											<td >{{ record.1|timeuntil:record.0 }}</td>
+											<td >{{ record.2|safe}}</td>
+										</tr>
+										{% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!--End Advanced Tables -->
+                </div>
+            </div>
+</div>
+	<!-- /. PAGE INNER  -->
+	<script src="/assets/js/jquery-1.10.2.js"></script>
+	<script src="/assets/js/dataTables/jquery.dataTables.js"></script>
+    <script src="/assets/js/dataTables/dataTables.bootstrap.js"></script>
+	<script>
+            $(document).ready(function () {
+                $('#dataTables-example').dataTable();
+            });
+    </script>
+{% endblock %}

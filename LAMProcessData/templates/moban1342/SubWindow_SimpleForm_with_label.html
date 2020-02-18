@@ -1,0 +1,161 @@
+{% extends "SubWindow_base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+<script>
+    function copyText (text) {
+        //生成一个textarea对象
+        var textArea = document.createElement('textarea');
+        //设置属性
+        textArea.style.position = 'fixed';
+        textArea.style.top = 0;
+        textArea.style.left = 0;
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = 0;
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.value = text;
+        //添加到页面body
+        document.body.appendChild(textArea);
+        textArea.select();
+        //执行
+        document.execCommand('copy')
+        <!--var msg = document.execCommand('copy') ? '成功' : '失败';-->
+        <!--alert('复制内容' + msg);-->
+        //移除对象
+        document.body.removeChild(textArea);
+    }
+
+
+</script>
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+
+
+                            <form role="form" method="post" action="">{% csrf_token %}
+
+                                <label></label>
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.error_messages|safe }}
+                                    {{ form.errors }}
+                                </div>
+                                {% endifequal %}
+                                <div class="form-group">
+                                    {% for field in form %}
+                                    <div class="form-group">
+                                        <label>{{ field.label|safe }}</label>
+                                        {{ field }}
+                                    </div>
+                                    {% endfor %}
+                                    <!--{{ form.id }}-->
+
+                                </div>
+                                <!--<input id='input_url' v-model='product_url' class="btn btn-info btn-sm" type="button" value="复制" onclick="this.select();document.execCommand('Copy');">-->
+
+
+                                <button type="submit" class="btn btn-primary">保存</button>
+
+                                <a href="javascript:window.opener.reclickItem();window.opener=null;window.open('','_self');window.close();"
+                                   class="btn btn-danger">关闭</a>
+                                <!--<div class="form-group">-->
+                                <!--{% for tag in form.taglist %}-->
+                                <!--<button type="button" class="btn btn-info btn-sm" onclick="copyText('{{ tag }}');">{{ tag }}</button>-->
+                                <!--{% endfor %}-->
+                                <!--</div>-->
+
+
+                                {% if messages %}
+                                <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+
+
+
+                                </script>
+                                {% endif %}
+
+                            </form>
+                            <label></label>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            内置标签
+                        </div>
+                        <div class="panel-body">
+                            <!--<form role="form" method="post" action="">-->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>内置标签（单击复制）</th>
+                                        <th>现实含义</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for tag in form.taglist_with_label %}
+                                    <tr>
+                                        <td>
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="copyText('{{ tag.0 }}');">{{ tag.0 }}
+                                            </button>
+                                        </td>
+                                        <td>{{ tag.1 }}</td>
+                                    </tr>
+                                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!--</form>-->
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+
+    {% endblock %}

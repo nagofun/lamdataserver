@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ form.title }}</small>
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            OPERATE
+                            <!--{{ operate|upper }}-->
+                        </div>
+                        <div class="panel-body">
+                            <!--<div class="row">-->
+                            <!--<div class="col-lg-6">-->
+
+                            <!--{% if form.posted %}-->
+                            <!--{% if form.save_success %}-->
+                            <!--<div class="alert alert-success">-->
+                            <!--<strong>保存成功！</strong>-->
+                            <!--</div>-->
+
+                            <!--{% else %}-->
+                            <!--<div class="alert alert-danger">-->
+                            <!--<strong>保存失败！</strong> {{ form.error_messages }}-->
+                            <!--</div>-->
+                            <!--&lt;!&ndash;<div class="form-group has-error">&ndash;&gt;-->
+                            <!--&lt;!&ndash;<label class="control-label" for="inputError">保存失败</label>&ndash;&gt;-->
+                            <!--&lt;!&ndash;<label class="control-label" for="inputError">{{ form.error_messages&ndash;&gt;-->
+                            <!--&lt;!&ndash;}}</label>&ndash;&gt;-->
+                            <!--&lt;!&ndash;</div>&ndash;&gt;-->
+                            <!--{% endif %}-->
+                            <!--{% endif %}-->
+                            <a href='add'>
+                                <button type="button" class="btn btn btn-success" name="item_add">新增</button>
+                            </a>
+
+                            <form role="form" method="GET" action="alert">{% csrf_token %}
+
+                                <label></label>
+                                <div class="form-group">
+                                    <label>条目ID </label>
+                                    <!--<input type="text" name="item_id" class="form-control" placeholder="请输入待编辑的条目ID"-->
+                                    <!--required="" id="id_id">-->
+                                    <!--<select class="form-control" name="item_id" onclick="RefreshValue()">-->
+                                    <select class="form-control" name="item_id" id="item_id">
+                                        <!--{{ item_id_list }}-->
+                                        {% for wksp in all_Workshop_entries %}
+                                        <tr>
+                                            <!--<td><input type="radio" name=" {{ wksp.id }}" value=" {{ wksp.id }}" /> {{ wksp.id }}</td>-->
+                                            <option>{{ wksp.id }}</option>
+                                        </tr>
+                                        {% endfor %}
+                                        <!--{% for wksp_id in item_id_list %}-->
+                                        <!--<option>{{ wksp_id }}</option>-->
+                                        <!--{% endfor %}-->
+                                    </select>
+                                    <!--{{ form.id }}-->
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" name="item_edit" formaction='edit/'>选中编辑
+                                </button>
+
+                                <button type="button" class="btn btn-danger" name="item_delete"
+                                        onclick="confirmDelete()">
+                                    选中删除
+                                </button>
+                                <!--<a href="#" class="btn btn-danger">danger</a>-->
+                                <!--<a href="#" class="btn btn-primary">primary</a>-->
+                                {% if messages %}
+                                <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+
+                                </script>
+                                {% endif %}
+                            </form>
+                            <label></label>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+
+                <div class="col-lg-8">
+                    <!--   Kitchen Sink -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            BROWSE
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover">
+                                    {% if all_Workshop_entries %}
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>{{ form.name.label }}</th>
+                                        <th>{{ form.code.label }}</th>
+                                    </tr>
+                                    </thead>
+
+                                    <tbody>
+                                    {% for wksp in all_Workshop_entries %}
+                                    <tr>
+                                        <!--<td><input type="radio" name=" {{ wksp.id }}" value=" {{ wksp.id }}" /> {{ wksp.id }}</td>-->
+                                        <td>{{ wksp.id }}</td>
+                                        <td>{{ wksp.name }}</td>
+                                        <td>{{ wksp.code }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+
+                                    {% else %}
+                                    <p>未查询到厂房信息</p>
+                                    {% endif %}
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End  Kitchen Sink -->
+                </div>
+
+
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var selectItemID
+        var selectItemName=''
+        var ItemList_id=new Array(
+        {% for wksp in all_Workshop_entries %}
+        {{ wksp.id }},
+        {% endfor %}
+        );
+        var ItemList_name=new Array(
+        {% for wksp in all_Workshop_entries %}
+        '{{ wksp.name }}',
+        {% endfor %}
+        );
+
+        function Post(URL, PARAMTERS) {
+            //创建form表单
+            var temp_form = document.createElement("form");
+            temp_form.action = URL;
+            //如需打开新窗口，form的target属性要设置为'_blank'
+            temp_form.target = "_self";
+            temp_form.method = "post";
+            temp_form.style.display = "none";
+            //添加参数
+            for (var item in PARAMTERS) {
+                var opt = document.createElement("textarea");
+                opt.name = item;
+                opt.value = PARAMTERS[item];
+                temp_form.appendChild(opt);
+            }
+            document.body.appendChild(temp_form);
+            //提交数据
+            temp_form.submit();
+        }
+
+        function RefreshValue(){
+            selectItemID=item_id.value
+            for (var i=0;i<ItemList_id.length;i++)
+                {
+                    if (ItemList_id[i]==selectItemID)
+                    {
+                        selectItemName=ItemList_name[i];
+                        break;
+                    }
+                }
+        }
+        //弹出一个询问框，有确定和取消按钮
+        function confirmDelete() {
+            RefreshValue();
+            txt='请确认是否删除此记录:\n      ID:'+selectItemID+' 名称:'+selectItemName;
+            <!--alert(txt);-->
+            <!--//利用对话框返回的值 （true 或者 false）-->
+            if (confirm(txt))
+            {
+                <!--window.location.href='delete/'+selectItemID+'/';-->
+                params = {
+                    'id':selectItemID,
+                    'name':selectItemName
+                };
+
+                Post('delete/',params);
+            }
+
+        }
+
+
+
+
+
+
+
+    </script>
+    <!--<div class="panel panel-default">-->
+    <!--<div class="panel-heading">-->
+    <!--{{ form.title }}-->
+    <!--</div>-->
+    <!--<div class="panel-body">-->
+    <!--<div class="row">-->
+    <!--<div class="col-lg-6">-->
+    <!--<form role="form">-->
+    <!--<div class="form-group">-->
+    <!--<label>{{ form.name.label }}</label>-->
+    <!--&lt;!&ndash;<input class="form-control">&ndash;&gt;-->
+    <!--{{ form.name }}-->
+    <!--&lt;!&ndash;<input type="text" name="name" maxlength="30" required="" id="id_name">&ndash;&gt;-->
+    <!--&lt;!&ndash;<p class="help-block">Example block-level help text here.</p>&ndash;&gt;-->
+    <!--</div>-->
+    <!--<div class="form-group">-->
+    <!--<label>{{ form.code.label }}</label>-->
+    <!--&lt;!&ndash;<input class="form-control">&ndash;&gt;-->
+    <!--{{ form.code }}-->
+    <!--&lt;!&ndash;<input type="text" name="name" maxlength="30" required="" id="id_name">&ndash;&gt;-->
+    <!--&lt;!&ndash;<p class="help-block">Example block-level help text here.</p>&ndash;&gt;-->
+    <!--</div>-->
+
+    <!--<button type="submit" class="btn btn-default">Submit Button</button>-->
+    <!--<button type="reset" class="btn btn-default">Reset Button</button>-->
+    <!--</form>-->
+    <!--</div>-->
+    <!--&lt;!&ndash; /.col-lg-6 (nested) &ndash;&gt;-->
+
+    <!--</div>-->
+    <!--&lt;!&ndash; /.row (nested) &ndash;&gt;-->
+    <!--</div>-->
+    <!--&lt;!&ndash; /.panel-body &ndash;&gt;-->
+    <!--</div>-->
+
+
+    <!--<form action="" method="post" role="form">-->
+    <!--<table>-->
+    <!--{{ form.as_table }}-->
+    <!--<tr>-->
+    <!--<td></td>-->
+    <!--<td><input type="submit" value="提交"></td>-->
+    <!--</tr>-->
+    <!--</table>-->
+    <!--</form>-->
+    {% endblock %}

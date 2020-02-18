@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--<script src="jquery.min.js"></script>-->
+<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="/assets/js/matching.js"></script>
+
+<!--</style>-->
+<script>
+    function load()
+    {
+        this;
+        <!--&lt;!&ndash;此处可参照对应修改&ndash;&gt;-->
+        <!--{% ifequal form.modelname 'LAM_TechInst_Serial'%}-->
+        <!--&lt;!&ndash;工序在工艺文件中的实例化&ndash;&gt;-->
+            <!--var techid=document.getElementById("id_technique_instruction").value;-->
+            <!--loadTableData(techid);-->
+        <!--{% endifequal %}-->
+
+        //针对适用工序表格，翻页、筛选时，及时更新高亮显示条目
+        document.getElementById("dataTables-example2_length").onclick = function() {reclickItem();}
+        document.getElementById("dataTables-example2_filter").onclick = function() {reclickItem();}
+        document.getElementById("dataTables-example2_paginate").onclick = function() {reclickItem();}
+
+    }
+    function Post(URL, PARAMTERS) {
+        //创建form表单
+        var temp_form = document.createElement("form");
+        temp_form.action = URL;
+        //如需打开新窗口，form的target属性要设置为'_blank'
+        temp_form.target = "_self";
+        temp_form.method = "post";
+        temp_form.style.display = "none";
+        //添加参数
+        for (var item in PARAMTERS) {
+            var opt = document.createElement("textarea");
+            opt.name = item;
+            opt.value = PARAMTERS[item];
+            temp_form.appendChild(opt);
+        }
+        document.body.appendChild(temp_form);
+        //提交数据
+        temp_form.submit();
+    }
+    var ItemList_id=new Array({% for record in all_entries %}{{ record.id|safe }}{% if not forloop.last %},{% endif %}{% endfor %});
+    var ItemList_name=new Array({% for record in all_entries %}"{{ record|safe }}"{% if not forloop.last %},{% endif %}{% endfor %});
+    var selectItemID = -1
+    var clickItemID = -1
+    var crt_clickItemOldColor = -1
+
+    //选中的工序id列表
+    var Selected_TechInstSerial_IDList=new Array();
+
+    //所有工序id列表
+    var Serial_ItemList_id=new Array({% for record in all_entries_serial %}{{ record.id|safe }}{% if not forloop.last %},{% endif %}{% endfor %});
+
+
+
+
+    var bgcolor_hightlight = "#337ab7"
+    var fontcolor_hightligt = "#fff"
+    var bgcolor_odd = "#f9f9f9"
+    var bgcolor_even = "#ffffff"
+    var fontcolor = "#000"
+
+
+
+    <!--var crt_clickTechInstItemOldColor = -1-->
+
+    function RefreshValue(){
+        var Item=document.getElementsByName("item_id");
+        for (var i = 0, length = Item.length; i < length; i++) {
+            if (Item[i].checked) {
+                // 弹出选中值
+                selectItemID = Item[i].value
+                // 选中后退出循环
+                break;
+            }
+        }
+        if(selectItemID==-1)
+        {
+            alert('请点亮拟处理的参数包条目');
+        }
+        else
+        {
+            for (var i=0;i<ItemList_id.length;i++)
+                {
+                    if (ItemList_id[i]==selectItemID)
+                    {
+                        selectItemName=ItemList_name[i];
+                        break;
+                    }
+                }
+        }
+    }
+
+
+
+
+
+    //弹出一个询问框，有确定和取消按钮
+    function confirmDelete() {
+        RefreshValue();
+        if(selectItemID==undefined)
+        {
+            alert("请选择拟冻结的参数包条目");
+            return;
+        }
+        txt='请确认是否冻结此记录:\n'+selectItemName;
+        <!--//利用对话框返回的值 （true 或者 false）-->
+        if (confirm(txt))
+        {
+            <!--window.location.href='delete/'+selectItemID+'/';-->
+            params = {
+                'id':selectItemID,
+                'name':selectItemName
+            };
+            Post('delete/',params);
+        }
+    }
+
+    //由子窗口返回时，调用此函数刷新表格
+    function reclickItem(){
+        clickParameterItemByID(clickItemID);
+    }
+
+    //单击左侧浏览用表格后，选中该行数据，并高亮显示,更新当前单击条目参数clickItemID
+    function clickParameterItemByID(newclickItemID){
+        if(clickItemID!=-1){
+            $("#Parameter"+clickItemID).animate({backgroundColor:crt_clickItemOldColor,color: fontcolor},100);
+            $("#optionsRadios"+clickItemID).removeAttr("checked");
+        }
+        //变更背景颜色
+        if(newclickItemID!=-1){
+            var _newitemclsName = document.getElementById("Parameter"+newclickItemID).getAttribute("class");
+            if(_newitemclsName=='odd'){
+                crt_clickItemOldColor=bgcolor_odd;
+            }
+            else if(_newitemclsName=='even'){
+                crt_clickItemOldColor=bgcolor_even;
+            }
+        }
+        clickItemID=newclickItemID;
+        $("#Parameter"+clickItemID).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
+        <!--#337ab7-->
+        $("#optionsRadios"+clickItemID).prop("checked", "checked");
+        //更新右侧表格:条件单元
+        loadTableData_ConditionalCell(clickItemID);
+
+        //更新右侧表格:适用的工序
+        loadTableData_TechInstSerial(clickItemID);
+    }
+
+    //单击右侧适用工序表格后，选中该行数据、并高亮显示,或取消选中该行数据，取消高亮显示
+    function click_TechInst_ItemByID(newclickItemID){
+        //变更背景颜色
+        var ckbox = document.getElementById("checkbox"+newclickItemID)
+        if(ckbox.checked==true){
+            //取消选中
+            Selected_TechInstSerial_IDList.remove(newclickItemID)
+            if(ckbox!=null){ckbox.checked = false;}
+            <!--ckbox.checked=false-->
+            <!--$("#checkbox"+newclickItemID).removeAttr("checked");-->
+            document.getElementById("TechInst"+newclickItemID).removeAttribute("style"); //清除所有样式
+        }
+        else{
+            //选中
+            if(Selected_TechInstSerial_IDList.indexOf(newclickItemID)<0){
+                //去重
+                Selected_TechInstSerial_IDList.push(newclickItemID);
+            }
+            if(ckbox!=null){ckbox.checked = true;}
+            <!--ckbox.checked=true-->
+            $("#TechInst"+newclickItemID).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
+        }
+    }
+
+    //人为选中某工序或不选中某工序
+    function select_TechInst_ItemByID(ItemID, ifselect){
+        var ckbox = document.getElementById("checkbox"+ItemID)
+        if(ifselect){
+            if(Selected_TechInstSerial_IDList.indexOf(ItemID)<0){
+                //去重
+                Selected_TechInstSerial_IDList.push(ItemID);
+            }
+            if(ckbox!=null){ckbox.checked = true;}
+            <!--ckbox.checked = true;-->
+            <!--document.getElementById("checkbox"+ItemID).checked=true;-->
+            $("#TechInst"+ItemID).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
+        }
+        else{
+            Selected_TechInstSerial_IDList.remove(ItemID);
+            if(ckbox!=null){
+                ckbox.checked = false;
+                document.getElementById("TechInst"+ItemID).removeAttribute("style"); //清除所有样式
+            }
+            <!--ckbox.checked = false;-->
+            <!--document.getElementById("checkbox"+ItemID).checked=false;-->
+            <!--$("#checkbox"+ItemID).prop('checked', false);-->
+            <!--$("#checkbox"+ItemID).removeAttr("checked");-->
+
+        }
+    }
+
+    //增加一条ConditionalCell
+    function AddConditionalCellItem(){
+        RefreshValue();
+        if(selectItemID!=-1){
+            var _url='{{ Common_URL.SubWindow_URL_LAMProcessParametersConditionalCell_Add }}'+selectItemID+'/';
+            shownewpage(_url);
+        }
+    }
+
+    //添加适用的工序
+    function SaveTechInstSerialItems(){
+
+        RefreshValue();
+        <!--alert(Selected_TechInstSerial_IDList);-->
+        var _url='{{ Common_URL.Update_URL_LAMProcessParametersTechInstSerial_Save }}';
+        params = {
+                'id':selectItemID,
+                'techinst_serial_list':Selected_TechInstSerial_IDList.join(','),
+        };
+        $.post(
+            _url,
+            params,
+            function(data, textStatus)
+            {
+                function func_end(){
+                    setTimeout(function(){
+                        // 刷新适用工序表格
+                        RefreshTableData_TechInstSerial();
+
+
+                    },10);
+                    setTimeout(function(){
+                        // 点击参数包表格当前行，调用clickParameterItemByID时将点亮所适用的工序行
+                        clickParameterItemByID(selectItemID);
+                    },100);
+
+                    setTimeout(function(){
+                        // 隐藏消息框
+                        document.getElementById("techinstserial_alert_success").style.display="none";
+                        document.getElementById("techinstserial_alert_danger").style.display="none";
+
+                    },3000);
+                }
+                this;
+                location.reload(true);
+                <!--if(data.save_success=='True'){-->
+                    <!--document.getElementById('techinstserial_alert_success').style.display=""; //显示-->
+                    <!--document.getElementById('techinstserial_alert_danger').style.display="none"; //隐藏-->
+                    <!--func_end();-->
+                <!--}-->
+                <!--else{-->
+                    <!--document.getElementById('techinstserial_alert_success').style.display="none"; //隐藏-->
+                    <!--document.getElementById('techinstserial_alert_danger').style.display=""; //显示-->
+                    <!--func_end();-->
+                    <!--&lt;!&ndash;setTimeout(function(){document.getElementById("techinstserial_alert_danger").style.display="none";RefreshTableData_TechInstSerial();},3000);&ndash;&gt;-->
+                    <!--&lt;!&ndash;setTimeout(func_end,3000);&ndash;&gt;-->
+                <!--}-->
+
+            }
+        );
+
+    }
+
+
+
+    //刷新右侧条件单元表格
+    function loadTableData_ConditionalCell(ProcessParameterID)
+    {
+        if(ProcessParameterID==-1){return;}
+        $.get(
+            '{{ Common_URL.Query_ConditionalCell_By_ProcessParameterID }}'+ProcessParameterID+'/',
+            {},
+            function(data, textStatus)
+            {
+                this;
+                var tbody=document.getElementById('tbd_ConditionalCell');
+                var rowNum=tbody.rows.length;
+                if(rowNum>0)
+                {
+                    for(i=0;i<rowNum;i++)
+                    {
+                        <!--table.deleteRow(i);-->
+                        tbody.deleteRow(i);
+                        rowNum=rowNum-1;
+                        i=i-1;
+                    }
+
+                }
+                <!--alert(table.rows.length)-->
+                for(var ever in data) {
+                    var row=tbody.insertRow(-1);
+                    for(var item in data[ever]){
+                        if(item=='id'){
+                            var _ccell_id=data[ever][item]
+                        }
+                        var c1=row.insertCell(-1);
+                        c1.innerHTML=data[ever][item];
+                    }
+                    var c1=row.insertCell(-1);
+                    c1.innerHTML='<a href="#" class="btn btn-primary btn-sm" onclick="'+    "shownewpage('{{ Common_URL.SubWindow_URL_LAMProcessParametersConditionalCell_Edit }}"+_ccell_id+"/');"    +'">修改</a>';
+                }
+            }
+        );
+    }
+
+    //刷新右侧适用工序表格，更新高亮选中状态，更新Selected_TechInstSerial_IDList
+    function loadTableData_TechInstSerial(ProcessParameterID)
+    {
+        if(ProcessParameterID==-1){return;}
+        $.get(
+            '{{ Common_URL.Query_ProcessParameterTechInstSerial_By_ProcessParameterID }}'+ProcessParameterID+'/',
+            {},
+            function(data, textStatus)
+            {
+                this;
+                var newidlist=data.techinst_serial_idlist;
+
+                //Selected_TechInstSerial_IDList
+
+                for(var ever in Serial_ItemList_id){
+                    item_id=Serial_ItemList_id[ever]
+                    if(newidlist.indexOf(item_id)>-1){
+                        //此元素在新状态中为选中
+                        select_TechInst_ItemByID(item_id, true);
+                    }
+                    else{
+                        //此元素在新状态中为不选中
+                        select_TechInst_ItemByID(item_id, false);
+                    }
+                }
+            }
+        );
+    }
+
+    //刷新工序Table
+    function RefreshTableData_TechInstSerial(){
+    $.get(
+            '{{ Common_URL.Query_ProcessParameterTechInstSerial}}',
+            {},
+            function(data, textStatus)
+            {
+                this;
+                var tbody=document.getElementById('tbd_TechInstlSerial');
+                var rowNum=tbody.rows.length;
+                if(rowNum>0)
+                {
+                    for(i=0;i<rowNum;i++)
+                    {
+                        <!--table.deleteRow(i);-->
+                        tbody.deleteRow(i);
+                        rowNum=rowNum-1;
+                        i=i-1;
+                    }
+                }
+                for(var ever in data) {
+                    var _ccell_id=data[ever]['id']
+                    var row=tbody.insertRow(-1);
+                    row.id="TechInst"+_ccell_id
+                    row.onclick=Function("click_TechInst_ItemByID("+_ccell_id+");");
+
+                    var c1=row.insertCell(-1);
+                    c1.innerHTML='<td align="center"><div class="checkbox"><label><input type="checkbox" name="item_id" id="checkbox'
+                        +_ccell_id
+                        +'" value="'
+                        +_ccell_id
+                        +'"></label></div></td>';
+
+                    for(var item_name in data[ever]){
+                        <!--_tr_html=_tr_html+'<td>'+data[ever][item_name]+'</td>'-->
+                        <!--c1.innerHTML=data[ever][item];-->
+
+                        var _td_html = '<td>'+data[ever][item_name]+'</td>'
+                        var c1=row.insertCell(-1);
+                        c1.innerHTML=_td_html;
+                    }
+
+                }
+            }
+        );
+    }
+
+
+
+
+
+</script>
+<div id="page-inner">
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+            </h1>
+        </div>
+
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-lg-5">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <form role="form" method="GET" action="alert">{% csrf_token %}
+                                    <table class="table table-striped table-bordered table-hover"
+                                           id="dataTables-example">
+                                        <thead>
+
+                                        <tr>
+                                            <th align="center" style="width: 30px">选择</th>
+                                            <th align="center" style="width: 30px">ID</th>
+                                            {% for field in form %}
+                                            <th align="center">{{ field.label }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for record in all_entries %}
+                                        <tr onclick="clickParameterItemByID({{record.id}});" id="Parameter{{ record.id }}">
+                                            <td align="center">
+                                                <div class="radio">
+                                                    <input type="radio" name="item_id" id="optionsRadios{{record.id}}"
+                                                           value="{{record.id}}">
+                                                </div>
+                                            </td>
+                                            <!--{{ record }}-->
+                                            {% for field in record.values %}
+                                            <td>{{ field }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
+
+                                    <!--<a href='add'>-->
+                                    <!--<button type="button" class="btn btn btn-success" name="item_add">新增</button>-->
+                                    <!--</a>-->
+
+                                    <button type="button" class="btn btn btn-success" name="item_add"
+                                            onclick="shownewpage('{{ Common_URL.SubWindow_URL_LAMProcessParameters_Add }}'+'');">
+                                        新增
+                                    </button>
+                                    <!--<button type="submit" class="btn btn-success btn-sm"-->
+                                    <!--onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ChemicalElement_Add }}'+'{{ form.itemid }}/'+'{{ If_Product_Test }}/');">-->
+                                    <!--增加-->
+                                    <!--</button>-->
+                                    <button type="button" class="btn btn-primary" name="item_edit" onclick="
+                                        RefreshValue();
+                                        if(selectItemID!=-1)
+                                        {
+                                            shownewpage('{{ Common_URL.SubWindow_URL_LAMProcessParameters_Edit }}'+selectItemID+'/');
+                                        }">
+                                        选中编辑
+                                    </button>
+                                    <button type="button" class="btn btn-danger" name="item_delete"
+                                            onclick="confirmDelete();">
+                                        选中冻结
+                                    </button>
+                                    {% if messages %}
+                                    <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+
+
+
+                                    </script>
+                                    {% endif %}
+                                </form>
+                            </div>
+
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+                <!--{{ form.modelname }}-->
+
+                {% if form.previewtablefields %}
+                <!--仅对工序实例化有效-->
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{ form.previewtableTitle }}
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th width="20">ID</th>
+                                        {% for field_label in form.previewtablefields.values %}
+                                        <th width="60">{{ field_label }}</th>
+                                        {% endfor %}
+                                        <th width="80">操作</th>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tbd_ConditionalCell">
+                                    {% for cell in ConditionalCell_datalist %}
+                                    <tr>
+                                        {% for field in cell.values %}
+                                        <td>{{ field }}</td>
+                                        {% endfor %}
+                                        <td>
+                                            <!--<a href="#" class="btn btn-info btn-sm">保存</a>-->
+                                            <a href="#" class="btn btn-primary btn-sm"
+                                               onclick="shownewpage('{{ Common_URL.SubWindow_URL_LAMProcessParametersConditionalCell_Edit }}'+'{{ cell.id }}/');">修改</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm" onclick="AddConditionalCellItem();">
+                                增加
+                            </button>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            {{ form.previewtable2_Title }}
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive" >
+                                <!--<form role="form" method="GET" action="alert">{% csrf_token %}-->
+                                    <table class="table table-striped table-bordered table-hover"
+                                           id="dataTables-example2" aria-describedby="dataTables-example_info">
+                                        <thead>
+                                        <th align="center" style="width:30px">选择</th>
+                                        <th align="center" style="width:30px">ID</th>
+                                        {% for field_label in form.previewtable2_fields.values %}
+                                        <th align="center" style="width:30px">{{ field_label }}</th>
+                                        {% endfor %}
+                                        </thead>
+                                        <tbody id="tbd_TechInstlSerial">
+                                        {% for record in all_entries_serial %}
+                                        <tr onclick="click_TechInst_ItemByID({{record.id}});" id="TechInst{{ record.id }}">
+                                            <td align="center">
+                                                <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox" name="item_id" id="checkbox{{record.id}}" value="{{record.id}}">
+                                                </label>
+                                                </div>
+                                            </td>
+                                            <!--{{ record }}-->
+                                            {% for field in record.values %}
+                                            <td>{{ field }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
+
+                                    <!--<a href='add'>-->
+                                    <!--<button type="button" class="btn btn btn-success" name="item_add">新增</button>-->
+                                    <!--</a>-->
+
+                                    <button type="submit" class="btn btn-success btn-sm" onclick="SaveTechInstSerialItems();">
+                                        保存
+                                    </button>
+                                    <div>
+                                        <div class="alert alert-success" id="techinstserial_alert_success" style="display:none">
+                                            <strong>保存成功！</strong>3s后刷新
+                                        </div>
+                                        <div class="alert alert-danger" id="techinstserial_alert_danger" style="display:none">
+                                            <strong>保存失败！</strong>3s后刷新
+                                        </div>
+                                    </div>
+                                    {% if messages %}
+                                    <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+                                    </script>
+                                    {% endif %}
+                                <!--</form>-->
+                            </div>
+
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+
+
+                    </div>
+
+
+                </div>
+
+                <!-- /.panel -->
+                {% endif %}
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

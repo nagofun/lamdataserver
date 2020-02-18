@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--<script src="jquery.min.js"></script>-->
+<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="/assets/js/matching.js"></script>
+
+
+<!--</style>-->
+<script>
+function load()
+{
+    {% ifequal form.modelname 'LAM_TechInst_Serial'%}
+    <!--工序在工艺文件中的实例化-->
+        var techid=document.getElementById("id_technique_instruction").value;
+        loadTableData(techid);
+    {% endifequal %}
+}
+
+</script>
+<div id="page-inner">
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+            </h1>
+        </div>
+
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-lg-6">
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+
+                            <form role="form" method="post" action="">{% csrf_token %}
+                                <div class="form-group">
+                                    <label>条目ID</label>
+                                    <!--<input class="form-control">-->
+                                    <input class="form-control" id="disabledInput" type="text"
+                                           placeholder="{{ form.itemid }}" disabled="">
+                                </div>
+
+                                {% for field in form %}
+                                <div class="form-group">
+                                    <label>{{ field.label }}</label>
+                                    {{ field |safe }}
+                                </div>
+                                {% endfor %}
+                                {% if form.techinst_datalist %}
+                                <!--辅助筛选工艺文件-->
+                                <datalist id="techinst_list" style="display:none;">
+                                    {% for data in form.techinst_datalist %}
+                                    <option value={{ data.id }} label='{{ data|safe }}'></option>
+                                    <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
+                                    {% endfor %}
+                                </datalist>
+                                {% endif %}
+                                {% if form.worktype_datalist %}
+                                <!--辅助筛选工序-->
+                                <datalist id="worktype_list" style="display:none;">
+                                    {% for data in form.worktype_datalist %}
+                                    <option value={{ data.id }} label='{{ data|safe }}'></option>
+                                    <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
+                                    {% endfor %}
+                                </datalist>
+                                {% endif %}
+                                <script type="text/javascript">
+                                    function check_FilterTechinstField(techinst_id) {
+                                        var data_id_list = [
+                                        {% for data in form.techinst_datalist %}
+                                            {{ data.id }},
+                                        {% endfor %}
+                                        -1
+                                        ];
+                                        if (techinst_id in data_id_list)
+                                        {
+                                            Tech_Inst_Field = document.getElementById("id_technique_instruction");
+                                            Tech_Inst_Field.value = techinst_id;
+                                            loadTableData(techinst_id);
+                                            shake_by_id("id_technique_instruction")
+                                        }
+                                    }
+                                    function check_FilterWorktypeField(worktype_id) {
+                                        var data_id_list = [
+                                        {% for data in form.worktype_datalist %}
+                                            {{ data.id }},
+                                        {% endfor %}
+                                        -1
+                                        ];
+                                        if (worktype_id in data_id_list)
+                                        {
+                                            Work_Type_Field = document.getElementById("id_serial_worktype");
+                                            Work_Type_Field.value = worktype_id;
+                                            shake_by_id("id_serial_worktype")
+                                        }
+                                    }
+
+
+
+
+                                </script>
+                                <script type="text/javascript">
+                                    function shake_by_id(shake_id,u){
+                                        var b=0;
+                                        <!--alert(shake_id);-->
+                                        Shake_Field = document.getElementById(shake_id);
+                                        u=setInterval(
+                                            function(){
+                                                Shake_Field.style.width=(100-5*(Math.sin(8*0.0087266*b++)))+'%';
+                                                if(b>180)
+                                                {
+                                                    clearInterval(u);
+                                                    b=0
+                                                }
+                                            },1
+                                        )
+                                    }
+
+
+
+
+                                </script>
+
+
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.error_messages }}
+                                </div>
+                                {% endifequal %}
+                                {% ifequal form.modelname 'LAMTechniqueInstruction'%}
+                                <div id="WarningMsg" class="alert alert-warning" style="display:none">
+
+                                </div>
+                                <div class="panel-heading">
+                                </div>
+                                {% endifequal %}
+                                <!--<button type="edit" class="btn btn-default">编辑</button>-->
+
+                                <button type="submit" class="btn btn-success">保存</button>
+
+                                <button type="reset" class="btn btn-primary">重置</button>
+                                <a href={{ Back_URL }}>
+                                    <button type="button" class="btn btn-primary" name="item_back" formaction=''>返回
+                                    </button>
+                                </a>
+                                <!--<a href="http://google.com" class="button">Continue</a>-->
+                            </form>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+                <!--{{ form.previewtablefields }}-->
+                {% if form.previewtablefields %}
+                <!--仅对工序实例化有效-->
+                <div class="col-lg-6">
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            预览
+                        </div>
+
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover" >
+                                    <thead>
+                                    <tr>
+
+                                        {% for field_label in form.previewtablefields.values %}
+                                        <th>{{ field_label }}</th>
+                                        {% endfor %}
+
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tbd">
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+                <script type="text/javascript">
+
+
+                    function loadTableData(techid)
+                    {
+
+                        $.get(
+                            '{{ Common_URL.Query_LAMTechInst_Preview }}'+techid+'/',
+                            {'TechInstID':techid},
+                            function(data, textStatus)
+                            {
+                                this;
+                                <!--var table=document.getElementsByClassName("table table-striped table-bordered table-hover")[0];-->
+                                <!--var rowNum=table.rows.length;-->
+
+                                var tbody=document.getElementById('tbd');
+                                var rowNum=tbody.rows.length;
+
+                                if(rowNum>0)
+                                {
+                                    for(i=0;i<rowNum;i++)
+                                    {
+                                        <!--table.deleteRow(i);-->
+                                        tbody.deleteRow(i);
+                                        rowNum=rowNum-1;
+                                        i=i-1;
+                                    }
+                                }
+                                <!--alert(table.rows.length)-->
+                                for(var ever in data) {
+                                    var row=tbody.insertRow(-1);
+                                    for(var item in data[ever]){
+                                        var c1=row.insertCell(-1);
+                                        c1.innerHTML=data[ever][item];
+                                    }
+                                }
+                            }
+                        );
+                    }
+
+
+
+                </script>
+
+                {% endif %}
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

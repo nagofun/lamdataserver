@@ -1,0 +1,874 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--<script src="jquery.min.js"></script>-->
+<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="/assets/js/matching.js"></script>
+
+
+<script type="text/javascript" src="/assets/js/echarts.min.js"></script>
+<!--<script type="text/javascript" src="/incubator-echarts-4.5.0/dist/echarts-gl.min.js"></script>-->
+<!--<script type="text/javascript" src="/assets/js/ecStat.min.js"></script>-->
+<!--<script type="text/javascript" src="/assets/js/extension/dataTool.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>-->
+<!--<script type="text/javascript" src="/assets/js/extension/bmap.min.js"></script>-->
+
+
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>-->
+<!--<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=xfhhaTThl11qYVrqLZii6w8qE5ggnhrY&__ec_v__=20190126"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>-->
+<!--<style>-->
+<!--.div {-->
+<!--width: 402px;-->
+<!--height: 34px;-->
+<!--margin:200px auto;-->
+<!--padding:0;-->
+<!--position:relative;-->
+<!--}-->
+<!--.div input {-->
+<!--width: 400px;-->
+<!--height: 30px;-->
+<!--line-height: 30px;-->
+<!--font:14px arial;-->
+<!--color:#333;-->
+<!--border: 1px solid #b8b8b8;-->
+<!--padding:2px 0px 2px 8px;-->
+<!--border-radius:5px;-->
+<!--box-shadow:0 0 16px 0 rgba(53,53,53,.2);-->
+<!--}-->
+<!--#search-button {-->
+<!--position: absolute;-->
+<!--height: 30px;-->
+<!--width: 30px;-->
+<!--top: 3px;-->
+<!--right: -6px;-->
+<!--background-color: #fff;-->
+<!--cursor: pointer;-->
+<!--}-->
+<!--.search-img {-->
+<!--position: absolute;-->
+<!--height: 0px;-->
+<!--width: 0px;-->
+<!--top: 13px;-->
+<!--right: 10px;-->
+<!--overflow: hidden;-->
+<!--cursor: pointer;-->
+<!--border-width: 5px;-->
+<!--border-style: solid dashed dashed;-->
+<!--border-color: #acacac transparent transparent;-->
+<!--background-repeat: no-repeat;-->
+<!--opacity: .6;-->
+<!--}-->
+<!--.div span.up {-->
+<!--border-width: 5px;-->
+<!--border-style: dashed dashed solid;-->
+<!--border-color: transparent transparent #acacac;-->
+<!--top: 7px;-->
+<!--}-->
+<!--.div select {-->
+<!--width: 410px;-->
+<!--height: 200px;-->
+<!--margin: 0px;-->
+<!--padding: 2px 0px;-->
+<!--outline: none;-->
+<!--border: 1px solid #b8b8b8;-->
+<!--position:absolute;-->
+<!--top:35px;-->
+<!--left:0;-->
+<!--box-shadow:0 0 16px 0 rgba(53,53,53,.2);-->
+<!--}-->
+<!--.div select option {-->
+<!--height:18px;-->
+<!--line-height:18px;-->
+<!--cursor: default;-->
+<!--font:14px arial;-->
+<!--padding: 2px 8px;-->
+<!--}-->
+<!--.div select option:hover{-->
+<!--background:#f0f0f0;-->
+<!--}-->
+
+
+<!--</style>-->
+<script>
+function load()
+{
+    {% ifequal form.modelname 'LAM_TechInst_Serial'%}
+    <!--工序在工艺文件中的实例化-->
+        var techid=document.getElementById("id_technique_instruction").value;
+        loadTableData(techid);
+    {% endifequal %}
+    <!--var res1;-->
+}
+var SelectStartTimeMode=false;
+var SelectFinishTimeMode=false;
+var SelectStartDateTime=null;
+var SelectFinishDateTime=null;
+
+
+</script>
+<div id="page-inner">
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+            </h1>
+        </div>
+
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            辅助选择
+                        </div>
+                        <div class="panel-body">
+
+                            <!--辅助选择下拉菜单-->
+                            <div class="form-group">
+                                {% for row in form.AuxiliarySelectionField_with_row %}
+                                <div class="form-group">
+                                    <div class="row">
+                                        {% for auxfield in row %}
+                                        <div class="col-lg-6">
+                                            <label>{{ auxfield.label }}</label>
+                                            {% for field in form %}
+                                            {% ifequal field.name auxfield.name %}
+                                            {{ field|safe }}
+                                            {% endifequal %}
+                                            {% endfor %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <!--<div class="form-group">-->
+                                    <!--<div class="row">-->
+                                        <!--<div class="col-lg-6">-->
+                                            <!--<button type="button" class="btn btn-success"-->
+                                                    <!--onclick="refreshProcessGraph();">刷新-->
+                                            <!--</button>-->
+                                            <!--<button type="reset" class="btn btn-primary">重置</button>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            </div>
+                            {% if form.productcode_datalist %}
+                            <!--辅助筛选产品实例编号  LAMProcessMissionForm_Edit-->
+                            <div id='datalistDiv'>
+                                <datalist id="product_code_list" style="display:none;">
+                                    {% for data in form.productcode_datalist %}
+                                    <option value={{ data|safe }} label='{{ data|safe }}'></option>
+                                    <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+                            {% endif %}
+
+                        </div>
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+
+                            <form role="form" method="post" action="">{% csrf_token %}
+
+                                <div class="form-group">
+                                    <label>条目ID</label>
+                                    <input class="form-control" id="disabledInput" type="text"
+                                           placeholder="{{ form.itemid }}" disabled="">
+                                </div>
+
+                                {% for field in form %}
+                                        {% for label in form.OriginalFields%}
+                                            {% ifequal field.name label %}
+                                            <div class="form-group">
+                                                <label>{{ field.label }}</label>
+                                                {% ifequal field.name form.ChangeableFieldname %}
+                                                    <div id='ChangeableDiv'>
+                                                {% endifequal %}
+                                                {{ field |safe }}
+                                                {% ifequal field.name form.ChangeableFieldname %}
+                                                    </div>
+                                                {% endifequal %}
+                                            </div>
+                                            {% endifequal %}
+                                        {% endfor %}
+
+                                {% endfor %}
+
+                                <!--<input type="hidden" value="" id="hidden_input">-->
+                                <script type="text/javascript">
+
+                                    <!--刷新图形数据，更新显示-->
+                                    function refreshProcessGraph(ifForceRefresh){
+
+                                        temp_process_start_date_field = document.getElementById("id_temp_process_start_date");
+                                        temp_process_finish_date_field = document.getElementById("id_temp_process_finish_date");
+                                        temp_process_start_date = temp_process_start_date_field.value;
+                                        temp_process_finish_date = temp_process_finish_date_field.value;
+
+                                        worksection_id = document.getElementById("id_worksection").value;
+                                        if(worksection_id=='')
+                                        {
+                                            NoticeInput('id_worksection','red');
+                                            return;
+                                        }
+                                        myChart.showLoading({
+                                                    text: '数据正在努力加载...',
+                                                    textStyle: { fontSize : 30 , color: '#444' },
+                                                    effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+                                                });
+                                        $.get(
+                                            '{{ Common_URL.Query_Data_By_WorkSectionDatetime }}'+ifForceRefresh+'/'+worksection_id+'/'+temp_process_start_date+'00:00/'+temp_process_finish_date+'23:59/60/',
+                                            <!--{'MissionID':process_mission_id,-->
+                                            <!--'StartDateTime':temp_process_start_date+' 00:00',-->
+                                            <!--'temp_process_finish_date':temp_process_finish_date+' 23:59',-->
+                                            <!--'Interval':60},-->
+
+                                            function(res, textStatus)
+                                            {
+                                                this;
+                                                myChart.hideLoading();
+
+                                                myChart.setOption({
+                                                    xAxis:{
+                                                        data:res['datetime'].map(function (str) {
+                                                            return str.replace(' ', '\n')
+                                                        })
+                                                    },
+                                                    series:[
+                                                        {
+                                                            data:res['oxydata']
+                                                        },
+                                                        {
+                                                            data:res['laserdata']
+                                                        },
+                                                        {
+                                                            data:res['cnczdata']
+                                                        }
+
+                                                    ]
+                                                });
+                                            }
+                                        );
+                                    }
+
+                                    <!--零件类别选择变化，刷新零件编号列表-->
+                                    function refresh_productlist()
+                                    {
+                                        if(document.getElementById('id_product_category').value=='')
+                                        {
+                                            return;
+                                        }
+                                        <!--根据辅助选择中产品类别条目刷新“零件编号”条目-->
+                                        $.get(
+                                            '{{ Common_URL.Query_Product_By_ProductCategory }}'+document.getElementById('id_product_category').value+'/',
+                                            <!--{'ProductCode':document.getElementById('id_product_code').value},-->
+                                            function(data, textStatus)
+                                            {
+                                                this;
+                                                var cut_slted_productcode = document.getElementById('id_product_code').value;
+                                                var contain = false
+                                                <!--零件编号列表-->
+                                                var htmlData = '<datalist id="product_code_list" style="display:none;">';
+
+                                                for(var ever in data) {
+                                                    htmlData=htmlData+'<option value='+data[ever]['product_code']+' label='+    data[ever]['id']    +'></option>';
+                                                    if(data[ever]['product_code']==cut_slted_productcode)
+                                                    {
+                                                        contain = true
+                                                    }
+                                                }
+                                                htmlData = htmlData+'</datalist>'
+                                                document.getElementById('datalistDiv').innerHTML=htmlData;
+                                                <!--若当前选择的零件编号不在最新列表里，则选择置空-->
+                                                if(contain==false)
+                                                {
+                                                    document.getElementById('id_product_code').value='';
+                                                    NoticeInput('id_product_code', 'blue');
+                                                }
+
+                                            }
+                                        );
+                                    }
+                                    <!--零件编号选择变化，刷新form中任务列表-->
+                                    function refresh_missionlist()
+                                    {
+                                        if(document.getElementById('id_product_code').value=='')
+                                        {
+                                            return;
+                                        }
+                                        <!--根据辅助选择中零件编号code刷新form，将该零件所具备的任务置顶-->
+                                        $.get(
+                                            '{{ Common_URL.Query_Mission_By_ProductCode }}'+document.getElementById('id_product_code').value+'/',
+                                            function(data, textStatus)
+                                            {
+                                                this;
+                                                <!--任务列表-->
+                                                htmlData = '<select name="process_mission" class="form-control" onchange="refresh_worksection_selection(this.value);refresh_start_finsh_datetime(this.value);" required="" id="id_process_mission">'
+
+                                                for(var ever in data) {
+                                                    htmlData=htmlData+'<option value="'   +data[ever]['id']+   '">'   +data[ever]['mission']+   '</option>';
+                                                }
+
+                                                htmlData = htmlData + '</select>'
+                                                document.getElementById('ChangeableDiv').innerHTML=htmlData;
+                                                NoticeInput('id_process_mission', 'blue');
+                                                refresh_worksection_selection(document.getElementById('id_process_mission').value);
+                                                refresh_start_finsh_datetime(document.getElementById('id_process_mission').value);
+                                            }
+                                        );
+
+                                    }
+                                    <!--form中任务选择变化，更新图形区域的工段选择、日期范围-->
+                                    function refresh_worksection_selection(mission_id)
+                                    {
+                                        if(mission_id=='')
+                                        {
+                                            return;
+                                        }
+                                        <!--根据form中任务id，获取所属工段id，更新图形区域的工段选择-->
+                                        $.get(
+                                            '{{ Common_URL.Query_WorksectionId_By_MissionID }}'+mission_id+'/',
+                                            function(data, textStatus)
+                                            {
+                                                this;
+                                                <!--更新图形区域的工段栏目-->
+                                                var ifchange = false;
+
+                                                worksection_obj = document.getElementById('id_worksection');
+                                                if(worksection_obj.value!=data['worksectionid'])
+                                                {
+                                                    ifchange=true;
+
+                                                }
+                                                worksection_obj.value = data['worksectionid'];
+                                                if(ifchange)
+                                                {
+                                                    NoticeInput('id_worksection', 'blue');
+                                                }
+
+                                            }
+                                        );
+
+                                        <!--根据form中任务id，更新图形区域的选择日期范围-->
+                                        $.get(
+                                            '{{ Common_URL.Query_ArrangementDate_By_MissionID }}'+mission_id+'/',
+                                            function(data, textStatus)
+                                            {
+                                                this;
+                                                if(document.getElementById('id_temp_process_start_date').value<data['arrangementdate'])
+                                                {
+                                                    <!--更新图形区域的工段栏目-->
+                                                    document.getElementById('id_temp_process_start_date').value = data['arrangementdate'];
+                                                    NoticeInput('id_temp_process_start_date', 'blue');
+                                                }
+                                                <!--若截止日期小于起始日期，则截止日期增加1天-->
+                                                if(document.getElementById('id_temp_process_start_date').value > document.getElementById('id_temp_process_finish_date').value)
+                                                {
+                                                    var start_date = new Date(document.getElementById('id_temp_process_start_date').value)
+                                                    var finish_date = new Date(start_date-1+1+24*60*60*1000)
+                                                    document.getElementById('id_temp_process_finish_date').value=finish_date.toJSON().substring(0,10);
+                                                    NoticeInput('id_temp_process_finish_date', 'blue');
+                                                }
+                                            }
+                                        );
+
+                                    }
+
+                                    <!--form中任务选择变化，更新图形区域的工段选择、日期范围-->
+                                    function refresh_start_finsh_datetime(mission_id)
+                                    {
+                                        if(mission_id=='')
+                                        {
+                                            return;
+                                        }
+                                        <!--根据form中任务id，更新图形区域的选择日期范围，更新原始field中的日期-->
+                                        $.get(
+                                            '{{ Common_URL.Query_StartFinishTime_By_MissionID }}'+mission_id+'/',
+                                            function(data, textStatus)
+                                            {
+                                                this;
+                                                document.getElementById('id_process_start_time').value=data['start_datetime'].replace(' ','T');
+                                                document.getElementById('id_process_finish_time').value=data['finish_datetime'].replace(' ','T');
+                                                NoticeInput('id_process_start_time', 'blue');
+                                                NoticeInput('id_process_finish_time', 'blue');
+
+                                            }
+                                        );
+
+                                    }
+
+
+                                    function SetOnMode(objid)
+                                    {
+                                        $("#"+objid).animate({backgroundColor:"#4490A6",color: "#0AF032"},150);
+                                        $("#"+objid).animate({backgroundColor:"#39788B",color: "#0AF0A5"},150);
+                                    }
+                                    function SetOffMode(objid)
+                                    {
+                                        $("#"+objid).animate({backgroundColor:"#50A8C2",color: "#0AF032"},150);
+                                        $("#"+objid).animate({backgroundColor:"#5BC0DE",color: "#fff"},150);
+                                    }
+                                    <!--开启选择起始时间模式-->
+                                    function readySelectStartTime()
+                                    {
+                                        <!--若当前为选择结束时间模式，则退出该模式-->
+                                        if(SelectFinishTimeMode)
+                                        {
+                                            SelectFinishTimeMode = false;
+                                            SetOffMode("bt_select_finishtime");
+                                        }
+                                        SelectStartTimeMode = true;
+                                        SetOnMode('bt_select_starttime');
+                                    }
+
+                                    <!--检查开始时间与结束时间-->
+                                    function checkSelectTime()
+                                    {
+                                        var process_start_time = document.getElementById('id_process_start_time').value.replace('T', '\n');
+                                        var process_finish_time = document.getElementById('id_process_finish_time').value.replace('T', '\n');
+                                        if(process_start_time > process_finish_time)
+                                        {
+                                            document.getElementById('WarningDiv').style.display='block';
+                                            setTimeout( function(){
+                                                var temp_time = document.getElementById('id_process_start_time').value;
+                                                document.getElementById('id_process_start_time').value = document.getElementById('id_process_finish_time').value;
+                                                document.getElementById('id_process_finish_time').value = temp_time;
+                                                NoticeInput("id_process_start_time", "blue");
+                                                NoticeInput("id_process_finish_time", "blue");
+                                                document.getElementById('WarningDiv').style.display='none';
+                                            }, 5 * 1000 );
+
+                                        }
+                                        else{
+                                            document.getElementById('WarningDiv').style.display='none';
+                                        }
+                                        myChart.setOption({
+                                            series:[
+                                            {
+                                                markArea: {
+                                                    silent: true,
+                                                    data: [[{
+                                                        xAxis: process_start_time
+                                                    }, {
+                                                        xAxis: process_finish_time
+                                                    }]]
+                                                },
+                                            },
+                                            {
+                                                markArea: {
+                                                    silent: true,
+                                                    data: [[{
+                                                        xAxis: process_start_time
+                                                    }, {
+                                                        xAxis: process_finish_time
+                                                    }]]
+                                                },
+                                            },
+                                            {
+                                                markArea: {
+                                                    silent: true,
+                                                    data: [[{
+                                                        xAxis: process_start_time
+                                                    }, {
+                                                        xAxis: process_finish_time
+                                                    }]]
+                                                },
+                                            }
+                                            ]
+                                        });
+
+                                    }
+
+                                    <!--开启选择结束时间模式-->
+                                    function readySelectFinishTime()
+                                    {
+                                        <!--若当前为选择开始时间模式，则退出该模式-->
+                                        if(SelectStartTimeMode)
+                                        {
+                                            SelectStartTimeMode = false;
+                                            SetOffMode("bt_select_starttime");
+                                        }
+                                        SelectFinishTimeMode = true;
+                                        SetOnMode('bt_select_finishtime');
+                                    }
+
+                                </script>
+                                <div id="WarningDiv" class="alert alert-danger" style="display: none">
+                                    <strong>错误！</strong>结束时间不应小于开始时间，5s后互换。
+								</div>
+
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.error_messages|safe }}
+                                    {{ form.errors }}
+                                </div>
+                                {% endifequal %}
+                                {% ifequal form.modelname 'LAMTechniqueInstruction'%}
+                                <div id="WarningMsg" class="alert alert-warning" style="display:none">
+
+                                </div>
+                                <div class="panel-heading">
+                                </div>
+                                {% endifequal %}
+                                <!--<button type="edit" class="btn btn-default">编辑</button>-->
+
+                                <button type="submit" class="btn btn-success">保存</button>
+
+                                <button type="reset" class="btn btn-primary">重置</button>
+                                <a href={{ Back_URL }}>
+                                    <button type="button" class="btn btn-primary" name="item_back" formaction=''>返回
+                                    </button>
+                                </a>
+                                <!--<a href="http://google.com" class="button">Continue</a>-->
+                            </form>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+                <!--{{ form.modelname }}-->
+
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+
+                            <!--图像控制参数-->
+                            <div class="form-group">
+                                {% for row in form.GraphOperatorField_with_row %}
+                                <div class="form-group">
+                                    <div class="row">
+                                        {% for auxfield in row %}
+                                        <div class="col-lg-4">
+                                            <label>{{ auxfield.label }}</label>
+                                            {% for field in form %}
+                                            {% ifequal field.name auxfield.name %}
+                                            {{ field|safe }}
+                                            {% endifequal %}
+                                            {% endfor %}
+                                        </div>
+                                        {% endfor %}
+
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <label> {{ auxfield.label }}</label>
+                                        <!--<button class="btn btn-default" onclick="refreshProcessGraph();"><i-->
+                                                <!--class=" fa fa-refresh "></i> 检索-->
+                                        <!--</button>-->
+                                        <div class="btn-group">
+										  <button class="btn btn-primary" onclick="refreshProcessGraph(0);">刷新</button>
+										  <button data-toggle="dropdown" class="btn btn-primary dropdown-toggle" aria-expanded="false"><span class="caret"></span></button>
+										  <ul class="dropdown-menu">
+											<li><a href="#" onclick="refreshProcessGraph(1);">强制刷新</a></li>
+										  </ul>
+										</div>
+                                        <!--<button type="button" class="btn btn-primary btn-lg"-->
+                                        <!--onclick="refreshProcessGraph();">刷新-->
+                                        <!--</button>-->
+                                        <a href="#" class="btn btn-info" id="bt_select_starttime" onclick="readySelectStartTime();">选择开始时间</a>
+                                        <a href="#" class="btn btn-info" id="bt_select_finishtime" onclick="readySelectFinishTime();">选择结束时间</a>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <div id="main" style="width: 1000px;height:700px;">
+                            <body style="height: 100%; margin: 0">
+                            <!--<div class="panel-heading">-->
+                            <!--辅助选择-->
+                            <!--</div>-->
+
+                            <div id="container" style="height: 100%"></div>
+
+                            <script type="text/javascript">
+
+                            var dom = document.getElementById("container");
+                            var myChart = echarts.init(dom);
+                            var app = {};
+                            option = null;
+                            var base = +new Date(1968, 9, 3);
+
+
+                            option = {
+                                title : {
+                                    text: '激光成形过程采集数据',
+                                    subtext: '',
+                                    x: 'center',
+                                    align: 'right'
+                                },
+                                grid: {
+                                    bottom: 80
+                                },
+                                toolbox: {
+                                    feature: {
+                                        dataZoom: {
+                                            yAxisIndex: 'none'
+                                        },
+                                        restore: {},
+                                        saveAsImage: {}
+                                    }
+                                },
+                                tooltip : {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        type: 'cross',
+                                        animation: false,
+                                        label: {
+                                            backgroundColor: '#505765'
+                                        }
+                                    }
+                                },
+                                legend: {
+                                    data:['氧含量','激光功率','激光成形高度'],
+                                    x: 'left'
+                                },
+                                dataZoom: [
+                                    {
+                                        show: true,
+                                        realtime: true,
+                                        start: 65,
+                                        end: 85
+                                    },
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 65,
+                                        end: 85
+                                    }
+                                ],
+                                xAxis : [
+                                    {
+                                        type : 'category',
+                                        boundaryGap : false,
+                                        axisLine: {onZero: false},
+                                        data : []
+                                        <!--.map(function (str) {-->
+                                            <!--return str.replace(' ', '\n')-->
+                                        <!--})-->
+                                    }
+                                ],
+                                yAxis: [
+                                    {
+                                        name: '氧含量(ppm)',
+                                        type: 'value',
+                                        <!--max: 500-->
+                                    },
+                                    {
+                                        name: '功率(W)',
+                                        <!--nameLocation: 'start',-->
+                                        <!--max: 5,-->
+                                        type: 'value',
+
+                                    },
+                                    {
+                                        name: '高度(mm)',
+                                        <!--nameLocation: 'start',-->
+                                        <!--max: 5,-->
+                                        type: 'value',
+                                        offset: 60,
+                                        splitNumber: 10,
+                                    }
+                                ],
+                                series: [
+                                    {
+                                        name:'氧含量',
+                                        type:'line',
+                                        animation: false,
+                                        areaStyle: {
+                                        },
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        markLine : {
+                                            //symbol:['circle', 'arrow'],    //表示箭头从左向右
+                                            symbol:['arrow', 'circle'], //表示箭头从右向左
+                                            //symbol:"none",            //表示没有箭头的直线
+                                            
+                                            //警示线标签
+                                            label:{
+                                                show:true,
+                                                position:"end",    //将警示值放在哪个位置，start middle end 开头 中间 结尾
+                                                //formatter: "60%",   //警示线上显示内容
+                                            },
+                                            //警示线的样式，虚实  颜色
+                                            lineStyle:{
+                                                type:"solid",
+                                                color:"{{ color.oxygen_markLine_color }}",
+                                            },
+
+                                            data : [
+                                                { name: '氧含量警告值',yAxis:80},
+                                            ],
+                                        },
+
+                                        data:[]
+                                    },
+                                    {
+                                        name:'激光功率',
+                                        type:'line',
+                                        yAxisIndex:1,
+                                        animation: false,
+                                        areaStyle: {
+                                        },
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        markLine : {
+                                            symbol:['circle', 'arrow'],    //表示箭头从左向右
+                                            //symbol:['arrow', 'circle'], //表示箭头从右向左
+                                            //symbol:"none",            //表示没有箭头的直线
+                                            
+                                            //警示线标签
+                                            label:{
+                                                show:true,
+                                                position:"end",    //将警示值放在哪个位置，start middle end 开头 中间 结尾
+                                                //formatter: "60%",   //警示线上显示内容
+                                            },
+                                            //警示线的样式，虚实  颜色
+                                            lineStyle:{
+                                                type:"solid",
+                                                color:"{{ color.laser_markLine_color }}",
+                                            },
+
+                                            data : [
+                                                { name: '连续成形激光功率范围上限',yAxis:7600},
+                                                { name: '连续成形激光功率范围下限',yAxis:7200},
+                                            ],
+                                        },
+                                        data: []
+                                    },
+                                    {
+                                        name:'激光成形高度',
+                                        type:'line',
+                                        yAxisIndex:2,
+                                        animation: false,
+                                        areaStyle: {
+                                        },
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        data: []
+                                    }
+                                ]
+                            };
+
+
+
+                            if (option && typeof option === "object") {
+                                myChart.setOption(option, true);
+
+                                myChart.getZr().on('click',params=>{
+                                    if(SelectStartTimeMode || SelectFinishTimeMode)
+                                    {
+                                        var pointInPixel= [params.offsetX, params.offsetY];
+
+                                        if (myChart.containPixel('grid',pointInPixel)) {
+
+                                            var xIndex=myChart.convertFromPixel({seriesIndex:0},
+                                                  [params.offsetX, params.offsetY])[0];
+                                            op=myChart.getOption();
+                                            /*事件处理代码书写位置*/
+                                            if(!(op.xAxis[0].data[xIndex] == undefined))
+                                            {
+                                            <!--有数据-->
+                                                if(SelectStartTimeMode)
+                                                {
+                                                    SelectStartDateTime = op.xAxis[0].data[xIndex];
+                                                    SelectStartDateTime = SelectStartDateTime.replace('\n',' ')
+
+                                                    SelectStartTimeMode = false;
+                                                    SetOffMode("bt_select_starttime");
+                                                    document.getElementById("id_process_start_time").value = SelectStartDateTime.replace(' ','T');
+                                                    NoticeInput("id_process_start_time", "green");
+
+
+                                                    myChart.setOption({
+
+                                                        markLine: {
+                                                            data: SelectStartDateTime,
+
+                                                        },
+                                                    })
+
+                                                }
+                                                if(SelectFinishTimeMode)
+                                                {
+                                                    SelectFinishDateTime = op.xAxis[0].data[xIndex];
+                                                    if(! (SelectFinishDateTime == undefined)){
+                                                        SelectFinishDateTime = SelectFinishDateTime.replace('\n',' ')
+                                                    }
+                                                    SelectFinishTimeMode = false;
+                                                    SetOffMode("bt_select_finishtime");
+
+                                                    document.getElementById("id_process_finish_time").value = SelectFinishDateTime.replace(' ','T');
+                                                    NoticeInput("id_process_finish_time", "green");
+                                                }
+                                                checkSelectTime();
+                                            }
+                                            <!--alert(xIndex);-->
+                                            <!--alert(pointInPixel);-->
+                                            <!--op=myChart.getOption();-->
+                                            <!--alert(op.xAxis[0].data[xIndex]);-->
+                                            <!--alert(op.series[0].data[xIndex]);-->
+                                            <!--alert(op.series[1].data[xIndex]);-->
+                                            <!--alert(op.series[2].data[xIndex]);-->
+                                    }
+                                }
+
+                                });
+
+                                <!--20191204 00:26-->
+                                <!--https://blog.csdn.net/smk108/article/details/78482154/-->
+                                <!--http://www.freesion.com/article/506866459/-->
+
+                            }
+
+
+
+
+
+
+
+                            </script>
+                            </body>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

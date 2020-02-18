@@ -1,0 +1,92 @@
+{% extends "SubWindow_base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-10">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+
+
+                            <form role="form" method="post" action="">{% csrf_token %}
+
+                                <label></label>
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.error_messages|safe }}
+                                    {{ form.errors }}
+                                </div>
+                                {% endifequal %}
+                                <div class="form-group">
+
+                                    <!--<label>理化检测ID</label>-->
+                                    <!--&lt;!&ndash;<input class="form-control">&ndash;&gt;-->
+                                    <!--<input class="form-control" id="preWTestItemID" type="text"-->
+                                           <!--value="" disabled="">-->
+
+                                    {% for field in form %}
+                                            <div class="form-group">
+                                                <label>{{ field.label|safe }}</label>
+                                                {{ field }}
+                                            </div>
+                                    {% endfor %}
+
+                                    <!--{{ form.id }}-->
+                                </div>
+
+
+                                <button type="submit" class="btn btn-primary" >保存</button>
+
+                                <a href="javascript:window.opener.location.reload();window.opener=null;window.open('','_self');window.close();"  class="btn btn-danger">关闭</a>
+
+                                {% if messages %}
+                                <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+
+                                </script>
+                                {% endif %}
+
+                            </form>
+                            <label></label>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+
+    {% endblock %}

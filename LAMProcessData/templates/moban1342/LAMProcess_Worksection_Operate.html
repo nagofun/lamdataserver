@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--<script src="jquery.min.js"></script>-->
+<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="/assets/js/matching.js"></script>
+
+
+<script type="text/javascript" src="/assets/js/echarts.min.js"></script>
+
+<script>
+function load()
+{
+    LastTimeSearch();
+    RealTimeRecordSearch();
+    var interval3=setInterval(function(){
+         LastTimeSearch();
+         RealTimeRecordSearch();
+    },10000);
+}
+
+function LastTimeSearch(){
+    $.get(
+         '{{ Common_URL.Query_RecordLastTime_By_WorksectionID }}'+{{ worksection_id }}+'/',
+         function(res, textStatus)
+         {
+             this;
+             document.getElementById('recordLastTimeLaser_Input').value=res.laser;
+             document.getElementById('recordLastTimeOxygen_Input').value=res.oxygen;
+             document.getElementById('recordLastTimeCNCStatus_Input').value=res.cncstatus;
+         }
+    );
+}
+function RealTimeRecordSearch(){
+    myChart.showLoading({
+                text: '数据正在努力加载...',
+                textStyle: { fontSize : 30 , color: '#444' },
+                effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+             });
+
+    $.get(
+         '{{ Common_URL.Query_RealTimeRecord_By_WorksectionID }}'+{{ worksection_id }}+'/',
+         function(res, textStatus)
+         {
+             this;
+             myChart.hideLoading();
+             myChart.setOption({
+                 xAxis:{
+                     data:res['datetime'].map(function (str) {
+                        return str.replace(' ', '\n')
+                     })
+                 },
+                 series:[
+                     {
+                         data:res['oxygen']
+                     },
+                     {
+                         data:res['laser']
+                     },
+                     {
+                         data:res['cncstatus']
+                     }
+                     <!--alert(res);-->
+                 ]
+             });
+             <!--alert(res['oxydata']);-->
+
+         }
+    );
+}
+
+
+
+</script>
+<div id="page-inner">
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+            </h1>
+        </div>
+
+
+        <!-- /. ROW  -->
+        <div class="row">
+
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <!--<div class="panel-heading">-->
+                            <!--数据更新时间-->
+                        <!--</div>-->
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <label>激光功率采集</label>
+                                        <input class="form-control" id="recordLastTimeLaser_Input" type="text"
+                                               value="{{ recordLastTime.laser }}" placeholder="" disabled="">
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <label>气氛氧含量采集</label>
+                                        <input class="form-control" id="recordLastTimeOxygen_Input" type="text"
+                                               value="{{ recordLastTime.oxygen }}" placeholder="" disabled="">
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <label>机床运动参数采集</label>
+                                        <input class="form-control" id="recordLastTimeCNCStatus_Input" type="text"
+                                               value="{{ recordLastTime.cncstatus }}" placeholder="" disabled="">
+                                    </div>
+                                </div>
+                            </div>
+                        <!--</div>-->
+
+                        <!--<div class="panel-heading">-->
+                            <!--现场操作-->
+                        <!--</div>-->
+                        <!--<div class="panel-body">-->
+
+                            <form role="form" method="post" action="">{% csrf_token %}
+                                <div class="form-group">
+                                    <div class="row">
+                                        {% for field in form %}
+                                        <div class="col-lg-4">
+                                            <label>{{ field.label }}</label>
+                                            {{ field }}
+                                        </div>
+                                        {% endfor %}
+
+                                    </div>
+                                </div>
+                                <!--https://echarts.apache.org/examples/zh/editor.html?c=dynamic-data-->
+
+                                <!--<input type="hidden" value="" id="hidden_input">-->
+                                <script type="text/javascript">
+
+                                    <!--刷新图形数据，更新显示-->
+                                    function refreshProcessGraph(ifForceRefresh){
+
+                                        temp_process_start_date_field = document.getElementById("id_temp_process_start_date");
+                                        temp_process_finish_date_field = document.getElementById("id_temp_process_finish_date");
+                                        temp_process_start_date = temp_process_start_date_field.value;
+                                        temp_process_finish_date = temp_process_finish_date_field.value;
+
+                                        worksection_id = document.getElementById("id_worksection").value;
+                                        if(worksection_id=='')
+                                        {
+                                            NoticeInput('id_worksection','red');
+                                            return;
+                                        }
+                                        myChart.showLoading({
+                                                    text: '数据正在努力加载...',
+                                                    textStyle: { fontSize : 30 , color: '#444' },
+                                                    effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+                                                });
+                                        $.get(
+                                            '{{ Common_URL.Query_Data_By_WorkSectionDatetime }}'+ifForceRefresh+'/'+worksection_id+'/'+temp_process_start_date+'00:00/'+temp_process_finish_date+'23:59/60/',
+                                            <!--{'MissionID':process_mission_id,-->
+                                            <!--'StartDateTime':temp_process_start_date+' 00:00',-->
+                                            <!--'temp_process_finish_date':temp_process_finish_date+' 23:59',-->
+                                            <!--'Interval':60},-->
+
+                                            function(res, textStatus)
+                                            {
+                                                this;
+                                                myChart.hideLoading();
+
+                                                myChart.setOption({
+                                                    xAxis:{
+                                                        data:res['datetime'].map(function (str) {
+                                                            return str.replace(' ', '\n')
+                                                        })
+                                                    },
+                                                    series:[
+                                                        {
+                                                            data:res['oxydata']
+                                                        },
+                                                        {
+                                                            data:res['laserdata']
+                                                        },
+                                                        {
+                                                            data:res['cnczdata']
+                                                        }
+
+                                                    ]
+                                                });
+                                            }
+                                        );
+                                    }
+
+
+
+
+                                </script>
+
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>操作成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>操作失败！</strong>
+                                    {{ form.error_messages|safe }}
+                                    {{ form.errors }}
+                                </div>
+                                {% endifequal %}
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-lg-4">
+                                            <button type="submit" class="btn btn-success">{{ submit_text }}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--<a href="http://google.com" class="button">Continue</a>-->
+                            </form>
+
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+                <!--{{ form.modelname }}-->
+
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+
+                        <div id="main" style="width: 100%;height:450px;">
+                            <body style="height: 100%; margin: 0">
+                            <!--<div class="panel-heading">-->
+                            <!--辅助选择-->
+                            <!--</div>-->
+
+                            <div id="container" style="height: 100%"></div>
+
+                            <script type="text/javascript">
+
+                                var dom = document.getElementById("container");
+                                var myChart = echarts.init(dom);
+                                var app = {};
+                                option = null;
+                                var base = +new Date(1968, 9, 3);
+
+                                option = {
+                                    title : {
+                                        text: '激光成形过程采集数据',
+                                        subtext: '',
+                                        x: 'center',
+                                        align: 'right'
+                                    },
+                                    grid: {
+                                        bottom: 80
+                                    },
+                                    toolbox: {
+                                        feature: {
+                                            dataZoom: {
+                                                yAxisIndex: 'none'
+                                            },
+                                            restore: {},
+                                            saveAsImage: {}
+                                        }
+                                    },
+                                    tooltip : {
+                                        trigger: 'axis',
+                                        axisPointer: {
+                                            type: 'cross',
+                                            animation: false,
+                                            label: {
+                                                backgroundColor: '#505765'
+                                            }
+                                        }
+                                    },
+                                    legend: {
+                                        data:['氧含量','激光功率','激光成形高度'],
+                                        x: 'left'
+                                    },
+                                    dataZoom: [
+                                        {
+                                            show: false,
+                                            realtime: true,
+                                            start: 0,
+                                            end: 100
+                                        },
+                                        {
+                                            type: 'inside',
+                                            realtime: true,
+                                            start: 0,
+                                            end: 30
+                                        }
+                                    ],
+                                    xAxis : [
+                                        {
+                                            type : 'category',
+                                            boundaryGap : false,
+                                            axisLine: {onZero: false},
+                                            data : []
+                                            <!--.map(function (str) {-->
+                                                <!--return str.replace(' ', '\n')-->
+                                            <!--})-->
+                                        }
+                                    ],
+                                    yAxis: [
+                                        {
+                                            name: '氧含量(ppm)',
+                                            type: 'value',
+                                            <!--max: 500-->
+                                        },
+                                        {
+                                            name: '功率(W)',
+                                            <!--nameLocation: 'start',-->
+                                            <!--max: 5,-->
+                                            type: 'value',
+
+                                        },
+                                        {
+                                            name: '高度(mm)',
+                                            <!--nameLocation: 'start',-->
+                                            <!--max: 5,-->
+                                            type: 'value',
+                                            offset: 60,
+                                            splitNumber: 10,
+                                        }
+                                    ],
+                                    series: [
+                                        {
+                                            name:'氧含量',
+                                            type:'line',
+                                            animation: false,
+                                            areaStyle: {
+                                            },
+                                            lineStyle: {
+                                                width: 1
+                                            },
+                                            markLine : {
+                                                //symbol:['circle', 'arrow'],    //表示箭头从左向右
+                                                symbol:['arrow', 'circle'], //表示箭头从右向左
+                                                //symbol:"none",            //表示没有箭头的直线
+                                                
+                                                //警示线标签
+                                                label:{
+                                                    show:true,
+                                                    position:"end",    //将警示值放在哪个位置，start middle end 开头 中间 结尾
+                                                    //formatter: "60%",   //警示线上显示内容
+                                                },
+                                                //警示线的样式，虚实  颜色
+                                                lineStyle:{
+                                                    type : "solid",
+                                                    color: "{{ color.oxygen_markLine_color }}",
+                                                },
+
+                                                data : [
+                                                    { name: '氧含量警告值',yAxis:80},
+                                                ],
+                                            },
+
+                                            data:[]
+                                        },
+                                        {
+                                            name:'激光功率',
+                                            type:'line',
+                                            yAxisIndex:1,
+                                            animation: false,
+                                            areaStyle: {
+                                            },
+                                            lineStyle: {
+                                                width: 1
+                                            },
+                                            markLine : {
+                                                symbol:['circle', 'arrow'],    //表示箭头从左向右
+                                                //symbol:['arrow', 'circle'], //表示箭头从右向左
+                                                //symbol:"none",            //表示没有箭头的直线
+                                                
+                                                //警示线标签
+                                                label:{
+                                                    show:true,
+                                                    position:"end",    //将警示值放在哪个位置，start middle end 开头 中间 结尾
+                                                    //formatter: "60%",   //警示线上显示内容
+                                                },
+                                                //警示线的样式，虚实  颜色
+                                                lineStyle:{
+                                                    type:"solid",
+                                                    color:"{{ color.laser_markLine_color }}",
+                                                },
+
+                                                data : [
+                                                    { name: '连续成形激光功率范围上限',yAxis:7600},
+                                                    { name: '连续成形激光功率范围下限',yAxis:7200},
+                                                ],
+                                            },
+                                            data: []
+                                        },
+                                        {
+                                            name:'激光成形高度',
+                                            type:'line',
+                                            yAxisIndex:2,
+                                            animation: false,
+                                            areaStyle: {
+                                            },
+                                            lineStyle: {
+                                                width: 1
+                                            },
+                                            data: []
+                                        }
+                                    ]
+                                };
+
+
+
+                                if (option && typeof option === "object") {
+                                    myChart.setOption(option, true);
+
+
+
+                                    <!--20191204 00:26-->
+                                    <!--https://blog.csdn.net/smk108/article/details/78482154/-->
+                                    <!--http://www.freesion.com/article/506866459/-->
+
+                                }
+
+
+
+
+
+
+
+
+
+
+                            </script>
+                            </body>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

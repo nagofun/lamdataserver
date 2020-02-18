@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<!--<div id="page-inner">-->
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="page-header">
+            {{ form.title }}
+            <small>{{ operate|upper }}</small>
+        </h1>
+    </div>
+
+    <!-- /. ROW  -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="col-lg-3">
+                <div class="panel panel-default">
+
+                    <div class="panel-heading">
+                        {{ operate|upper }}
+                    </div>
+                    <div class="panel-body">
+
+                        <form role="form" method="post" action="">{% csrf_token %}
+                            <div class="form-group">
+
+                                <label>条目ID</label>
+                                <!--<input class="form-control">-->
+                                <input class="form-control" id="TestItemID" type="text"
+                                       value="{{ form.itemid }}" disabled="">
+
+                            </div>
+                            {% for field in form %}
+                            <div class="form-group">
+                                <label>{{ field.label }}</label>
+                                {{ field }}
+                            </div>
+                            {% endfor %}
+
+
+                            {% ifequal save_success|upper 'TRUE' %}
+                            <div class="alert alert-success">
+                                <strong>保存成功！</strong>
+                            </div>
+                            {% endifequal %}
+                            {% ifequal save_success|upper 'FALSE' %}
+                            <div class="alert alert-danger">
+                                <strong>保存失败！</strong>
+                                {{ form.error_messages }}
+                            </div>
+                            {% endifequal %}
+                            {% ifequal form.modelname 'LAMTechniqueInstruction'%}
+                            <div id="WarningMsg" class="alert alert-warning" style="display:none">
+
+                            </div>
+                            <div class="panel-heading">
+                            </div>
+                            {% endifequal %}
+                            <!--<button type="edit" class="btn btn-default">编辑</button>-->
+
+                            <button type="submit" class="btn btn-success">保存</button>
+
+                            <button type="reset" class="btn btn-primary">重置</button>
+                            <a href={{ Back_URL }}>
+                                <button type="button" class="btn btn-primary" name="item_back" formaction=''>返回
+                                </button>
+                            </a>
+                            <!--<a href="http://google.com" class="button">Continue</a>-->
+                        </form>
+
+                        <!--</div>-->
+
+                        <!--</div>-->
+                        <!--/.row (nested) -->
+                    </div>
+                    <!-- /.panel-body -->
+                </div>
+            </div>
+            <!-- /.panel -->
+            {% ifequal operate 'edit' %}
+            <div class="col-lg-9">
+
+                <div class="panel panel-default">
+
+                    <div class="panel-heading">
+                        拉伸测试
+                    </div>
+                    <!--拉伸测试-->
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    {% for field in form.tensile_fields %}
+                                    <th>{{ field }}</th>
+                                    {% endfor %}
+                                    <th width="20">操作</th>
+                                </tr>
+                                </thead>
+
+                                <tbody id="tbd">
+                                {% for tensile in tensile_datalist %}
+                                <tr>
+                                    {% for field in tensile.values %}
+                                    <td>{{ field }}</td>
+                                    {% endfor %}
+                                    <td>
+                                        <!--<a href="#" class="btn btn-info btn-sm">保存</a>-->
+                                        <a href="#" class="btn btn-primary btn-sm"
+                                           onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_TensileTest_Edit }}'+'{{ tensile.id }}');">修改</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <!--<tr>-->
+                                    <!--{% for field in form_tensile %}-->
+                                    <!--<td>{{ field }}</td>-->
+                                    <!--{% endfor %}-->
+                                    <!--<td></td>-->
+
+                                <!--</tr>-->
+
+                                </tbody>
+
+                            </table>
+
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_TensileTest_Add }}'+'{{ form.itemid }}/');">
+                                增加
+                            </button>
+
+                            <!--<a href="#" class="btn btn-success btn-sm">增加</a>-->
+                        </div>
+                    </div>
+                    <!-- /.panel-body -->
+
+                    <div class="panel-heading">
+                        冲击测试
+                    </div>
+                    <!--冲击测试-->
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    {% for field in form.toughness_fields %}
+                                    <th>{{ field|safe }}</th>
+                                    {% endfor %}
+                                    <th width="20">操作</th>
+                                </tr>
+                                </thead>
+
+                                <tbody id="tbd">
+                                {% for toughness in toughness_datalist %}
+                                <tr>
+                                    {% for field in toughness.values %}
+                                    <td>{{ field }}</td>
+                                    {% endfor %}
+                                    <td>
+                                        <!--<a href="#" class="btn btn-info btn-sm">保存</a>-->
+                                        <a href="#" class="btn btn-primary btn-sm"
+                                           onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ToughnessTest_Edit }}'+'{{ toughness.id }}');">修改</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <!--<tr>-->
+                                    <!--{% for field in form_tensile %}-->
+                                    <!--<td>{{ field }}</td>-->
+                                    <!--{% endfor %}-->
+                                    <!--<td></td>-->
+
+                                <!--</tr>-->
+
+                                </tbody>
+
+                            </table>
+
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ToughnessTest_Add }}'+'{{ form.itemid }}/');">
+                                增加
+                            </button>
+
+                            <!--<a href="#" class="btn btn-success btn-sm">增加</a>-->
+                        </div>
+                    </div>
+                    <!-- /.panel-body -->
+
+                    <div class="panel-heading">
+                        化学成分测试
+                    </div>
+                    <!--化学成分测试-->
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    {% for field in chemical_items %}
+                                    <th>{{ field|safe }}</th>
+                                    {% endfor %}
+                                    <th width="20">操作</th>
+                                </tr>
+                                </thead>
+
+                                <tbody id="tbd">
+                                <!--{{ chemical_datalist }}-->
+                                <!--{{ chemical_datalist.test_value }}-->
+                                {% for chem_element in chemical_datalist %}
+                                <tr>
+                                    {% for field in chem_element.values %}
+                                        {% ifequal field chem_element.test_value %}
+                                            <!--解析Value列表-->
+                                            {% for value in field %}
+                                                <td>{{ value }}</td>
+                                            {% endfor %}
+                                        {% else %}
+                                        <td>{{ field }}</td>
+                                        {% endifequal %}
+                                    {% endfor %}
+                                    <td>
+                                        <!--<a href="#" class="btn btn-info btn-sm">保存</a>-->
+                                        <a href="#" class="btn btn-primary btn-sm"
+                                           onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ChemicalElement_Edit }}'+'{{ form.itemid }}/'+'{{ chem_element.id }}/'+'{{ If_Product_Test }}/');">修改</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <!--<tr>-->
+                                    <!--{% for field in form_tensile %}-->
+                                    <!--<td>{{ field }}</td>-->
+                                    <!--{% endfor %}-->
+                                    <!--<td></td>-->
+
+                                <!--</tr>-->
+
+                                </tbody>
+
+                            </table>
+
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ChemicalElement_Add }}'+'{{ form.itemid }}/'+'{{ If_Product_Test }}/');">
+                                增加
+                            </button>
+
+                            <!--<a href="#" class="btn btn-success btn-sm">增加</a>-->
+                        </div>
+                    </div>
+                    <!-- /.panel-body -->
+                </div>
+            </div>
+            {% endifequal %}
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+</div>
+<!--</div>-->
+
+<script language="JavaScript">
+function load()
+{
+    empty=0;
+
+}
+
+
+</script>
+{% endblock %}

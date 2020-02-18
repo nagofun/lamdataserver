@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+                            <!--<div class="row">-->
+                            <!--<div class="col-lg-6">-->
+                            <!--<form role="form" method="post" action="alert">{% csrf_token %}-->
+
+                            <!--<div class="form-group">-->
+                            <!--<label>ID </label>-->
+                            <!--<input type="text" name="item_id" class="form-control" placeholder="请输入待编辑的条目ID"-->
+                            <!--required="" id="id_id">-->
+                            <!--</div>-->
+                            <!--<button type="submit" class="btn btn-default" name="item_add" formaction='{{ baseURL }}/add'>新增</button>-->
+                            <!--<button type="submit" class="btn btn-default" name="item_edit" formaction='{{ baseURL }}/edit'>选中编辑</button>-->
+                            <!--<button type="submit" class="btn btn-default" name="item_delete" formaction='{{ baseURL }}/delete'>选中删除</button>-->
+                            <!--</form>-->
+                            <!--<label></label>-->
+                            <form role="form" method="post" action="">{% csrf_token %}
+                                <div class="form-group">
+
+                                    <label>条目ID</label>
+                                    <!--<input class="form-control">-->
+                                    <input class="form-control" id="disabledInput" type="text"
+                                           placeholder="{{ form.itemid }}" disabled="">
+
+
+                                    <!--<input type="text" name="name" maxlength="30" required="" id="id_name">-->
+                                    <!--<p class="help-block">Example block-level help text here.</p>-->
+                                </div>
+                                {% for field in form %}
+                                <div class="form-group">
+                                    <label>{{ field.label }}</label>
+                                    {{ field }}
+                                </div>
+                                {% endfor %}
+
+
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.error_messages }}
+                                </div>
+                                {% endifequal %}
+                                {% ifequal form.modelname 'LAMTechniqueInstruction'%}
+                                <div id="WarningMsg" class="alert alert-warning" style="display:none">
+
+								</div>
+                                <div class="panel-heading">
+                                </div>
+                                {% endifequal %}
+                                <!--<button type="edit" class="btn btn-default">编辑</button>-->
+
+                                <button type="submit" class="btn btn-success" {% ifequal form.modelname 'LAMTechniqueInstruction'%} onclick="return CheckSeria();" {% endifequal %}>保存</button>
+
+                                <button type="reset" class="btn btn-primary">重置</button>
+                                <a href={{ Back_URL }}>
+                                    <button type="button" class="btn btn-primary" name="item_back" formaction=''>返回
+                                    </button>
+                                </a>
+                                <!--<a href="http://google.com" class="button">Continue</a>-->
+                            </form>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+    <script type="text/javascript">
+    {% ifequal form.modelname 'LAMTechniqueInstruction'%}
+        document.getElementById("WarningMsg").style.display="none";
+        String.prototype.myReplace=function(f,e){//吧f替换成e
+            var reg=new RegExp(f,"g"); //创建正则RegExp对象
+            return this.replace(reg,e);
+        }
+        function isInteger(obj) {
+            return Number(obj)%1 ===0
+
+        }
+        function isNumber(val) {
+            var regPos = /^\d+(\.\d+)?$/; //非负浮点数
+            var regNeg = /^(-(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*)))$/; //负浮点数
+            if(regPos.test(val) || regNeg.test(val)) {
+                return true;
+                } else {
+                return false;
+                }
+            }
+
+
+        function CheckSeria(){
+            var note_str = document.getElementById("LAMProcess_serial_note").value.myReplace('，',',')
+            var number_str = document.getElementById("LAMProcess_serial_number").value.myReplace('，',',')
+            if(note_str.charAt(note_str.length-1)==',')
+            {
+            note_str=note_str.substring(0, note_str.length-1)
+            }
+            if(number_str.charAt(number_str.length-1)==',')
+            {
+            number_str=number_str.substring(0, number_str.length-1)
+            }
+            document.getElementById("LAMProcess_serial_note").value = note_str
+            document.getElementById("LAMProcess_serial_number").value = number_str
+            serial_note_strlist = note_str.split(",")
+            serial_number_strlist = number_str.split(",")
+
+            txt='<strong>Warning!</strong>\n'
+            display=false
+            if (serial_note_strlist.length != serial_number_strlist.length)
+            {
+                txt+='工序号列表与工序说明列表长度不等!\n';
+                display = true
+            }
+            for (var i=0;i<serial_number_strlist.length;i++)
+            {
+                if (!isInteger(serial_number_strlist[i]))
+                {
+                    txt += '工序号非整数！'
+                    display = true
+                    break;
+                }
+            }
+            if(display)
+            {
+                document.getElementById("WarningMsg").innerHTML = txt;
+                document.getElementById("WarningMsg").style.display="inline";
+                return false;
+                <!--alert(txt);-->
+            }
+            else
+            {
+                document.getElementById("WarningMsg").style.display="none";
+                return true;
+            }
+
+        }
+
+    {% endifequal %}
+
+    </script>
+    {% endblock %}

@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>信息维护</small>
+            </h1>
+        </div>
+    </div>
+    <!-- /. ROW  -->
+    <!-- /. ROW  -->
+    <!--<div class="row">-->
+        <!--<div class="col-md-12">-->
+            <!--<div class="panel panel-default">-->
+                <!--<div class="panel-heading">-->
+                    <!--操作-->
+                    <!--&lt;!&ndash;{{ operate|upper }}&ndash;&gt;-->
+                <!--</div>-->
+                <!--<div class="panel-body">-->
+                    <!--<form role="form" method="GET" action="alert">{% csrf_token %}-->
+                        <!--&lt;!&ndash;<div class="col-md-6">&ndash;&gt;-->
+                            <!--&lt;!&ndash;<div class="form-group">&ndash;&gt;-->
+                                <!--&lt;!&ndash;<label>条目ID </label>&ndash;&gt;-->
+                                <!--&lt;!&ndash;&lt;!&ndash;<input type="text" name="item_id" class="form-control" placeholder="请输入待编辑的条目ID"&ndash;&gt;&ndash;&gt;-->
+                                <!--&lt;!&ndash;&lt;!&ndash;required="" id="id_id">&ndash;&gt;&ndash;&gt;-->
+                                <!--&lt;!&ndash;&lt;!&ndash;<select class="form-control" name="item_id" onclick="RefreshValue()">&ndash;&gt;&ndash;&gt;-->
+                                <!--&lt;!&ndash;<select class="form-control" name="item_id" id="item_id">&ndash;&gt;-->
+                                    <!--&lt;!&ndash;&lt;!&ndash;{{ item_id_list }}&ndash;&gt;&ndash;&gt;-->
+                                    <!--&lt;!&ndash;{% for record in all_entries %}&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<tr>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;&lt;!&ndash;<td><input type="radio" name=" {{ wksp.id }}" value=" {{ wksp.id }}" /> {{ wksp.id }}</td>&ndash;&gt;&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<option>{{ record.id }}</option>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</tr>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;{% endfor %}&ndash;&gt;-->
+                                <!--&lt;!&ndash;</select>&ndash;&gt;-->
+                                <!--&lt;!&ndash;&lt;!&ndash;{{ form.id }}&ndash;&gt;&ndash;&gt;-->
+                            <!--&lt;!&ndash;</div>&ndash;&gt;-->
+                        <!--&lt;!&ndash;</div>&ndash;&gt;-->
+                        <!--<div class="col-md-6">-->
+                            <!--<br>-->
+                            <!--<a href='add'>-->
+                                <!--<button type="button" class="btn btn btn-success" name="item_add">新增</button>-->
+                            <!--</a>-->
+                            <!--&lt;!&ndash;<button type="submit" class="btn btn-primary" name="item_edit" formaction='edit/'>选中编辑&ndash;&gt;-->
+                            <!--&lt;!&ndash;</button>&ndash;&gt;-->
+                            <!--&lt;!&ndash;<button type="button" class="btn btn-danger" name="item_delete"&ndash;&gt;-->
+                                    <!--&lt;!&ndash;onclick="confirmDelete()">&ndash;&gt;-->
+                                <!--&lt;!&ndash;选中冻结&ndash;&gt;-->
+                            <!--&lt;!&ndash;</button>&ndash;&gt;-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash;<a href="#" class="btn btn-danger">danger</a>&ndash;&gt;-->
+                        <!--&lt;!&ndash;<a href="#" class="btn btn-primary">primary</a>&ndash;&gt;-->
+
+                    <!--</form>-->
+                    <!--<label></label>-->
+
+                    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+                    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+                    <!--&lt;!&ndash;/.row (nested) &ndash;&gt;-->
+                <!--</div>-->
+                <!--&lt;!&ndash; /.panel-body &ndash;&gt;-->
+            <!--</div>-->
+            <!--&lt;!&ndash; /.panel &ndash;&gt;-->
+
+
+        <!--</div>-->
+        <!--&lt;!&ndash; /.col-lg-12 &ndash;&gt;-->
+    <!--</div>-->
+
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Advanced Tables -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    {{ form.title }}明细表
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <form role="form" method="GET" action="alert">{% csrf_token %}
+                            <table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                                <thead>
+
+                                <tr>
+                                    <th align="center" style="width: 35px">选择</th>
+                                    <th align="center" style="width: 35px">ID</th>
+                                    {% for field in form %}
+                                    <th align="center">{{ field.label }}</th>
+                                    {% endfor %}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for record in all_entries %}
+                                <tr>
+                                    <td align="center">
+                                        <div class="radio">
+                                            <input type="radio" name="item_id" id="optionsRadios{{record.id}}"
+                                                   value="{{record.id}}">
+                                        </div>
+                                    </td>
+                                    <!--{{ record }}-->
+                                    {% for field in record.values %}
+                                    <td>{{ field }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+
+                            {% ifequal form.modelname 'RawStockSendRetrieve' %}
+                            <a href='send'>
+                                <button type="button" class="btn btn btn-success" name="item_add">发放</button>
+                            </a>
+                            <button type="submit" class="btn btn-primary" name="item_retrieve" formaction='retrieve/'>选中归还
+                            </button>
+                            {% else %}
+                            <a href='add'>
+                                <button type="button" class="btn btn btn-success" name="item_add">新增</button>
+                            </a>
+                            {% endifequal %}
+                            {% ifequal form.modelname 'LAMProcessMission' %}
+                            <button type="submit" class="btn btn-primary" name="item_finish" formaction='finish/'>选中完成
+                            </button>
+                            {% else %}
+                            <button type="submit" class="btn btn-primary" name="item_edit" formaction='edit/'>选中编辑
+                            </button>
+                            {% endifequal %}
+
+                            <button type="button" class="btn btn-danger" name="item_delete"
+                                    onclick="confirmDelete()">
+                                选中冻结
+                            </button>
+                            {% ifequal form.modelname 'RawStockSendRetrieve' %}
+                            <div class="alert alert-info">
+									<strong>注意！</strong> 归还选项仅对粉末有效。
+								</div>
+
+                            {% endifequal %}
+                            {% if messages %}
+                            <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+
+                            </script>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+            <!--End Advanced Tables -->
+        </div>
+    </div>
+    <!-- /. ROW  -->
+
+
+</div>
+<script type="text/javascript">
+        var selectItemID
+        var selectItemName=''
+        var ItemList_id=new Array({% for record in all_entries %}{{ record.id|safe }}{% if not forloop.last %},{% endif %}{% endfor %});
+        var ItemList_name=new Array({% for record in all_entries %}"{{ record|safe }}"{% if not forloop.last %},{% endif %}{% endfor %});
+
+        function Post(URL, PARAMTERS) {
+            //创建form表单
+            var temp_form = document.createElement("form");
+            temp_form.action = URL;
+            //如需打开新窗口，form的target属性要设置为'_blank'
+            temp_form.target = "_self";
+            temp_form.method = "post";
+            temp_form.style.display = "none";
+            //添加参数
+            for (var item in PARAMTERS) {
+                var opt = document.createElement("textarea");
+                opt.name = item;
+                opt.value = PARAMTERS[item];
+                temp_form.appendChild(opt);
+            }
+            document.body.appendChild(temp_form);
+            //提交数据
+            temp_form.submit();
+        }
+
+        function RefreshValue(){
+            <!--var selectItemID = -1-->
+            var Item=document.getElementsByName("item_id");
+            for (var i = 0, length = Item.length; i < length; i++) {
+                if (Item[i].checked) {
+                    // 弹出选中值
+                    selectItemID = Item[i].value
+                    <!--alert(Item[i].value);-->
+                    // 选中后退出循环
+                    break;
+                }
+            }
+            <!--selectItemID=item_id.value-->
+            for (var i=0;i<ItemList_id.length;i++)
+                {
+                    if (ItemList_id[i]==selectItemID)
+                    {
+                        selectItemName=ItemList_name[i];
+                        break;
+                    }
+                }
+        }
+        //弹出一个询问框，有确定和取消按钮
+        function confirmDelete() {
+            RefreshValue();
+            if(selectItemID == undefined)
+            {
+                alert("请选择拟冻结的条目");
+                return;
+            }
+            txt='请确认是否冻结此记录:\n'+selectItemName;
+
+            <!--//利用对话框返回的值 （true 或者 false）-->
+            if (confirm(txt))
+            {
+                <!--window.location.href='delete/'+selectItemID+'/';-->
+                params = {
+                    'id':selectItemID,
+                    'name':selectItemName
+                };
+                Post('delete/',params);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+</script>
+{% endblock %}

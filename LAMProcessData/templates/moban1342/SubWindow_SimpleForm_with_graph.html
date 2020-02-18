@@ -1,0 +1,888 @@
+{% extends "SubWindow_base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+
+<script type="text/javascript">
+    function calMax(arr) {
+        let max = 0;
+        arr.forEach((el) => {
+          el.forEach((el1) => {
+            if (!(el1 === undefined || el1 === '')) {
+              if (max < el1) {
+                max = el1;
+              }
+            }
+          })
+        })
+        let maxint = Math.ceil(max / 9.5);//不让最高的值超过最上面的刻度
+        let maxval = maxint * 10;//让显示的刻度是整数
+        return maxval;
+  }
+
+  //计算最小值
+  function calMin(arr) {
+    let min = 0;
+    arr.forEach((el) => {
+      el.forEach((el1) => {
+        if (!(el1 === undefined || el1 === '')) {
+          if (min > el1) {
+            min = el1;
+          }
+        }
+      })
+    })
+    let minint = Math.floor(min / 10);
+    let minval = minint * 10;//让显示的刻度是整数
+    return minval;
+  }
+
+
+
+
+<!--{{ time_dict|safe }}-->
+    var select_date="{{ first_date|safe }}";
+    var select_time_text="{{ first_time_text|safe }}";
+    var select_time_hour="{{ first_time_hour|safe }}";
+    var date_list = {{ datetime_list|safe }};
+    var time_dict = {{ time_dict|safe }};
+
+    function onload()
+    {
+        this;
+        <!--document.getElementById("container").style.width=window.innerWidth*0.6;-->
+        <!--$('#container').height(1200);-->
+        <!--document.getElementById("container").style.width=parseInt(document.getElementById("container").style.width);-->
+        loadRecords();
+        loadInspection();
+    }
+    function loadRecords()
+    {
+        missionID={{ missionID }};
+        myChart.showLoading({
+                    text: '数据正在努力加载...',
+                    textStyle: { fontSize : 30 , color: '#444' },
+                    effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+                });
+        $.get(
+        '{{ Common_URL.Query_ProcessFineData_By_MissionID }}'+missionID+'/'+select_date+'/'+select_time_hour+'/',
+        function(res, textStatus)
+        {
+            this;
+            var MinFeed = calMin([res['cncfeedratedata']]), MinScanR = calMin([res['cncscanningratedata']]),
+            MaxFeed = calMax([res['cncfeedratedata']]), MaxScanR = calMax([res['cncscanningratedata']]);
+
+
+            myChart.hideLoading();
+            myChart.setOption({
+                xAxis:[
+                    {
+                        data:res['datetime']
+                    },
+                    {
+                        data:res['datetime']
+                    },
+                    {
+                        data:res['datetime']
+                    },
+                    {
+                        data:res['datetime']
+                    },
+                    <!--{-->
+                        <!--data:res['datetime']-->
+                    <!--}-->
+                ],
+                yAxis:[
+                {},
+                {},
+                {},
+                {
+                    min: 0,
+                    max: 120,
+                    splitNumber: 6,
+                    <!--interval: (MaxFeed - MinFeed) / 6-->
+                    interval: (120 - 0) / 6
+                },
+                {
+                    min: Math.floor(MinScanR),
+                    max: Math.ceil((MaxScanR - Math.floor(MinScanR)) / 60)*60+Math.floor(MinScanR),
+                    splitNumber: 6,
+                    interval: Math.ceil((MaxScanR - Math.floor(MinScanR)) / 60)*10
+                }
+                ],
+                series:[
+                    {
+                        data:res['oxydata']
+                    },
+                    {
+                        data:res['laserdata']
+                    },
+                    {
+                        data:res['cnczdata']
+                    },
+                    {
+                        data:res['cncfeedratedata']
+                    },
+                    {
+                        data:res['cncscanningratedata']
+                    }
+                ]
+                });
+        }
+        );
+    }
+    function loadInspection()
+    {
+        missionID={{ missionID }};
+        <!--提交读取不符合项记录列表-->
+        $.get(
+            '{{ Common_URL.Query_InspectLAMProcessRecords_By_MissionID }}'+missionID+'/',
+            function(res, textStatus)
+            {
+                this;
+                alert('Wait_And_Following');
+                <!--若返回为'Wait_And_Following'，则做相应处理-->
+            }
+        )
+
+
+        <!--$.get(-->
+                <!--'{{ Common_URL.Query_ProgressBarValue_InspectionLAMRecords_By_MissionID }}'+missionID+'/',-->
+                <!--function(res, textStatus)-->
+                <!--{-->
+                    <!--document.getElementById("progress_bar").style.width=res['progress_rate'];-->
+
+                <!--}-->
+            <!--)-->
+        <!--每隔一段时间查询一次后台计算进度-->
+        var sitv = setInterval(function(){
+
+            $.get(
+                '{{ Common_URL.Query_ProgressBarValue_InspectionLAMRecords_By_MissionID }}'+missionID+'/',
+                function(res, textStatus)
+                {
+                    document.getElementById("progress_bar").style.width=res['progress_rate'];
+
+                }
+            )
+        }, 3000);
+
+
+    }
+
+
+    <!--选择date后-->
+    function clickDate(date1)
+    {
+        <!--alert(date1);-->
+        $("#bt_select_date").text(date1);
+        select_date = date1;
+        document.getElementById('close_Data_dialog').click();
+    }
+
+    <!--选择time后-->
+    function clickTime(time1)
+    {
+        $("#bt_select_time").text(time1);
+        select_time_hour = Number(time1.slice(0,2));
+        select_time_text = time1;
+        document.getElementById('close_Time_dialog').click()
+    }
+
+    <!--切换到相邻曲线-->
+    function gotoAnotherTime(flag)
+    {
+        <!--时间计数自1起，为与length匹配-->
+        var i=1;
+        let time_length= Object.keys(time_dict).length;
+        for (var key in time_dict) {
+            if(select_time_hour==key){break;}
+            i=i+1;
+        }
+
+
+        <!--日期计数自1起，为与length匹配-->
+        var m=1;
+        let date_length = Object.keys(date_list).length;
+        for (var key in date_list) {
+            if(select_date==date_list[key]){break;}
+            m=m+1;
+        }
+
+
+        <!--获取时间，当前时间下标为i，新时间下标为j-->
+        <!--获取日期，当前日期下标为m，新日期下标为n-->
+        if(flag==1){
+            <!--前一时间段-->
+            if(i==1){
+                if(m-1>0){
+                <!--有变化时，日期列表自0起，并后退1日-->
+                    n=m-2;
+                    j=time_length;
+                }
+                else{
+                <!--无法后退1日，则不变-->
+                    j=i;
+                    n=m-1;
+                }
+            }
+            else{
+                j=i-1;
+                <!--无变化时，日期列表自0起算-->
+                n=m-1;
+            }
+            <!--　　var item = time_dict[key];-->
+        }
+        else{
+        <!--后一时间段-->
+            if(i==time_length){
+                if(m<date_length){
+                <!--有变化时，日期列表自0起，并前进1日-->
+                    j=1;
+                    n=m;
+                }
+                else{
+                <!--无法前进1日，则不变-->
+                    j=i;
+                    n=m-1;
+                }
+
+            }
+            else{
+                j=i+1;
+                <!--无变化时，日期列表自0起算-->
+                n=m-1;
+            }
+        }
+
+        select_date = date_list[n];
+
+        var _i=1;
+        for (var key in time_dict) {
+            if(_i==j){
+                select_time_hour = key;
+                select_time_text = time_dict[key]  ;
+                break;
+            }
+            _i=_i+1;
+        }
+        <!--更新button显示-->
+        $("#bt_select_date").text(select_date);
+        $("#bt_select_time").text(select_time_text);
+
+        loadRecords();
+    }
+    //计算最大值
+
+
+
+
+
+</script>
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ title }}
+                <small>{{ smalltitle|upper }}</small>
+
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            问题记录
+                        </div>
+                        <div class="panel-body">
+                            <!--<form role="form" method="post" action="">-->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>记录ID范围</th>
+                                        <th>起始时间</th>
+                                        <th>结束时间</th>
+                                        <th>不符合条件单元</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tbd_NonconformingRecords">
+                                    <!--{% for tag in form.taglist_with_label %}-->
+                                    <!--<tr>-->
+                                        <!--<td>-->
+                                            <!--<button type="button" class="btn btn-info btn-sm"-->
+                                                    <!--onclick="copyText('{{ tag.0 }}');">{{ tag.0 }}-->
+                                            <!--</button>-->
+                                        <!--</td>-->
+                                        <!--<td>{{ tag.1 }}</td>-->
+                                    <!--</tr>-->
+                                    <!--{% endfor %}-->
+
+                                    </tbody>
+
+                                </table>
+                            </div>
+                            <div class="panel-heading">
+                                加载进度...
+                            </div>
+                            <div class="panel-body">
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-primary" id="progress_bar" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                        <span class="sr-only">0% Complete (success)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--</form>-->
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <div style="margin:5px;" class="btn-toolbar">
+                                        <div class="btn-group">
+                                            <!--选择日期-->
+                                            <button class="btn btn-primary btn" data-toggle="modal"
+                                                    data-target="#Modal_Date" id="bt_select_date">
+                                                {{ first_date|safe }}
+                                            </button>
+                                        </div>
+                                        <div class="modal fade" id="Modal_Date" tabindex="-1" role="dialog"
+                                             aria-labelledby="myModalLabel" aria-hidden="true"
+                                             style="display: none;">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                                aria-hidden="true">×
+                                                        </button>
+                                                        <h4 class="modal-title" id="Modal_DateLabel">请选择拟显示的日期</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        {% for dt in datetime_list %}
+                                                        <a href="#" class="btn btn-primary" id="Date_{{ dt }}"
+                                                           value="{{ dt }}" onclick="clickDate(this.innerHTML);">{{ dt }}</a>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default"
+                                                                id="close_Data_dialog"
+                                                                data-dismiss="modal">关闭
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="btn-group">
+                                            <!--选择时间段-->
+                                            <button class="btn btn-primary btn" data-toggle="modal"
+                                                    data-target="#Modal_Time" id="bt_select_time">
+                                                {{ first_time_text|safe }}
+                                            </button>
+                                        </div>
+                                        <div class="modal fade" id="Modal_Time" tabindex="-1" role="dialog"
+                                             aria-labelledby="myModalLabel" aria-hidden="true"
+                                             style="display: none;">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                                aria-hidden="true">×
+                                                        </button>
+                                                        <h4 class="modal-title" id="Modal_TimeLabel">请选择拟显示的时间段</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        {% for dt,value in time_dict.items %}
+                                                        <a href="#" class="btn btn-primary" id="Date_{{ dt }}H"
+                                                           value="{{ dt }}" onclick="clickTime(this.innerHTML);">{{ value }}</a>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default"
+                                                                id="close_Time_dialog"
+                                                                data-dismiss="modal">关闭
+                                                        </button>
+                                                        <!--<button type="button" class="btn btn-primary">Save-->
+                                                        <!--changes-->
+                                                        <!--</button>-->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group">
+                                            <!--上一时间段-->
+                                            <a href="#" class="btn btn-info" onclick="gotoAnotherTime(1)">上一时间段</a>
+                                        </div>
+                                        <div class="btn-group">
+                                            <!--下一时间段-->
+                                            <a href="#" class="btn btn-info" onclick="gotoAnotherTime(-1)">下一时间段</a>
+                                        </div>
+                                        <div class="btn-group">
+                                            <!--刷新按钮-->
+                                            <div class="btn-group">
+                                                <button class="btn btn-success" onclick="loadRecords();">刷新
+                                                </button>
+                                                <!--<button data-toggle="dropdown" class="btn btn-success dropdown-toggle"-->
+                                                <!--aria-expanded="false"><span class="caret"></span></button>-->
+                                                <!--<ul class="dropdown-menu">-->
+                                                <!--<li><a href="#" onclick="refreshProcessGraph(1);">强制刷新</a></li>-->
+                                                <!--</ul>-->
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="panel-body">
+
+                            <div id="main" style="width: 100%;height:1800px;">
+                                <body style="height: 100%; margin: 0">
+                                <!--<div class="panel-heading">-->
+                                <!--辅助选择-->
+                                <!--</div>-->
+                                <!--<div class="form-group">-->
+                                <!--<div class="row">-->
+
+                                <!--</div>-->
+                                <!--</div>-->
+                                <div id="container" style="height: 100%"></div>
+
+                                </body>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+    <script type="text/javascript">
+        var dom = document.getElementById("container");
+        var myChart = echarts.init(dom);
+        var app = {};
+        option = null;
+        var base = +new Date(1968, 9, 3);
+
+        option = {
+            title: {
+                text: '激光成形过程采集数据',
+                subtext: '{{ smalltitle|upper }} '+select_date+' '+select_time_text,
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    animation: false
+                }
+            },
+            legend: {
+                data: ['氧含量', '激光功率', '成形高度','进给率','移动速率'],
+                left: 10,
+            },
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            axisPointer: {
+                link: {xAxisIndex: 'all'}
+            },
+            dataZoom: [
+                {
+                    show: true,
+                    realtime: true,
+                    start: 0,
+                    end: 100,
+                    xAxisIndex: [0, 1, 2, 3]
+                },
+                {
+                    type: 'inside',
+                    realtime: true,
+                    start: 0,
+                    end: 100,
+                    xAxisIndex:[0, 1, 2, 3]
+                },
+                {
+                    type: 'inside',
+                    realtime: true,
+                    start: 0,
+                    end: 100,
+                    xAxisIndex: [0, 1, 2, 3]
+                },
+                {
+                    type: 'inside',
+                    realtime: true,
+                    start: 0,
+                    end: 100,
+                    xAxisIndex: [0, 1, 2, 3]
+                },
+                <!--{-->
+                    <!--type: 'inside',-->
+                    <!--realtime: true,-->
+                    <!--start: 0,-->
+                    <!--end: 100,-->
+                    <!--xAxisIndex: [0, 1, 2, 3, 4]-->
+                <!--}-->
+            ],
+            grid: [{
+                left: 50,
+                right: 50,
+                top: '5%',
+                height: '20%'
+            }, {
+                left: 50,
+                right: 50,
+                top: '28%',
+                height: '20%'
+            }, {
+                left: 50,
+                right: 50,
+                top: '51%',
+                height: '20%'
+            }, {
+                left: 50,
+                right: 50,
+                top: '74%',
+                height: '20%'
+            },
+            <!--{-->
+                <!--left: 50,-->
+                <!--right: 50,-->
+                <!--top: '80%',-->
+                <!--height: '10.5%'-->
+            <!--}-->
+            ],
+            xAxis: [
+                {
+                    gridIndex: 0,
+                    type: 'category',
+                    boundaryGap: false,
+                    axisLine: {onZero: true},
+                    data: []
+                },
+                {
+                    gridIndex: 1,
+                    type: 'category',
+                    boundaryGap: false,
+                    axisLine: {onZero: true},
+                    data: []
+                },
+                {
+                    gridIndex: 2,
+                    type: 'category',
+                    boundaryGap: false,
+                    axisLine: {onZero: true},
+                    data: []
+                },
+                {
+                    gridIndex: 3,
+                    type: 'category',
+                    boundaryGap: false,
+                    axisLine: {onZero: true},
+                    data: []
+                },
+                <!--{-->
+                    <!--gridIndex: 3,-->
+                    <!--type: 'category',-->
+                    <!--boundaryGap: false,-->
+                    <!--axisLine: {onZero: true},-->
+                    <!--data: []-->
+                <!--}-->
+            ],
+            yAxis: [
+                {
+                    gridIndex: 0,
+                    name: '氧含量(ppm)',
+                    type: 'value',
+                    <!--min: 100,-->
+                    splitNumber: 4,
+                },
+                {
+                    gridIndex: 1,
+                    name: '激光功率(W)',
+                    type: 'value',
+                    splitNumber: 4,
+                },
+                {
+                    gridIndex: 2,
+                    name: '成形高度(mm)',
+                    type: 'value',
+                    splitNumber: 4,
+
+                },
+                {
+                    gridIndex: 3,
+                    name: '进给率(%)',
+                    type: 'value',
+                    <!--min: 100,-->
+                    splitNumber: 4,
+                },
+                {
+                    <!--gridIndex: 4,-->
+                    gridIndex: 3,
+                    name: '速率(mm/min)',
+                    type: 'value',
+                    splitNumber: 4,
+                }
+            ],
+            series: [
+                {
+                    name: '氧含量',
+                    type: 'line',
+                    <!--xAxisIndex: 0,-->
+                    <!--yAxisIndex: 0,-->
+                    symbolSize: 8,
+                    hoverAnimation: false,
+                    data: []
+                },
+                {
+                    name: '激光功率',
+                    type: 'line',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 8,
+                    hoverAnimation: false,
+                    data: []
+                },
+                {
+                    name: '成形高度',
+                    type: 'line',
+                    xAxisIndex: 2,
+                    yAxisIndex: 2,
+                    symbolSize: 8,
+                    hoverAnimation: false,
+                    data: []
+                },
+                {
+                    name: '进给率',
+                    type: 'line',
+                    xAxisIndex: 3,
+                    yAxisIndex: 3,
+                    symbolSize: 8,
+                    hoverAnimation: false,
+                    data: []
+                },
+                {
+                    name: '移动速率',
+                    type: 'scatter',
+                    xAxisIndex: 3,
+                    <!--xAxisIndex: 4,-->
+                    yAxisIndex: 4,
+                    symbolSize: 5,
+                    hoverAnimation: false,
+                    data: []
+                }
+            ]
+        };
+        <!--option = {-->
+                                <!--title : {-->
+                                    <!--text: '激光成形过程采集数据',-->
+                                    <!--subtext: '',-->
+                                    <!--x: 'center',-->
+                                    <!--align: 'right'-->
+                                <!--},-->
+                                <!--grid: {-->
+                                    <!--bottom: 80-->
+                                <!--},-->
+                                <!--toolbox: {-->
+                                    <!--feature: {-->
+                                        <!--dataZoom: {-->
+                                            <!--yAxisIndex: 'none'-->
+                                        <!--},-->
+                                        <!--restore: {},-->
+                                        <!--saveAsImage: {}-->
+                                    <!--}-->
+                                <!--},-->
+                                <!--tooltip : {-->
+                                    <!--trigger: 'axis',-->
+                                    <!--axisPointer: {-->
+                                        <!--type: 'cross',-->
+                                        <!--animation: false,-->
+                                        <!--label: {-->
+                                            <!--backgroundColor: '#505765'-->
+                                        <!--}-->
+                                    <!--}-->
+                                <!--},-->
+                                <!--legend: {-->
+                                    <!--data:['氧含量','激光功率','激光成形高度'],-->
+                                    <!--x: 'left'-->
+                                <!--},-->
+                                <!--dataZoom: [-->
+                                    <!--{-->
+                                        <!--show: true,-->
+                                        <!--realtime: true,-->
+                                        <!--start: 65,-->
+                                        <!--end: 85,-->
+                                        <!--xAxisIndex: [0, 1, 2]-->
+                                    <!--},-->
+                                    <!--{-->
+                                        <!--type: 'inside',-->
+                                        <!--realtime: true,-->
+                                        <!--start: 65,-->
+                                        <!--end: 85,-->
+                                        <!--xAxisIndex: [0, 1, 2]-->
+                                    <!--}-->
+                                <!--],-->
+                                <!--xAxis : [-->
+                                    <!--{-->
+                                        <!--type : 'category',-->
+                                        <!--boundaryGap : false,-->
+                                        <!--axisLine: {onZero: false},-->
+                                        <!--data : []-->
+                                        <!--&lt;!&ndash;.map(function (str) {&ndash;&gt;-->
+                                            <!--&lt;!&ndash;return str.replace(' ', '\n')&ndash;&gt;-->
+                                        <!--&lt;!&ndash;})&ndash;&gt;-->
+                                    <!--},-->
+                                    <!--{-->
+                                        <!--gridIndex: 1,-->
+                                        <!--type: 'category',-->
+                                        <!--boundaryGap: false,-->
+                                        <!--axisLine: {onZero: true},-->
+                                        <!--data: [],-->
+                                        <!--position: 'top'-->
+                                    <!--}-->
+                                <!--],-->
+                                <!--yAxis: [-->
+                                    <!--{-->
+                                        <!--name: '氧含量(ppm)',-->
+                                        <!--type: 'value',-->
+                                        <!--&lt;!&ndash;max: 500&ndash;&gt;-->
+                                    <!--},-->
+                                    <!--{-->
+                                        <!--gridIndex: 1,-->
+                                        <!--name: '功率(W)',-->
+                                        <!--&lt;!&ndash;nameLocation: 'start',&ndash;&gt;-->
+                                        <!--&lt;!&ndash;max: 5,&ndash;&gt;-->
+                                        <!--type: 'value',-->
+
+                                    <!--},-->
+                                    <!--{-->
+                                        <!--gridIndex: 2,-->
+                                        <!--name: '高度(mm)',-->
+                                        <!--&lt;!&ndash;nameLocation: 'start',&ndash;&gt;-->
+                                        <!--&lt;!&ndash;max: 5,&ndash;&gt;-->
+                                        <!--type: 'value',-->
+                                        <!--offset: 60,-->
+                                        <!--splitNumber: 10,-->
+                                    <!--}-->
+                                <!--],-->
+                                <!--series: [-->
+                                    <!--{-->
+                                        <!--name:'氧含量',-->
+                                        <!--type:'line',-->
+                                        <!--animation: false,-->
+                                        <!--areaStyle: {-->
+                                        <!--},-->
+                                        <!--lineStyle: {-->
+                                            <!--width: 1-->
+                                        <!--},-->
+                                        <!--markLine : {-->
+                                            <!--//symbol:['circle', 'arrow'],    //表示箭头从左向右-->
+                        <!--                    symbol:['arrow', 'circle'], //表示箭头从右向左-->
+                        <!--                    //symbol:"none",            //表示没有箭头的直线-->
+                        <!--                    -->
+                        <!--                    //警示线标签-->
+                        <!--                    label:{-->
+                        <!--                        show:true,-->
+                        <!--                        position:"end",    //将警示值放在哪个位置，start middle end 开头 中间 结尾-->
+                        <!--                        //formatter: "60%",   //警示线上显示内容-->
+                        <!--                    },-->
+                        <!--                    //警示线的样式，虚实  颜色-->
+                        <!--                    lineStyle:{-->
+                        <!--                        type:"solid",-->
+                        <!--                        color:"{{ color.oxygen_markLine_color }}",-->
+                        <!--                    },-->
+
+                                            <!--data : [-->
+                                                <!--{ name: '氧含量警告值',yAxis:80},-->
+                                            <!--],-->
+                                        <!--},-->
+
+                                        <!--data:[],-->
+                                        <!--large: true-->
+                                    <!--},-->
+                                    <!--{-->
+                                        <!--name:'激光功率',-->
+                                        <!--type:'line',-->
+                                        <!--yAxisIndex:1,-->
+                                        <!--animation: false,-->
+                                        <!--areaStyle: {-->
+                                        <!--},-->
+                                        <!--lineStyle: {-->
+                                            <!--width: 1-->
+                                        <!--},-->
+                                        <!--markLine : {-->
+                                            <!--symbol:['circle', 'arrow'],    //表示箭头从左向右-->
+                        <!--                    //symbol:['arrow', 'circle'], //表示箭头从右向左-->
+                        <!--                    //symbol:"none",            //表示没有箭头的直线-->
+                        <!--                    -->
+                        <!--                    //警示线标签-->
+                        <!--                    label:{-->
+                        <!--                        show:true,-->
+                        <!--                        position:"end",    //将警示值放在哪个位置，start middle end 开头 中间 结尾-->
+                        <!--                        //formatter: "60%",   //警示线上显示内容-->
+                        <!--                    },-->
+                        <!--                    //警示线的样式，虚实  颜色-->
+                        <!--                    lineStyle:{-->
+                        <!--                        type:"solid",-->
+                        <!--                        color:"{{ color.laser_markLine_color }}",-->
+                        <!--                    },-->
+
+                                            <!--data : [-->
+                                                <!--{ name: '连续成形激光功率范围上限',yAxis:7600},-->
+                                                <!--{ name: '连续成形激光功率范围下限',yAxis:7200},-->
+                                            <!--],-->
+                                        <!--},-->
+                                        <!--data: [],-->
+                                        <!--large: true-->
+                                    <!--},-->
+                                    <!--{-->
+                                        <!--name:'激光成形高度',-->
+                                        <!--type:'line',-->
+                                        <!--yAxisIndex:2,-->
+                                        <!--animation: false,-->
+                                        <!--areaStyle: {-->
+                                        <!--},-->
+                                        <!--lineStyle: {-->
+                                            <!--width: 1-->
+                                        <!--},-->
+                                        <!--data: [],-->
+                                        <!--large: true-->
+                                    <!--}-->
+                                <!--]-->
+                            <!--};-->
+    if (option && typeof option === "object") {
+        myChart.setOption(option, true);
+        <!--20191204 00:26-->
+        <!--https://blog.csdn.net/smk108/article/details/78482154/-->
+        <!--http://www.freesion.com/article/506866459/-->
+    }
+    onload();
+
+
+
+
+
+
+
+
+    </script>
+    {% endblock %}

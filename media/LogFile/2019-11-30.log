@@ -1,0 +1,506 @@
+2019-11-30 Sat 00:01:15 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:01:24 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 00:01:27 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 00:04:48 log.py log_response 228 - WARNING - Not Found: /LAMProcessData/QueryData/PreviewTable/LAMTechniqueInstruction//
+2019-11-30 Sat 00:06:28 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/QueryData/Data_By_WorkSectionDatetime/1/2019-11-2900:00/2019-11-3023:59/60/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.OperationalError: (1054, "Unknown column 'LAMProcessData_cncprocessstatus.program_name' in 'field list'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\Python37\lib\site-packages\django\contrib\auth\decorators.py", line 21, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+  File "D:\Python37\lib\site-packages\django\views\decorators\csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\query_views.py", line 348, in queryData_data_By_WorkSectionDatetime
+    for _d in queryDataSet_CNC:
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 274, in __iter__
+    self._fetch_all()
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 1242, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 55, in __iter__
+    results = compiler.execute_sql(chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1097, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+django.db.utils.OperationalError: (1054, "Unknown column 'LAMProcessData_cncprocessstatus.program_name' in 'field list'")
+2019-11-30 Sat 00:08:35 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:13:25 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\urls.py changed, reloading.
+2019-11-30 Sat 00:13:27 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:15:35 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:15:37 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:17:21 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:17:23 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:22:36 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:22:38 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:25:00 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:25:02 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:25:32 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:25:39 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 00:30:41 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:30:56 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordTimeStamp/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 1921, in UpdateRecordTimeStamp
+    oxy.save()
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 741, in save
+    force_update=force_update, update_fields=update_fields)
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 779, in save_base
+    force_update, using, update_fields,
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 851, in _save_table
+    forced_update)
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 900, in _do_update
+    return filtered._update(values) > 0
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 760, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1426, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1084, in execute_sql
+    sql, params = self.as_sql()
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1392, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "D:\Python37\lib\site-packages\django\db\models\fields\__init__.py", line 1563, in get_db_prep_save
+    return connection.ops.adapt_decimalfield_value(self.to_python(value), self.max_digits, self.decimal_places)
+  File "D:\Python37\lib\site-packages\django\db\backends\base\operations.py", line 516, in adapt_decimalfield_value
+    return utils.format_number(value, max_digits, decimal_places)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 238, in format_number
+    value = value.quantize(decimal.Decimal(1).scaleb(-decimal_places), context=context)
+decimal.InvalidOperation: [<class 'decimal.InvalidOperation'>]
+2019-11-30 Sat 00:31:55 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:31:57 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:32:21 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordTimeStamp/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 1922, in UpdateRecordTimeStamp
+    oxy.save()
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 741, in save
+    force_update=force_update, update_fields=update_fields)
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 779, in save_base
+    force_update, using, update_fields,
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 851, in _save_table
+    forced_update)
+  File "D:\Python37\lib\site-packages\django\db\models\base.py", line 900, in _do_update
+    return filtered._update(values) > 0
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 760, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1426, in execute_sql
+    cursor = super().execute_sql(result_type)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1084, in execute_sql
+    sql, params = self.as_sql()
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1392, in as_sql
+    val = field.get_db_prep_save(val, connection=self.connection)
+  File "D:\Python37\lib\site-packages\django\db\models\fields\__init__.py", line 1563, in get_db_prep_save
+    return connection.ops.adapt_decimalfield_value(self.to_python(value), self.max_digits, self.decimal_places)
+  File "D:\Python37\lib\site-packages\django\db\backends\base\operations.py", line 516, in adapt_decimalfield_value
+    return utils.format_number(value, max_digits, decimal_places)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 238, in format_number
+    value = value.quantize(decimal.Decimal(1).scaleb(-decimal_places), context=context)
+decimal.InvalidOperation: [<class 'decimal.InvalidOperation'>]
+2019-11-30 Sat 00:37:07 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\models.py changed, reloading.
+2019-11-30 Sat 00:37:09 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:48:20 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:48:54 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:48:57 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:52:20 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:52:22 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 00:58:51 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 00:58:54 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 08:35:07 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 08:35:14 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 08:35:18 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 08:35:28 log.py log_response 228 - WARNING - Not Found: /LAMProcessData/UpdateRecordTimeStamp/
+2019-11-30 Sat 09:15:53 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 09:16:15 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordCNCProcessStatus/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 126, in _get_response
+    "returned None instead." % (callback.__module__, view_name)
+ValueError: The view LAMProcessData.views.UpdateRecordCNCProcessStatus didn't return an HttpResponse object. It returned None instead.
+2019-11-30 Sat 09:18:01 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 09:18:05 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:19:41 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:20:07 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 09:20:10 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:20:23 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:21:04 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:22:14 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:23:07 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:24:38 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:25:43 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:26:57 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:34:44 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:35:10 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:39:12 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:39:19 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordCNCProcessStatus/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 1965, in UpdateRecordCNCProcessStatus
+    for Current_i in range(Sum_i):
+TypeError: 'float' object cannot be interpreted as an integer
+2019-11-30 Sat 09:39:36 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 09:39:42 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:40:44 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:41:01 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:41:13 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:46:02 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:49:43 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 09:49:46 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:50:02 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 09:50:04 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:50:34 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 09:54:01 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 12:54:46 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 12:57:33 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 12:57:34 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 12:58:11 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 12:58:31 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 12:58:33 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 13:50:25 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 13:50:27 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 13:58:11 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 13:58:13 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:01:55 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:01:57 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:09:15 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:09:18 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:10:49 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:10:51 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:12:26 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:12:29 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:13:48 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:13:50 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:13:55 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:13:57 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:15:12 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:15:15 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:20:58 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:21:00 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 14:21:28 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordOxygendataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:/1.chenbo/1-program/11-LAMDataServer/lamdataserver\LAMProcessData\views.py", line 2029, in UpdateOxygendata_Date_Worksection_indexing
+    _list = length_list[Current_i * num_per_page:(Current_i + 1) * num_per_page]
+TypeError: 'int' object is not subscriptable
+2019-11-30 Sat 14:21:47 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:22:31 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:52:10 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:54:02 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:55:18 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:57:46 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:57:51 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordOxygendataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 2079, in UpdateOxygendata_Date_Worksection_indexing
+    _temp.item_id = start_Oxygendata_id
+AttributeError: 'int' object has no attribute 'item_id'
+2019-11-30 Sat 14:58:03 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:58:08 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 14:59:35 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 14:59:37 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:01:15 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:01:17 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:02:26 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:02:28 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:03:53 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:03:55 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:04:20 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:04:23 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:05:08 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:05:10 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:06:22 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\urls.py changed, reloading.
+2019-11-30 Sat 15:06:24 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:06:27 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 15:06:33 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordLaserdataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 2129, in UpdateLaserdata_Date_Worksection_indexing
+    _temp.item_id = start_Oxygendata_id
+NameError: name 'start_Oxygendata_id' is not defined
+2019-11-30 Sat 15:06:49 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:06:51 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:12:42 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:16:26 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:17:46 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:17:54 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:19:59 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:21:33 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:21:36 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:22:07 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:22:43 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:22:51 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:25:47 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:49:22 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:49:47 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:49:51 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordCNCStatusdataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\Python37\lib\site-packages\django_lock.py", line 220, in inner
+    return func(*args, **kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 2152, in UpdateCNCStatusdata_Date_Worksection_indexing
+    if GLOBAL_UPDATE_INDEXINGTABLE_FLAG_CNCSTATUS:
+NameError: name 'GLOBAL_UPDATE_INDEXINGTABLE_FLAG_CNCSTATUS' is not defined
+2019-11-30 Sat 15:49:52 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 15:51:26 autoreload.py trigger_reload 203 - INFO - E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2019-11-30 Sat 15:51:31 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 15:52:04 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 15:55:03 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:19:53 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:20:31 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 16:20:33 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordCNCStatusdataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 2156, in UpdateCNCStatusdata_Date_Worksection_indexing
+    start_CNCStatusdata_id = TemporaryParameter_ID.objects.get(id=5).item_id
+  File "D:\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 408, in get
+    self.model._meta.object_name
+LAMProcessData.models.TemporaryParameter_ID.DoesNotExist: TemporaryParameter_ID matching query does not exist.
+2019-11-30 Sat 16:21:24 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:21:28 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordCNCStatusdataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.OperationalError: (1054, "Unknown column 'LAMProcessData_cncprocessstatus.acquisition_timestamp' in 'field list'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 2179, in UpdateCNCStatusdata_Date_Worksection_indexing
+    length_list = CNCdata_list.count()
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 392, in count
+    return self.query.get_count(using=self.db)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\query.py", line 504, in get_count
+    number = obj.get_aggregation(using, ['__count'])['__count']
+  File "D:\Python37\lib\site-packages\django\db\models\sql\query.py", line 489, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1097, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+django.db.utils.OperationalError: (1054, "Unknown column 'LAMProcessData_cncprocessstatus.acquisition_timestamp' in 'field list'")
+2019-11-30 Sat 16:25:20 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:25:23 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordCNCStatusdataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.OperationalError: (1054, "Unknown column 'LAMProcessData_cncprocessstatus.program_name' in 'field list'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 2179, in UpdateCNCStatusdata_Date_Worksection_indexing
+    length_list = CNCdata_list.count()
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 392, in count
+    return self.query.get_count(using=self.db)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\query.py", line 504, in get_count
+    number = obj.get_aggregation(using, ['__count'])['__count']
+  File "D:\Python37\lib\site-packages\django\db\models\sql\query.py", line 489, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1097, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+django.db.utils.OperationalError: (1054, "Unknown column 'LAMProcessData_cncprocessstatus.program_name' in 'field list'")
+2019-11-30 Sat 16:26:31 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:27:29 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/LAMProcessData/UpdateRecordOxygendataIndexing/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.OperationalError: (1054, "Unknown column 'LAMProcessData_oxygendata.acquisition_timestamp' in 'field list'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 2027, in UpdateOxygendata_Date_Worksection_indexing
+    length_list = oxygendata_list.count()
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 392, in count
+    return self.query.get_count(using=self.db)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\query.py", line 504, in get_count
+    number = obj.get_aggregation(using, ['__count'])['__count']
+  File "D:\Python37\lib\site-packages\django\db\models\sql\query.py", line 489, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "D:\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1097, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 206, in execute
+    res = self._query(query)
+  File "D:\Python37\lib\site-packages\MySQLdb\cursors.py", line 312, in _query
+    db.query(q)
+  File "D:\Python37\lib\site-packages\MySQLdb\connections.py", line 224, in query
+    _mysql.connection.query(self, query)
+django.db.utils.OperationalError: (1054, "Unknown column 'LAMProcessData_oxygendata.acquisition_timestamp' in 'field list'")
+2019-11-30 Sat 16:28:47 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:30:52 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:33:16 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:34:47 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2019-11-30 Sat 16:36:18 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2019-11-30 Sat 16:48:40 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader

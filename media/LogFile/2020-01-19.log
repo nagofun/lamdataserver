@@ -1,0 +1,22 @@
+2020-01-19 Sun 21:11:26 autoreload.py run_with_reloader 578 - INFO - Watching for file changes with StatReloader
+2020-01-19 Sun 21:11:27 query_views.py <module> 57 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-01-19 Sun 21:11:27 query_views.py <module> 58 - DEBUG - Waitfor_Recive : [2038721]
+2020-01-19 Sun 21:11:35 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-01-19 Sun 23:21:06 log.py log_response 228 - ERROR - Internal Server Error: /LAMProcessData/userProfile/
+Traceback (most recent call last):
+  File "D:\Python37\lib\site-packages\django\core\handlers\exception.py", line 34, in inner
+    response = get_response(request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "D:\Python37\lib\site-packages\django\core\handlers\base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "D:\Python37\lib\site-packages\django\contrib\auth\decorators.py", line 21, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+  File "E:\1.chenbo\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 481, in userprofile
+    current_group_set = Group.objects.get(user=current_user_set)
+  File "D:\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Python37\lib\site-packages\django\db\models\query.py", line 408, in get
+    self.model._meta.object_name
+django.contrib.auth.models.Group.DoesNotExist: Group matching query does not exist.
+2020-01-19 Sun 23:27:42 log.py log_response 228 - WARNING - Not Found: /favicon.ico
