@@ -699,14 +699,16 @@ class LAMProcess_Worksection_Operate(models.Model):
 class Process_Inspect_FineData_DiscordantRecords(models.Model):
     # 任务信息
     process_mission = models.ForeignKey(LAMProcessMission, on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 计算时间
+    inspect_timestamp = models.PositiveIntegerField()
     # 不符合阶段开始时间戳
-    start_timestamp = models.PositiveIntegerField(unique=True)
+    start_timestamp = models.PositiveIntegerField()
     # 不符合阶段结束时间戳
-    finish_timestamp = models.PositiveIntegerField(unique=True)
+    finish_timestamp = models.PositiveIntegerField()
     # 不符合条目
     parameter_conditionalcell = models.ForeignKey(LAMProcessParameterConditionalCell, on_delete=models.DO_NOTHING, null=True, blank=True)
-    # 实际值
-    parameter_realvalue = models.CharField(max_length=50, null=True)
+    # # 实际值
+    # parameter_realvalue = models.CharField(max_length=50, null=True)
 
 
 

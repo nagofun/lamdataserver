@@ -533,6 +533,13 @@
             this.splice(index, 1);
         }
     };
+    <!--字符串转时间戳-->
+    function datatimestr_to_timestamp(datetimestr){
+        date = datetimestr.substring(0,19);
+        date = date.replace(/-/g,'/'); //必须把日期'-'转为'/'
+        var timestamp = new Date(date).getTime();
+        return timestamp;
+    }
     <!--//使用for循环进行等待操作-->
     <!--function sleep(delay) {-->
         <!--var start = (new Date()).getTime();-->

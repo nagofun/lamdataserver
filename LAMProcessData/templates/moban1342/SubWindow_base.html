@@ -9,12 +9,13 @@
     <!-- FontAwesome Styles-->
     <link href="/assets/css/font-awesome.css" rel="stylesheet"/>
     <!-- Morris Chart Styles-->
+    <link href="/assets/js/morris/morris-0.4.3.min.css" rel="stylesheet"/>
 
     <!-- Custom Styles-->
     <link href="/assets/css/custom-styles.css" rel="stylesheet"/>
     <!-- Google Fonts-->
     <!--<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'/>-->
-    <link href='/assets/css/Open+Sans.css' rel='stylesheet' type='text/css'/>
+    <link href="/assets/css/font-Open Sans.css" rel="stylesheet"/>
     <!-- ECharts-->
     <link href="/assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet"/>
     <script src="/assets/js/echarts.js"></script>
@@ -38,6 +39,7 @@
 
 </head>
 <script>
+
     <!--//使用for循环进行等待操作-->
     <!--function sleep(delay) {-->
         <!--var start = (new Date()).getTime();-->
@@ -45,12 +47,23 @@
             <!--continue;-->
         <!--}-->
     <!--}-->
+    function replaceAll(str, find, replace) {
+         return str.replace(new RegExp(find, 'g'), replace);
+    }
+    <!--字符串转时间戳-->
+    function datatimestr_to_timestamp(datetimestr){
+        date = datetimestr.substring(0,19);
+        date = date.replace(/-/g,'/'); //必须把日期'-'转为'/'
+        var timestamp = new Date(date).getTime();
+        return timestamp;
+    }
 
 </script>
 <!-- JS Scripts-->
 <!-- jQuery Js -->
 <!--此处去掉后datetimepicker可用??-->
 <script src="/assets/js/jquery-1.10.2.js"></script>
+<script src="/assets/js/jquery-ui.min.js"></script>
 <!-- Bootstrap Js -->
 <script src="/assets/js/bootstrap.min.js"></script>
 <!-- Metis Menu Js -->
@@ -94,7 +107,9 @@
 
 <!--<script src="/assets/datetimepicker/jiaoben6136/js/base.js"></script>-->
 <!-- end datetimepicker-->
+<script>
 
+</script>
 
 </body>
 </html>

@@ -702,22 +702,40 @@ def queryData_finedata_By_MissionID(request, MissionItemID,DateStr,HourStr):
 @login_required
 @csrf_exempt
 def queryData_Inspect_Complete_MissionLAMProcessRecords(request, MissionItemID):
-	expression_False_gather_list = RT_FineData.Realtime_FineData.inspect_complete_processRecord(MissionItemID)
-	if expression_False_gather_list == 'Wait_And_Following':
+	inspect_flag = RT_FineData.Realtime_FineData.inspect_complete_processRecord(MissionItemID)
+	if inspect_flag == 'Wait_And_Following':
 		print('Wait_And_Following')
 		return HttpResponse(json.dumps(['Wait_And_Following'], ensure_ascii=False), content_type='application/json')
+	elif inspect_flag == 'Query_Database':
+		print('Query_Database')
+		qset = (
+			Q(process_mission=LAMProcessMission.objects.get(id=MissionItemID))
+		)
+		_discordant_records = Process_Inspect_FineData_DiscordantRecords.objects.filter(qset)
+		_dict = {
+			'%d'%i.id:
+				{
+					'id':i.id,
+					'start_time':time_data2(i.start_timestamp),
+					'finish_time': time_data2(i.finish_timestamp),
+					'condition_cell':str(i.parameter_conditionalcell),
+				} for i in _discordant_records
+		}
+		html = json.dumps(_dict, ensure_ascii=False)
+		return HttpResponse(html, content_type='application/json')
 
-	_dict = {
-			'%d~%d' % (data['minID'],data['maxID']):
-			{'start_time': time_data2(data['start_timestamp']),
-			 'finish_time': time_data2(data['finish_timestamp']),
-			 'condition_cell': str(data['condition_cell'])}
-		for data in expression_False_gather_list
-	}
-	html = json.dumps(_dict, ensure_ascii=False)
-	# print(html)
-	print('-------')
-	return HttpResponse(html, content_type='application/json')
+	# _dict = {
+	# 		'timestampid:%d-%d'%(data['minID'],data['maxID']):
+	# 			{'timestamp': '%d~%d' % (data['minID'],data['maxID']),
+	# 			 'start_time': time_data2(data['start_timestamp']),
+	# 			 'finish_time': time_data2(data['finish_timestamp']),
+	# 			 'condition_cell': str(list(map(lambda cell:cell.comment, data['condition_cell']))).replace('[','').replace(']','').replace('\'','')}
+	# 		for data in expression_False_gather_list
+	# }
+	# html = json.dumps(_dict, ensure_ascii=False)
+	# # print(html)
+	# print('-------')
+	# return HttpResponse(html, content_type='application/json')
 
 with lock("global"):
 	pass

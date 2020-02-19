@@ -24,7 +24,7 @@ import os
 ''''''
 
 def CacheOperator(operateType, ifget, ParamSet,data=None):
-	'''暂时未使用
+	'''
 	:param operateType:
 		'WS_CrtMissionId' 未用
 		'ProgressBarValue_CompleteInspect_MissionId'    对某任务的过程记录进行检查 可能为None, x, 100三种状态
@@ -321,17 +321,22 @@ class Realtime_FineData():
 				return True, _discordant_cell_list
 			else:
 				return False, _discordant_cell_list
-
 			''' End inspect_one_processRecord '''
+			pass
 
 		''' start inspect_complete_processRecord '''
 		print('start inspect_complete_processRecord')
-		# 若系统上正在运行本mission的检查，则直接退出，返回等待查询flag
+		# 若数据库中有本mission记录，则直接退出，返回查询数据库flag
+		if Process_Inspect_FineData_DiscordantRecords.objects.filter((Q(process_mission=LAMProcessMission.objects.get(id=MissionID)))) is not None:
+			# 查询数据库，直接返回结果
+			return 'Query_Database'
+
 		_current_progressBar_Rate = CacheOperator('ProgressBarValue_CompleteInspect_MissionId', True, MissionID, None)
 		if _current_progressBar_Rate==1.0:
 			# 查询数据库，直接返回结果
-			pass
+			return 'Query_Database'
 		elif type(_current_progressBar_Rate) in (float,int) and _current_progressBar_Rate<1.0:
+			# 若系统上正在运行本mission的检查，则直接退出，返回等待查询flag
 			return 'Wait_And_Following'
 		elif _current_progressBar_Rate==None:
 			# 查询数据库，如有则直接返回结果，如没有则进行后续计算
@@ -378,14 +383,13 @@ class Realtime_FineData():
 			expression_result_list.append((i, inspect_one_processRecord(i)))
 			# 更新进度条
 			CacheOperator('ProgressBarValue_CompleteInspect_MissionId', False, MissionID, num/data_length)
-		# 进度条数据更新至100%
-		CacheOperator('ProgressBarValue_CompleteInspect_MissionId', False, MissionID, 1.0)
+
 
 		expression_False_list = filter(lambda i: not i[1][0], expression_result_list)
 		t3 = time.time()
 		print(t3 - t2)
 
-		'''将不符合的列表按类别聚集、时间连续后输出'''
+		'''将不符合的列表按类别聚集、时间连续后输出，并存入数据库'''
 		''''[[minID, maxID, starttime, finishtime, condition_cell]]'''
 		expression_False_gather_list = []
 		false_item = {'minID': None,
@@ -396,20 +400,36 @@ class Realtime_FineData():
 		for i in list(expression_False_list):
 			if false_item['condition_cell'] is None:
 				false_item['minID'] = i[0].id
+				false_item['maxID'] = i[0].id
 				false_item['start_timestamp'] = i[0].acquisition_timestamp
+				false_item['finish_timestamp'] = i[0].acquisition_timestamp
 				false_item['condition_cell'] = i[1][1]
 			elif false_item['condition_cell'] == i[1][1]:
 				false_item['maxID'] = i[0].id
 				false_item['finish_timestamp'] = i[0].acquisition_timestamp
 			else:
-				if false_item['maxID'] is None:
-					false_item['maxID'] = i[0].id
-					false_item['finish_timestamp'] = i[0].acquisition_timestamp
 				expression_False_gather_list.append(false_item)
 				false_item = {'minID': i[0].id,
-				              'maxID': None,
+				              'maxID': i[0].id,
 				              'start_timestamp': i[0].acquisition_timestamp,
-				              'finish_timestamp': None,
-				              'condition_cell': str(map(lambda _l:str(_l.comment),i[1][1]))}
-		return expression_False_gather_list
+				              'finish_timestamp': i[0].acquisition_timestamp,
+				              'condition_cell': i[1][1]}
+		# 存入数据库
+		inspect_timestamp = int(time.time())
+		for i in expression_False_gather_list:
+			for _cell in i['condition_cell']:
+				_discordantRecord = Process_Inspect_FineData_DiscordantRecords.objects.create(
+					process_mission=_mission,
+					inspect_timestamp=inspect_timestamp,
+					start_timestamp=i['start_timestamp'],
+					finish_timestamp=i['finish_timestamp'],
+					parameter_conditionalcell = _cell,
+				)
+				_discordantRecord.save()
+
+		# 进度条数据更新至100%，此时可以通知前端来数据库查询
+		CacheOperator('ProgressBarValue_CompleteInspect_MissionId', False, MissionID, 1.0)
+		# 查询数据库，
+		return 'Query_Database'
+		# return expression_False_gather_list
 
