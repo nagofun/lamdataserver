@@ -55,10 +55,14 @@ urlpatterns = [
     path('LAMProcessData/UpdateRecordLaserdataIndexing/', views.UpdateLaserdata_Date_Worksection_indexing),
     # 更新数据库Process_CNCStatusdata_Date_Worksection_indexing
     path('LAMProcessData/UpdateRecordCNCStatusdataIndexing/', views.UpdateCNCStatusdata_Date_Worksection_indexing),
-    # 更新数据库Process_CNCStatusdata_Date_Worksection_indexing
+    # 更新数据库Process_Realtime_FineData_By_WorkSectionID
     path('LAMProcessData/UpdateRecordToFineData/', views.Update_ExistingData_to_FineData),
-    # 更新数据库Process_CNCStatusdata_Date_Worksection_indexing中的时间戳
+    # 更新数据库Process_Realtime_FineData_By_WorkSectionID中的时间戳
     path('LAMProcessData/UpdateFineDataDatetime/', views.Update_ExistingFineData_datetime),
+    # 更新数据库Process_Realtime_FineData_By_WorkSectionID中的不连续数据
+    path('LAMProcessData/UpdateFineEmptyData/', views.Update_ExistingFineData_PatchEmptyData),
+    # 更新数据库Process_Realtime_FineData_By_WorkSectionID中的机床界面信息if_exec_intr，if_interrupt_intr
+    path('LAMProcessData/UpdateFineData_IfIntr/', views.Update_ExistingFinData_If_intr),
 
     path('DrawData/Oxygen/', views.DrawData_Oxygen),
     # 厂房
@@ -134,6 +138,10 @@ urlpatterns = [
     # 编辑参数条件单元
     re_path('EditBasicInfomation/LAMProcessParameters/EditConditionalCell/(?P<ConditionalCellItemID>(.+))/$',
                 views.edit_lamprocessparameterConditionalCell),
+
+    # 编辑参数累加单元
+    re_path('EditBasicInfomation/LAMProcessParameters/EditAccumulateCell/(?P<ProcessParameterItemID>(.+))/$',
+                views.edit_lamprocessparameterAccumulateCell),
 
     # 保存适用的工序
     re_path('EditBasicInfomation/LAMProcessParameters/SaveTechInstSerial/$',
@@ -215,6 +223,17 @@ urlpatterns = [
     re_path('QueryData/ProgressBarValue/InspectionLAMRecords_By_MissionID/(?P<MissionID>(.+))/$',
             query_views.queryData_ProgressBarValue_InspectionLAMRecords_By_MissionID),
 
+    # 打开任务筛选弹窗
+    re_path('AnalyseLAMProcess/MissionFilter/(?P<AnalyseType>(.+))/$', views.AnalyseLAMProcess_MissionFilter),
+    # 分析成形制造过程-成形高度
+    re_path('AnalyseLAMProcess/ZValue/$', views.AnalyseLAMProcess_ZValue),
+    # 分析成形制造过程-成形高度
+    re_path('AnalyseLAMProcess/AccumulateData/$', views.AnalyseLAMProcess_AccumulateData),
+    # 分析成形制造过程-成形高度
+    re_path('AnalyseLAMProcess/LayerData/$', views.AnalyseLAMProcess_LayerData),
+
+
+
     # 弹出子窗口
     re_path('InspectionRecords/PhysicochemicalTest/AddTensile/(?P<MissionItemID>(.+))/$',
             views.PhyChemTest_AddTensile),
@@ -246,6 +265,10 @@ urlpatterns = [
     # 根据参数包ID查询包含的条件单元
     re_path('QueryData/LAMProcessParameterConditionalCell_By_ProcessParameterID/(?P<ProcessParameterID>(.+))/$',
             query_views.queryData_LAMProcessParameterConditionalCell),
+
+    # 根据参数包ID查询包含的累加单元
+    re_path('QueryData/LAMProcessParameterAccumulateCell_By_ProcessParameterID/(?P<ProcessParameterID>(.+))/$',
+            query_views.queryData_LAMProcessParameterAccumulateCell),
 
     # 根据参数包ID查询适用工序列表
     re_path('QueryData/LAMProcessParameter_TechInstSerial_By_ProcessParameterID/(?P<ProcessParameterID>(.+))/$',
@@ -309,9 +332,12 @@ urlpatterns = [
     # re_path('QueryData/Laserdata_By_WorkSectionDatetime/(?P<Worksection>(.+))/(?P<StartTime>(.+))/(?P<FinishTime>(.+))/interval/$',
     #         query_views.queryData_Laserdata_By_WorkSectionDatetime),
 
-    # 以MissionID查询FindData中记录数据
+    # 以MissionID查询FindData中记录数据 图形显示 graph
     re_path('QueryData/FineData_By_MissionID/(?P<MissionItemID>(.+))/(?P<DateStr>(.+))/(?P<HourStr>(.+))/$',
             query_views.queryData_finedata_By_MissionID),
+    # 以MissionID查询FindData中记录数据
+    re_path('QueryData/FineData_By_MissionID_Datetime/(?P<MissionItemID>(.+))/(?P<startTimestamp>(.+))/(?P<finishTimestamp>(.+))/$',
+            query_views.queryData_finedata_By_MissionID_timestamp),
 
     # 以工段id查询最新更新数据时间
     re_path(

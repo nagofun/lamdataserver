@@ -8,6 +8,7 @@
 
 <!--</style>-->
 <script>
+    var dataTables_example_select_Array=null;
     function load()
     {
         this;
@@ -23,6 +24,8 @@
         document.getElementById("dataTables-example2_filter").onclick = function() {reclickItem();}
         document.getElementById("dataTables-example2_paginate").onclick = function() {reclickItem();}
 
+        document.getElementById("dataTables-example").onchange = function() {console.log('11');}
+        AddTableClearStyleFun('dataTables-example');
     }
     function Post(URL, PARAMTERS) {
         //创建form表单
@@ -73,12 +76,14 @@
         for (var i = 0, length = Item.length; i < length; i++) {
             if (Item[i].checked) {
                 // 弹出选中值
-                selectItemID = Item[i].value
+                clickItemID = Item[i].value
+<!--                dataTables_example_select_Array=['Parameter'+clickItemID];-->
+                dataTables_example_select_Array=[new Array('Parameter'+clickItemID,'optionsRadios'+clickItemID)];
                 // 选中后退出循环
                 break;
             }
         }
-        if(selectItemID==-1)
+        if(clickItemID==-1)
         {
             alert('请点亮拟处理的参数包条目');
         }
@@ -86,9 +91,11 @@
         {
             for (var i=0;i<ItemList_id.length;i++)
                 {
-                    if (ItemList_id[i]==selectItemID)
+                    if (ItemList_id[i]==clickItemID)
                     {
                         selectItemName=ItemList_name[i];
+<!--                        dataTables_example_select_Array=['Parameter'+clickItemID];-->
+                        dataTables_example_select_Array=[new Array('Parameter'+clickItemID,'optionsRadios'+clickItemID)];
                         break;
                     }
                 }
@@ -102,7 +109,7 @@
     //弹出一个询问框，有确定和取消按钮
     function confirmDelete() {
         RefreshValue();
-        if(selectItemID==undefined)
+        if(clickItemID==undefined)
         {
             alert("请选择拟冻结的参数包条目");
             return;
@@ -111,9 +118,9 @@
         <!--//利用对话框返回的值 （true 或者 false）-->
         if (confirm(txt))
         {
-            <!--window.location.href='delete/'+selectItemID+'/';-->
+            <!--window.location.href='delete/'+clickItemID+'/';-->
             params = {
-                'id':selectItemID,
+                'id':clickItemID,
                 'name':selectItemName
             };
             Post('delete/',params);
@@ -142,11 +149,16 @@
             }
         }
         clickItemID=newclickItemID;
+        dataTables_example_select_Array=[new Array('Parameter'+clickItemID,'optionsRadios'+clickItemID)];
+<!--        dataTables_example_select_Array=['Parameter'+clickItemID];-->
         $("#Parameter"+clickItemID).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
         <!--#337ab7-->
         $("#optionsRadios"+clickItemID).prop("checked", "checked");
         //更新右侧表格:条件单元
         loadTableData_ConditionalCell(clickItemID);
+
+        //更新右侧表格:累加单元
+        loadTableData_AccumulateCell(clickItemID);
 
         //更新右侧表格:适用的工序
         loadTableData_TechInstSerial(clickItemID);
@@ -206,10 +218,20 @@
     //增加一条ConditionalCell
     function AddConditionalCellItem(){
         RefreshValue();
-        if(selectItemID!=-1){
-            var _url='{{ Common_URL.SubWindow_URL_LAMProcessParametersConditionalCell_Add }}'+selectItemID+'/';
+        if(clickItemID!=-1){
+            var _url='{{ Common_URL.SubWindow_URL_LAMProcessParametersConditionalCell_Add }}'+clickItemID+'/';
             shownewpage(_url);
         }
+    }
+
+    //编辑累加单元
+    function EditAccumulateCell(){
+        RefreshValue();
+        if(clickItemID!=-1){
+            var _url='{{ Common_URL.SubWindow_URL_LAMProcessParametersAccumulateCell_Edit }}'+clickItemID+'/';
+            shownewpage(_url);
+        }
+
     }
 
     //添加适用的工序
@@ -219,7 +241,7 @@
         <!--alert(Selected_TechInstSerial_IDList);-->
         var _url='{{ Common_URL.Update_URL_LAMProcessParametersTechInstSerial_Save }}';
         params = {
-                'id':selectItemID,
+                'id':clickItemID,
                 'techinst_serial_list':Selected_TechInstSerial_IDList.join(','),
         };
         $.post(
@@ -236,7 +258,7 @@
                     },10);
                     setTimeout(function(){
                         // 点击参数包表格当前行，调用clickParameterItemByID时将点亮所适用的工序行
-                        clickParameterItemByID(selectItemID);
+                        clickParameterItemByID(clickItemID);
                     },100);
 
                     setTimeout(function(){
@@ -307,6 +329,44 @@
             }
         );
     }
+
+
+
+    //刷新右侧累加单元表格
+    function loadTableData_AccumulateCell(ProcessParameterID)
+    {
+        if(ProcessParameterID==-1){return;}
+        $.get(
+            '{{ Common_URL.Query_AccumulateCell_By_ProcessParameterID }}'+ProcessParameterID+'/',
+            {},
+            function(data, textStatus)
+            {
+                this;
+                var tbody=document.getElementById('tbd_AccumulatedataCell');
+                var rowNum=tbody.rows.length;
+                if(rowNum>0)
+                {
+                    for(i=0;i<rowNum;i++)
+                    {
+                        <!--table.deleteRow(i);-->
+                        tbody.deleteRow(i);
+                        rowNum=rowNum-1;
+                        i=i-1;
+                    }
+
+                }
+                <!--alert(table.rows.length)-->
+                for(var ever in data) {
+                    var row=tbody.insertRow(-1);
+                    for(var item in data[ever]){
+                        var c1=row.insertCell(-1);
+                        c1.innerHTML=data[ever][item];
+                    }
+                }
+            }
+        );
+    }
+
 
     //刷新右侧适用工序表格，更新高亮选中状态，更新Selected_TechInstSerial_IDList
     function loadTableData_TechInstSerial(ProcessParameterID)
@@ -409,10 +469,10 @@
                             {{ operate|upper }}
                         </div>
                         <div class="panel-body">
-                            <div class="table-responsive">
+                            <div class="table-responsive" onLoadSuccess="alert(1);" onPostBody="alert(2);">
                                 <form role="form" method="GET" action="alert">{% csrf_token %}
                                     <table class="table table-striped table-bordered table-hover"
-                                           id="dataTables-example">
+                                           id="dataTables-example" onLoadSuccess="alert(1);" onPostBody="alert(2);">
                                         <thead>
 
                                         <tr>
@@ -456,9 +516,9 @@
                                     <!--</button>-->
                                     <button type="button" class="btn btn-primary" name="item_edit" onclick="
                                         RefreshValue();
-                                        if(selectItemID!=-1)
+                                        if(clickItemID!=-1)
                                         {
-                                            shownewpage('{{ Common_URL.SubWindow_URL_LAMProcessParameters_Edit }}'+selectItemID+'/');
+                                            shownewpage('{{ Common_URL.SubWindow_URL_LAMProcessParameters_Edit }}'+clickItemID+'/');
                                         }">
                                         选中编辑
                                     </button>
@@ -494,6 +554,7 @@
                 {% if form.previewtablefields %}
                 <!--仅对工序实例化有效-->
                 <div class="col-lg-7">
+                    <!--条件单元-->
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             {{ form.previewtableTitle }}
@@ -534,6 +595,62 @@
                         <!-- /.panel-body -->
                     </div>
 
+                    <!--累加单元-->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{ form.previewtable3_Title }}
+
+<!--                        <h4 class="panel-title">-->
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" class="collapsed" aria-expanded="false">说明</a>
+<!--                        </h4>-->
+                        </div>
+                        <div id="collapseOne" class="panel-collapse collapse" style="height: 0px;" aria-expanded="false" >
+                            <div class="panel-body">
+                                假定在某一时刻i（单位秒，按分钟取整），零件最大的集中应力F(i)与累加热输入P正相关，与停光散热时间加权值K正相关。<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F(i)=M1*∑I(i)×P + M2*∑J(i)×K<br />
+                               其中：
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;K=1/(1+e<sup>(delta_t - tm)/l</sup>);<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delta_t=ti-tn,<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I(i)表示此时刻是否开光，开光为1，停光为0<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;J(i)表示此时刻是否停光，停光为1，开光为0<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P为此时刻功率值<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ti为某时刻的时间戳，<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tn为累加过程中当前记录的时间戳，<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tm为加权系数半衰期（秒）,<br />
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l为收缩系数，l减小则K曲线以tm为中心收缩<br />
+                            </div>
+
+                        </div>
+                        <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <thead>
+                                        <tr>
+                                            {% for field_label in form.previewtable3_fields.values %}
+                                            <th width="10">{{ field_label }}</th>
+                                            {% endfor %}
+
+                                        </tr>
+                                        </thead>
+                                        <tbody id="tbd_AccumulatedataCell">
+                                        {% for cell in AccumulatedataCell_datalist %}
+                                        <tr>
+                                            {% for field in cell.values %}
+                                            <td>{{ field }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                </div>
+
+                        <a href="#" class="btn btn-primary btn-sm"
+                                onclick="EditAccumulateCell();">修改</a>
+                        </div>
+                    </div>
+
+                    <!--适用工序-->
                     <div class="panel panel-default">
 
                         <div class="panel-heading">

@@ -39,6 +39,92 @@
 
 </head>
 <script>
+    var bgcolor_hightlight = "#337ab7"
+    var fontcolor_hightligt = "#fff"
+    var bgcolor_odd = "#f9f9f9"
+    var bgcolor_even = "#ffffff"
+    var fontcolor = "#000"
+    <!--控件边框提示-->
+    function NoticeInput(objid, colortype)
+    {
+        if(colortype=='red')
+        {
+            colorvalue = "#aa0000";
+            colorvalue1 = "#FF5050";
+            <!--colorvalue2 = "#FF7C7C";-->
+        }
+        else if(colortype=='blue')
+        {
+            colorvalue = "#0000aa";
+            colorvalue1 = "#66B3FF";
+            <!--colorvalue2 = "#8CC6FF";-->
+        }
+        else if(colortype=='green')
+        {
+            colorvalue = "#00aa00";
+            colorvalue1 = "#96FF96";
+            <!--colorvalue2 = "#BDFFBD";-->
+        }
+        $("#"+objid).animate({backgroundColor:colorvalue1,color: "#fff"},500);
+        <!--$("#"+objid).animate({backgroundColor:colorvalue2,color: "#fff"},400);-->
+        <!--$("#"+objid).animate({backgroundColor:colorvalue1,color: "#fff"},400);-->
+        $("#"+objid).animate({backgroundColor:"#fff",color: "#000000"},500);
+    }
+
+    <!--onload时给复合表格增加清除样式功能，需要更新table_id+'_select_Array'列表-->
+    function AddTableClearStyleFun(table_id){
+        var newf = function(){
+                <!--清空表格高亮样式-->
+                $('#'+table_id).dataTable();
+                TableRemoveAttribute_ByID(table_id);
+                <!--点亮列表中的行-->
+                varname = table_id+'_select_Array';
+                varname = varname.replace('-','_')
+                try{
+                   //在这里运行代码
+                    for(var _index in window[varname]){
+                        $("#"+window[varname][_index][0]).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
+                        try{$("#"+window[varname][_index][1]).prop("checked", "checked");}catch(err){this;}
+                    }
+                }
+                catch(err)
+                {this;}
+                $('#'+table_id).dataTable();
+        }
+        document.getElementById(table_id).onchange = newf
+        document.getElementById(table_id+"_length").onmouseup = newf
+        document.getElementById(table_id+"_filter").onkeyup = newf
+        document.getElementById(table_id+"_paginate").onmouseup = newf
+    }
+
+
+
+    <!--清除复合表格高亮显示等样式-->
+    function TableRemoveAttribute_ByID(table_id){
+        var tb =document.getElementById(table_id);
+        var rows = tb.rows;
+        for(var i = 0; i<rows.length; i++ ){
+           rows[i].removeAttribute("style");
+        }
+    }
+
+    <!--设置row显示隐藏-->
+    function changeRowDisplay(rowID) {
+        var row = document.getElementById(rowID);
+        if (row != null) {
+            if (row.style.display=='none'){
+                row.style.display = "block";
+            }
+            else{
+                row.style.display = "none";
+            }
+        }
+    }
+    function setRowDisplay(rowID, value) {
+        var row = document.getElementById(rowID);
+        row.style.display = value;
+    }
+
 
     <!--//使用for循环进行等待操作-->
     <!--function sleep(delay) {-->
@@ -50,12 +136,41 @@
     function replaceAll(str, find, replace) {
          return str.replace(new RegExp(find, 'g'), replace);
     }
+    Array.prototype.indexOf = function(val) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i] == val) return i;
+        }
+        return -1;
+    };
+    Array.prototype.remove = function(val) {
+        var index = this.indexOf(val);
+        if (index > -1) {
+            this.splice(index, 1);
+        }
+    };
     <!--字符串转时间戳-->
     function datatimestr_to_timestamp(datetimestr){
         date = datetimestr.substring(0,19);
         date = date.replace(/-/g,'/'); //必须把日期'-'转为'/'
         var timestamp = new Date(date).getTime();
         return timestamp;
+    }
+    <!--时间戳转日期，用法：new Date(1542274800000).Format('yy-MM-dd hh:mm:ss'); //"2018-11-15 17:40:00"-->
+    Date.prototype.Format = function (fmt) {
+        var o = {
+                "M+": this.getMonth() + 1, // 月份
+                "d+": this.getDate(), // 日
+                "h+": this.getHours(), // 小时
+                "m+": this.getMinutes(), // 分
+                "s+": this.getSeconds(), // 秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+                "S": this.getMilliseconds() // 毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + ""));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
     }
 
 </script>
@@ -73,7 +188,7 @@
 <!-- DATA TABLE SCRIPTS -->
 <script src="/assets/js/dataTables/jquery.dataTables.js"></script>
 <script src="/assets/js/dataTables/dataTables.bootstrap.js"></script>
-<body>
+<body >
 <div id="wrapper">
 
     <nav class="navbar navbar-default top-navbar" role="navigation">

@@ -6,7 +6,12 @@ from django.db import models
 # from django.dispatch.dispatcher import receiver
 
 # Create your models here.
-
+# CNCStatus_Choice=(
+#     (0, 'Windows界面'),
+#     (1, '自动界面，正在运行或刀具检查'),
+#     (2, '自动界面，未运行'),
+#     (3, '手动界面，')
+# )
 '''框架表'''
 # print('start models.py')
 # 厂房
@@ -168,6 +173,34 @@ class LAMProcessParameterConditionalCell(models.Model):
     def __str__(self):
         return "ID%s-%s"%(self.id, self.comment)
 
+# 激光成形参数应力累加单元
+class LAMProcessParameterAccumulateCell(models.Model):
+    '''
+    # 假定在某一时刻i，单位秒，按分钟取整，零件最大的集中应力Fi与累加热输入P正相关，与停光散热时间加权值1*K正相关，与成形时间正相关。
+    假定在某一时刻i，单位秒，按分钟取整，零件最大的集中应力Fi与累加热输入P正相关，与停光散热时间加权值1*K正相关。（暂不考虑到此时刻的成形总时间）
+
+    # Fi=M1*∑P + M2*∑(1*K**(ti-tn)) + M3*(ti-t0)
+    Fi=M1*∑P + M2*∑(1*K)
+    K=I(i)/(1+e^(l*(delta_t - tm)));
+        delta_t=ti-tn,
+        I(i)为此时刻分钟内停光时间秒数
+        ti为某时刻的时间戳，tn为累加时当时的时间戳，tm为加权系数半衰期（秒）,l为收缩系数，l增大则曲线以tm为中心收缩
+    '''
+    # 是否启用
+    active = models.BooleanField(default=False)
+    # 能量系数M1
+    M1 = models.FloatField(null=True, blank=True)
+    # 停光冷却系数M2
+    M2 = models.FloatField(null=True, blank=True)
+    # M3 = models.FloatField(null=True, blank=True)
+    # 停光冷却-聚集系数l
+    l = models.FloatField(null=True, blank=True)
+    # 停光冷却-权重半衰期tm
+    tm = models.FloatField(null=True, blank=True)
+    # 报警值
+    alarm_value = models.FloatField(null=True, blank=True)
+
+
 # 激光成形参数包
 class LAMProcessParameters(models.Model):
     # 工序实例中以外键引用本类，参数包可对应多个工序实例
@@ -175,6 +208,8 @@ class LAMProcessParameters(models.Model):
     name = models.CharField(max_length=40, unique=True)
     # 若干条件单元
     conditional_cell = models.ManyToManyField(LAMProcessParameterConditionalCell, related_name='CondCell_Parameter', blank=True)
+    # 应力累加单元
+    accumulate_cell = models.ForeignKey(LAMProcessParameterAccumulateCell, related_name='AccuCell_Parameter',null=True, blank=True, on_delete=models.CASCADE)
     # 简述
     comment = models.CharField(max_length=80, null=True, unique=True)
     # 是否有效
@@ -647,13 +682,43 @@ class Process_CNCStatusdata_Date_Worksection_indexing(models.Model):
     data_string = models.TextField(null=True)
 
 
+# 针对任务，按照现存的类假数据参数，以及任务过程记录中开光停光数据计算累加值，按天存入本表中
+class Process_Accumulatedata_Date_Mission(models.Model):
+    # 任务信息
+    process_mission = models.ForeignKey(LAMProcessMission, on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 日期
+    index_date = models.DateField()
+    # 日期对应的整数 8位 YYYYMMDD
+    index_date_int = models.IntegerField(null=True)
+    # 第一个数据为自任务开始后第几分钟
+    minute_index = models.IntegerField(null=True)
+    # (list:24*60), 列表  1分钟内开光功率累加值
+    P = models.TextField(null=True)
+    # (list:24*60), 列表  1分钟内停光秒数
+    K = models.TextField(null=True)
+
+# 针对任务，按照现存的类假数据参数，以及任务过程记录中开光停光数据计算累加值，按天存入本表中
+class Process_CNCData_Date_Mission(models.Model):
+    # 任务信息
+    process_mission = models.ForeignKey(LAMProcessMission, on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 日期
+    index_date = models.DateField()
+    # 日期对应的整数 8位 YYYYMMDD
+    index_date_int = models.IntegerField(null=True)
+    # 第一个数据为自任务开始后第几分钟
+    minute_index = models.IntegerField(null=True)
+    # (list:24*60), 列表  1分钟内Z最小值
+    Z_value = models.TextField(null=True)
+    # (list:24*60), 列表  1分钟内层厚度
+    layer_thickness = models.TextField(null=True)
+
 class Process_Realtime_FineData_By_WorkSectionID(models.Model):
     # 获取的时间戳
     acquisition_timestamp = models.PositiveIntegerField(unique=True)
     # 获取的时间str
     acquisition_datetime = models.DateTimeField(null=True, blank=True)
     # 氧含量
-    oxygen_value = models.FloatField(null=True)
+    oxygen_value = models.FloatField(default=-1)
     # 激光功率
     laser_power = models.IntegerField(null=True)
     # 机床信息
@@ -665,10 +730,14 @@ class Process_Realtime_FineData_By_WorkSectionID(models.Model):
     program_name = models.CharField(max_length=20, null=True)
     # 任务信息
     process_mission = models.ForeignKey(LAMProcessMission, on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 是否正在运行程序
+    if_exec_intr = models.BooleanField(null=True, blank=True)
+    # 是否在运行程序过程中断
+    if_interrupt_intr = models.BooleanField(null=True, blank=True)
 
     class Meta:
         abstract = True
-        index_together = ['process_mission', 'acquisition_timestamp']
+        index_together = ['process_mission', 'acquisition_timestamp', 'Z_value', 'laser_power', 'ScanningRate_value']
 
 class Process_Realtime_FineData_By_WorkSectionID_1(Process_Realtime_FineData_By_WorkSectionID):
     pass

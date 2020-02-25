@@ -8,6 +8,8 @@
 
 <!--</style>-->
 <script>
+    var dataTables_example_select_Array=null;
+
     function load()
     {
         this;
@@ -22,7 +24,7 @@
         <!--document.getElementById("dataTables-example2_length").onclick = function() {reclickItem();}-->
         <!--document.getElementById("dataTables-example2_filter").onclick = function() {reclickItem();}-->
         <!--document.getElementById("dataTables-example2_paginate").onclick = function() {reclickItem();}-->
-
+        AddTableClearStyleFun('dataTables-example');
     }
     function Post(URL, PARAMTERS) {
         //创建form表单
@@ -74,6 +76,8 @@
             if (Item[i].checked) {
                 // 弹出选中值
                 selectItemID = Item[i].value
+<!--                dataTables_example_select_Array=['Mission'+selectItemID];-->
+                dataTables_example_select_Array=[new Array('Mission'+clickItemID,'optionsRadios'+clickItemID)];
                 // 选中后退出循环
                 break;
             }
@@ -89,6 +93,8 @@
                     if (ItemList_id[i]==selectItemID)
                     {
                         selectItemName=ItemList_name[i];
+<!--                        dataTables_example_select_Array=['Mission'+selectItemID];-->
+                        dataTables_example_select_Array=[new Array('Mission'+clickItemID,'optionsRadios'+clickItemID)];
                         break;
                     }
                 }
@@ -139,6 +145,8 @@
             }
         }
         clickItemID=newclickItemID;
+<!--        dataTables_example_select_Array=['Mission'+clickItemID];-->
+        dataTables_example_select_Array=[new Array('Mission'+clickItemID,'optionsRadios'+clickItemID)];
         $("#Mission"+clickItemID).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
         <!--#337ab7-->
         $("#optionsRadios"+clickItemID).prop("checked", "checked");

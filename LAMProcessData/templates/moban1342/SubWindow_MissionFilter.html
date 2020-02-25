@@ -1,0 +1,571 @@
+{% extends "SubWindow_base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+<!--<link rel="stylesheet" type="text/css" href="/assets/admin/css/base.css">-->
+<!--<link rel="stylesheet" type="text/css" href="/assets/admin/css/forms.css">-->
+
+
+<!--<script type="text/javascript" src="/admin/jsi18n/"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/vendor/jquery/jquery.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/calendar.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/jquery.init.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/admin/DateTimeShortcuts.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/core.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/admin/RelatedObjectLookups.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/SelectBox.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/actions.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/SelectFilter2.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/urlify.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/prepopulate.js"></script>-->
+<!--<script type="text/javascript" src="/assets/admin/js/vendor/xregexp/xregexp.js"></script>-->
+
+
+<!--<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">-->
+<!--<link rel="stylesheet" type="text/css" href="/assets/admin/css/responsive.css">-->
+<!--<script type="text/javascript"-->
+<!--        id="django-admin-form-add-constants"-->
+<!--        src="/assets/admin/js/change_form.js"-->
+<!--&gt;-->
+<!--</script>-->
+
+
+<!--<script type="text/javascript"-->
+<!--        id="django-admin-prepopulated-fields-constants"-->
+<!--        src="/assets/admin/js/prepopulate_init.js"-->
+<!--        data-prepopulated-fields="[]">-->
+<!--</script>-->
+
+
+<div id="page-inner" style="height: 1853px">
+    <div class="row">
+        <!--        <div class="col-md-12">-->
+        <!--            <h1 class="page-header">-->
+        <!--                {{ title }}-->
+        <!--                <small>{{ operate|upper }}</small>-->
+
+        <!--            </h1>-->
+        <!--        </div>-->
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <div class="panel panel-default" style="height: 820px">
+                        <!--                        <div class="row">-->
+                        <!--                            <div class="panel panel-default">-->
+                        <div class="panel-heading">
+                            {{ title }}<small> For {{ operate|upper }}</small>
+                        </div>
+                        <div class="panel-body">
+                            <!--                            <div class="row">-->
+                            <div class="form-group input-group">
+                                <input type="text" class="form-control" id="search_input_id" onchange="SearchLeftTable(document.getElementById('search_input_id').value);">
+                                <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" onclick="SearchLeftTable(document.getElementById('search_input_id').value);"><i class="fa fa-search"></i>
+                                        </button>
+                                    </span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <form role="form" method="GET" action="alert">{% csrf_token %}
+                                    <!--                                <table class="table table-striped table-bordered table-hover"-->
+                                    <!--                                        id="dataTables-example">-->
+                                    <table class="table table-hover"
+                                           id="dataTables-example" style="height: 600px">
+                                        <thead id="left_table_thead" class="thead">
+                                        <tr id="left_table_thead_tr">
+                                            <!--<th align="center" style="width: 30px">选择</th>-->
+                                            <th align="center" style="width: 24px">ID</th>
+                                            {% for label in displayFieldLabel %}
+                                            <th align="center">{{ label }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                        </thead>
+                                        <tbody id="left_table_tbody" class="tbody">
+                                        {% for record in all_mission %}
+                                        <tr onclick="Left_selectMissionItemByID({{record.id}});"
+                                            id="LeftMission{{ record.id }}">
+                                            {% for field in record.values %}
+                                            <td>{{ field }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-primary" onclick="Left_select_all();">
+                                        全选
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="Left_select_none();">
+                                        全不选
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="Left_select_reverse();">
+                                        反选
+                                    </button>
+                                </form>
+                            </div>
+
+
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-default" style="height: 820px">
+                        <div class="panel-heading">
+                            选中的任务列表
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group input-group">
+                                <button type="button" class="btn btn-primary" name="item_edit" onclick="MoveToLeftTable_All();"><<</button>&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary" name="item_edit" onclick="MoveToLeftTable_Select()"><</button>&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary" name="item_edit" onclick="MoveToRightTable_Select();">></button>&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary" name="item_edit" onclick="MoveToRightTable_All();">>></button>&nbsp;&nbsp;
+                            </div>
+                            <div class="table-responsive">
+                                <form role="form" method="GET" action="alert">{% csrf_token %}
+                                    <table class="table table-hover"
+                                           id="dataTables-example2">
+                                        <thead>
+
+                                        <tr>
+<!--                                            <th align="center" style="width: 30px">选择</th>-->
+                                            <th align="center">ID</th>
+                                            {% for label in displayFieldLabel %}
+                                            <th align="center">{{ label }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for record in all_mission %}
+                                        <!--初始隐藏-->
+                                        <tr onclick="Right_selectMissionItemByID({{record.id}});" style="display:none"
+                                            id="RightMission{{ record.id }}">
+                                            {% for field in record.values %}
+                                            <td>{{ field }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-primary" onclick="Right_select_all();">
+                                        全选
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="Right_select_none();">
+                                        全不选
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="Right_select_reverse();">
+                                        反选
+                                    </button>
+
+                                    <button type="button" class="btn btn-info" onclick="JumpToAnalyseLAMProcess('{{ operate }}');">
+                                        开始分析
+                                    </button>
+
+
+                                </form>
+                            </div>
+
+
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+
+<style type="text/css">
+    .table thead tr {
+        display:block;
+    }
+    .table tbody {
+        display: block;
+        height: 600px;
+        overflow: auto;
+    }
+
+
+
+
+</style>
+<script type="text/javascript">
+    <!--所有的Mission-->
+    var All_Mission_Dict = new Array();
+    {% for record in all_mission %}
+    All_Mission_Dict['{{ record.id }}'] = new Array(
+        {% for field in record.values %}
+            '{{ field }}',
+        {% endfor %}
+    );
+    {% endfor %}
+
+    <!--左侧Table高亮选中的MissionID-->
+    var LeftSelect_Mission_List = new Array();
+
+    <!--右侧Table高亮选中的MissionID-->
+    var RightSelect_Mission_List = new Array();
+
+    <!--左侧Table中现有MissionID-->
+    var Left_Mission_List = new Array(
+        {% for record in all_mission %}
+            {{ record.id }},
+        {% endfor %}
+    );
+
+    <!--右侧Table中现有MissionID-->
+    var Right_Mission_List = new Array();
+
+    <!--各列宽度数据-->
+    var width_list = new Array();
+
+
+    <!--单击表格，高亮显示-->
+    function Left_selectMissionItemByID(mission_id){
+        var row_id = "LeftMission"+mission_id;
+        if (LeftSelect_Mission_List.indexOf(mission_id)==-1){
+            <!--不包含，则高亮-->
+            $("#"+row_id).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
+            LeftSelect_Mission_List.push(mission_id);
+        }
+        else{
+            LeftSelect_Mission_List.remove(mission_id);
+            document.getElementById(row_id).removeAttribute("style"); //清除所有样式
+        }
+        console.log(LeftSelect_Mission_List);
+    }
+
+    <!--单击表格，高亮显示-->
+    function Right_selectMissionItemByID(mission_id){
+        var row_id = "RightMission"+mission_id;
+        if (RightSelect_Mission_List.indexOf(mission_id)==-1){
+            <!--不包含，则高亮-->
+            $("#"+row_id).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
+            RightSelect_Mission_List.push(mission_id);
+        }
+        else{
+            RightSelect_Mission_List.remove(mission_id);
+            document.getElementById(row_id).removeAttribute("style"); //清除所有样式
+        }
+        console.log(RightSelect_Mission_List);
+    }
+
+
+    <!--更改table中各列宽度-->
+    function resize(tableid, default_tableid = null){
+
+        table = document.getElementById(tableid);
+        thead = table.children[0];
+        tbody = table.children[1];
+
+        thd_row0 = thead.children[0];
+        tbd_row0 = tbody.rows[0];
+
+        if (tbd_row0 == undefined){
+            if(default_tableid != null){
+                _default_table = document.getElementById(default_tableid);
+                _default_tbody = _default_table.children[1];
+                tbd_row0 = _default_tbody.rows[0];
+            }
+        }
+        <!--取第一行数据各列宽度，赋值给width_list-->
+        for (let i = 0; i < tbd_row0.childElementCount; i += 1){
+            width_list.push(tbd_row0.children[i].offsetWidth);
+        }
+        <!--设置表头各列宽度-->
+        if (tbd_row0 != undefined){
+            for (let i = 0; i < thd_row0.childElementCount; i += 1){
+                    thd_row0.children[i].width = width_list[i]+'px';
+            }
+        }
+        <!--设置表体所有行数据各列宽度-->
+        for (let k=0; k<tbody.rows.length; k += 1){
+            var _row = tbody.rows[k];
+            for (let i = 0; i < _row.childElementCount; i += 1){
+                _row.children[i].width = width_list[i]+'px';
+            }
+        }
+
+    }
+
+    <!--搜索筛选LeftTable-->
+    function SearchLeftTable(search_str){
+        NoticeInput('search_input_id','green');
+        table = document.getElementById('dataTables-example');
+
+        <!--符合筛选文本的id-->
+        var filter_id_list = new Array();
+        All_Mission_Dict.forEach(function(elem){
+            if(String(elem).indexOf(search_str)>-1){
+                filter_id_list.push(elem[0]);
+            }
+        });
+        <!--清空选择列表-->
+        LeftSelect_Mission_List = new Array();
+        <!--清除左侧表格样式-->
+        TableRemoveAttribute_ByID('dataTables-example');
+        <!--筛选，仅显示符合条件的行-->
+        for(let i=0; i< table.children[1].rows.length; i += 1){
+            elem = table.children[1].rows[i];
+            var _id = elem.cells[0].textContent;
+            if(filter_id_list.indexOf(_id)>-1 && Left_Mission_List.indexOf(_id)>-1){
+                <!--如果符合筛选字符串且在左侧列表中存在，则显示-->
+                elem.style.display = 'block';
+            }
+            else{
+                <!-- 隐藏-->
+                elem.style.display = 'none';
+            }
+        }
+        resize('dataTables-example');
+    }
+
+<!--根据现有id列表显示table-->
+    function RefreshTable(){
+        left_table = document.getElementById('dataTables-example');
+        right_table = document.getElementById('dataTables-example2');
+        <!--清除左侧表格样式-->
+        TableRemoveAttribute_ByID('dataTables-example');
+        <!--清除左侧表格样式-->
+        TableRemoveAttribute_ByID('dataTables-example2');
+
+        <!--左侧Table高亮选中的MissionID-->
+        var LeftSelect_Mission_List = new Array();
+
+        <!--右侧Table高亮选中的MissionID-->
+        var RightSelect_Mission_List = new Array();
+
+        <!--左侧Table中现有MissionID-->
+<!--        Left_Mission_List-->
+
+        <!--右侧Table中现有MissionID-->
+<!--        Right_Mission_List-->
+
+        <!--仅显示存在的行-->
+        for(let i=0; i< left_table.children[1].rows.length; i += 1){
+            elem = left_table.children[1].rows[i];
+            var _id = elem.cells[0].textContent;
+            if(Left_Mission_List.indexOf(_id)>-1){
+                <!--如果在左侧列表中存在，则显示-->
+                elem.style.display = 'block';
+            }
+            else{
+                <!-- 隐藏-->
+                elem.style.display = 'none';
+            }
+        }
+
+        <!--仅显示存在的行-->
+        for(let i=0; i< right_table.children[1].rows.length; i += 1){
+            elem = right_table.children[1].rows[i];
+            var _id = elem.cells[0].textContent;
+            if(Right_Mission_List.indexOf(_id)>-1){
+                <!--如果在左侧列表中存在，则显示-->
+                elem.style.display = 'block';
+            }
+            else{
+                <!-- 隐藏-->
+                elem.style.display = 'none';
+            }
+        }
+        resize('dataTables-example');
+        resize('dataTables-example2');
+    }
+
+    function MoveToRightTable_Select(){
+        <!--左侧选中移动到右侧-->
+        LeftSelect_Mission_List.forEach(function(elem){
+            Right_Mission_List.push(elem);
+        });
+
+        <!--左侧选中置空-->
+        LeftSelect_Mission_List = new Array();
+
+        <!--左侧现有减除-->
+        Right_Mission_List.forEach(function(elem){
+            Left_Mission_List.remove(elem);
+        });
+        RefreshTable();
+    }
+
+    function MoveToRightTable_All(){
+        <!--左侧选中置空-->
+        LeftSelect_Mission_List = new Array();
+        <!--右侧选中置空-->
+        RightSelect_Mission_List = new Array();
+        <!--左侧Table中现有MissionID-->
+        Left_Mission_List = new Array();
+        <!--右侧Table中现有MissionID-->
+        Right_Mission_List = new Array(
+            {% for record in all_mission %}
+                {{ record.id }},
+            {% endfor %}
+        );
+        RefreshTable();
+    }
+
+    function MoveToLeftTable_Select(){
+        <!--右侧选中移动到左侧-->
+        RightSelect_Mission_List.forEach(function(elem){
+            Left_Mission_List.push(elem);
+        });
+
+        <!--右侧选中置空-->
+        RightSelect_Mission_List = new Array();
+
+        <!--右侧现有减除-->
+        Left_Mission_List.forEach(function(elem){
+            Right_Mission_List.remove(elem);
+        });
+        RefreshTable();
+    }
+
+    function MoveToLeftTable_All(){
+        <!--左侧选中置空-->
+        LeftSelect_Mission_List = new Array();
+        <!--右侧选中置空-->
+        RightSelect_Mission_List = new Array();
+        <!--右侧Table中现有MissionID-->
+        Right_Mission_List= new Array();
+        <!--左侧Table中现有MissionID-->
+        Left_Mission_List = new Array(
+            {% for record in all_mission %}
+                {{ record.id }},
+            {% endfor %}
+        );
+        RefreshTable();
+    }
+
+    <!--左侧全选-->
+    function Left_select_all()
+    {
+        table = document.getElementById('dataTables-example');
+        LeftSelect_Mission_List = new Array();
+
+        <!--左侧选中全选显示的条目-->
+        for(let i=0; i< table.children[1].rows.length; i += 1){
+            elem = table.children[1].rows[i];
+            var _id = parseInt(elem.cells[0].textContent);
+            if(elem.style.display != 'none'){
+                <!--点亮-->
+                Left_selectMissionItemByID(_id);
+            }
+        }
+    }
+
+    <!--左侧全不选-->
+    function Left_select_none()
+    {
+        table = document.getElementById('dataTables-example');
+        LeftSelect_Mission_List = new Array();
+
+        <!--左侧选中全选显示的条目-->
+        for(let i=0; i< table.children[1].rows.length; i += 1){
+            elem = table.children[1].rows[i];
+            var _id = parseInt(elem.cells[0].textContent);
+            if(elem.style.display != 'none'){
+                <!--不点亮，则预先加入后消除-->
+                LeftSelect_Mission_List.push(_id);
+                Left_selectMissionItemByID(_id);
+            }
+        }
+    }
+
+    <!--左侧反选-->
+    function Left_select_reverse()
+    {
+        table = document.getElementById('dataTables-example');
+        <!--左侧选中全选显示的条目-->
+        for(let i=0; i< table.children[1].rows.length; i += 1){
+            elem = table.children[1].rows[i];
+            var _id = parseInt(elem.cells[0].textContent);
+            if(elem.style.display != 'none'){
+                Left_selectMissionItemByID(_id);
+            }
+        }
+    }
+
+    <!--右侧全选-->
+    function Right_select_all()
+    {
+        table = document.getElementById('dataTables-example2');
+        RightSelect_Mission_List = new Array();
+
+        <!--右侧选中全选显示的条目-->
+        for(let i=0; i< table.children[1].rows.length; i += 1){
+            elem = table.children[1].rows[i];
+            var _id = parseInt(elem.cells[0].textContent);
+            if(elem.style.display != 'none'){
+                <!--点亮-->
+                Right_selectMissionItemByID(_id);
+            }
+        }
+    }
+
+    <!--右侧全不选-->
+    function Right_select_none()
+    {
+        table = document.getElementById('dataTables-example2');
+        RightSelect_Mission_List = new Array();
+
+        <!--左侧选中全选显示的条目-->
+        for(let i=0; i< table.children[1].rows.length; i += 1){
+            elem = table.children[1].rows[i];
+            var _id = parseInt(elem.cells[0].textContent);
+            if(elem.style.display != 'none'){
+                <!--不点亮，则预先加入后消除-->
+                RightSelect_Mission_List.push(_id);
+                Right_selectMissionItemByID(_id);
+            }
+        }
+    }
+
+    <!--右侧反选-->
+    function Right_select_reverse()
+    {
+        table = document.getElementById('dataTables-example2');
+        <!--左侧选中全选显示的条目-->
+        for(let i=0; i< table.children[1].rows.length; i += 1){
+            elem = table.children[1].rows[i];
+            var _id = parseInt(elem.cells[0].textContent);
+            if(elem.style.display != 'none'){
+                Right_selectMissionItemByID(_id);
+            }
+        }
+    }
+
+    <!--跳转至分析页面-->
+    function JumpToAnalyseLAMProcess(operationType){
+
+        window.opener.location="{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/';
+        window.opener=null;
+        window.open('','_self');
+        window.close();
+    }
+
+
+    function onload()
+    {
+            this;
+            $(document).ready(function () {
+<!--                $('#dataTables-example').dataTable();-->
+    <!--            $('#dataTables-example2').dataTable();-->
+            });
+            resize('dataTables-example', 'dataTables-example2');
+            resize('dataTables-example2', 'dataTables-example');
+    }
+
+    onload();
+
+
+
+
+
+
+</script>
+{% endblock %}

@@ -111,7 +111,7 @@ class Realtime_FineData():
 	__Oneday_rows_initializing_list = []
 	__Last_initialize_tomorrow_rows_timestamp = TemporaryParameter_ID.objects.get(id=6).item_id
 
-	__Models_ByWorkSectionID_Dict={
+	Models_ByWorkSectionID_Dict={
 		'1': Process_Realtime_FineData_By_WorkSectionID_1,
 		'2': Process_Realtime_FineData_By_WorkSectionID_2,
 		'3': Process_Realtime_FineData_By_WorkSectionID_3,
@@ -124,7 +124,7 @@ class Realtime_FineData():
 
 	@classmethod
 	def getFineDataModel_ByWSID(cls, WSID):
-		return Realtime_FineData.__Models_ByWorkSectionID_Dict[WSID]
+		return Realtime_FineData.Models_ByWorkSectionID_Dict[WSID]
 
 	@classmethod
 	def getFineDataList_ByWSID(cls, WSID, starttimestamp, endtimestamp):
@@ -166,7 +166,7 @@ class Realtime_FineData():
 				for _hour in range(24):
 					_hour_stamp_list = [hour_starttime_stamp + _hour*3600 + i for i in range(3600)]
 
-					for _wsid,_model in Realtime_FineData.__Models_ByWorkSectionID_Dict.items():
+					for _wsid,_model in Realtime_FineData.Models_ByWorkSectionID_Dict.items():
 						# print('start %s' % _wsid)
 						insert_data_list = [_model(acquisition_timestamp=i, acquisition_datetime=datetime.datetime.fromtimestamp(i)) for i in _hour_stamp_list]
 						_model.objects.bulk_create(insert_data_list)
@@ -202,7 +202,7 @@ class Realtime_FineData():
 				for _hour in range(24):
 					_hour_stamp_list = [hour_starttime_stamp + _hour * 3600 + i for i in range(3600)]
 					# 遍历每个worksection表
-					for _wsid, _model in Realtime_FineData.__Models_ByWorkSectionID_Dict.items():
+					for _wsid, _model in Realtime_FineData.Models_ByWorkSectionID_Dict.items():
 						try:
 							insert_data_list = [_model(acquisition_timestamp=i, acquisition_datetime=datetime.datetime.fromtimestamp(i)) for i in _hour_stamp_list]
 							_model.objects.bulk_create(insert_data_list)
@@ -305,6 +305,8 @@ class Realtime_FineData():
 
 		def inspect_one_processRecord(finedata):
 			'''判断一条FineData是否符合参数包'''
+			if finedata.acquisition_timestamp==1574230228:
+				pass
 			# 首先得到列表：本条finedata都符合哪些条件单元
 			_final_conditional_cell_list = []
 			for _cond_cell in _conditional_cell_list:
@@ -327,7 +329,7 @@ class Realtime_FineData():
 		''' start inspect_complete_processRecord '''
 		print('start inspect_complete_processRecord')
 		# 若数据库中有本mission记录，则直接退出，返回查询数据库flag
-		if Process_Inspect_FineData_DiscordantRecords.objects.filter((Q(process_mission=LAMProcessMission.objects.get(id=MissionID)))) is not None:
+		if list(Process_Inspect_FineData_DiscordantRecords.objects.filter((Q(process_mission=LAMProcessMission.objects.get(id=MissionID))))) != []:
 			# 查询数据库，直接返回结果
 			return 'Query_Database'
 
@@ -390,6 +392,7 @@ class Realtime_FineData():
 		print(t3 - t2)
 
 		'''将不符合的列表按类别聚集、时间连续后输出，并存入数据库'''
+		'''expression_False_list : [<class: FineData>, (bool, _discordant_cell_list)]'''
 		''''[[minID, maxID, starttime, finishtime, condition_cell]]'''
 		expression_False_gather_list = []
 		false_item = {'minID': None,
@@ -397,6 +400,7 @@ class Realtime_FineData():
 		              'start_timestamp': None,
 		              'finish_timestamp': None,
 		              'condition_cell': None}
+		_pre_record_timestamp = None
 		for i in list(expression_False_list):
 			if false_item['condition_cell'] is None:
 				false_item['minID'] = i[0].id
@@ -404,7 +408,7 @@ class Realtime_FineData():
 				false_item['start_timestamp'] = i[0].acquisition_timestamp
 				false_item['finish_timestamp'] = i[0].acquisition_timestamp
 				false_item['condition_cell'] = i[1][1]
-			elif false_item['condition_cell'] == i[1][1]:
+			elif false_item['condition_cell'] == i[1][1] and i[0].acquisition_timestamp == _pre_record_timestamp+1:
 				false_item['maxID'] = i[0].id
 				false_item['finish_timestamp'] = i[0].acquisition_timestamp
 			else:
@@ -414,6 +418,7 @@ class Realtime_FineData():
 				              'start_timestamp': i[0].acquisition_timestamp,
 				              'finish_timestamp': i[0].acquisition_timestamp,
 				              'condition_cell': i[1][1]}
+			_pre_record_timestamp = i[0].acquisition_timestamp
 		# 存入数据库
 		inspect_timestamp = int(time.time())
 		for i in expression_False_gather_list:

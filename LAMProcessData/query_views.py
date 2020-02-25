@@ -107,7 +107,7 @@ def queryData_LAMTechInst_Preview(request, TechInstID):
 @login_required
 @csrf_exempt
 def queryData_LAMProcessParameterConditionalCell(request, ProcessParameterID):
-	# 待增加内容，根据ParameterID传回包含的ConditionalCell内容并列成表格
+	# 根据ParameterID传回包含的ConditionalCell内容并列成表格
 	_ProcessParameter = LAMProcessParameters.objects.get(id=ProcessParameterID)
 	all_datadict = _ProcessParameter.conditional_cell.all()
 	_dict = {
@@ -120,6 +120,30 @@ def queryData_LAMProcessParameterConditionalCell(request, ProcessParameterID):
 			 'instead_Cond_Cell':str(data.instead_Cond_Cell)}
 		for data in all_datadict
 	}
+	# print(_dict)
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_LAMProcessParameterAccumulateCell(request, ProcessParameterID):
+	# 根据ParameterID传回包含的AccumulateCell内容并列成表格
+	_ProcessParameter = LAMProcessParameters.objects.get(id=ProcessParameterID)
+	_accumulate = _ProcessParameter.accumulate_cell
+	if _accumulate ==None:
+		_dict = {}
+	else:
+		_dict = {
+			'id_%d' % data.id:
+				{
+				 'active': data.active,
+				 'M1': data.M1,
+				 'M2': data.M2,
+				 'l':data.l,
+				 'tm':data.tm,
+				 'alarm_value':data.alarm_value}
+			for data in [_accumulate]
+		}
 	# print(_dict)
 	html = json.dumps(_dict, ensure_ascii=False)
 	return HttpResponse(html, content_type='application/json')
@@ -642,43 +666,23 @@ def queryData_Oxydata_By_WorkSectionDatetime(request, WorksectionID, StartDateTi
 def queryData_Laserdata_By_WorkSectionDatetime(request, WorksectionID, StartDateTime, FinishDateTime, Interval):
 	pass
 
-@login_required
-@csrf_exempt
-# @cache_page(5)
-def queryData_finedata_By_MissionID(request, MissionItemID,DateStr,HourStr):
+def queryData_finedata_By_MissionID_with_certain_timestamp(MissionItemID, starttimestamp, finishstamp):
 	def patchEmptyData(datalist):
-		for i,_value in enumerate(datalist):
-			if i==0 or i==(len(datalist)-1):continue
-
-			if _value is None and not (datalist[i-1] is None) and not (datalist[i+1] is None):
-				datalist[i]=(datalist[i-1]+datalist[i+1])/2
-				datalist[i]=float('%.3f'%datalist[i])
+		# for i,_value in enumerate(datalist):
+		# 	if i==0 or i==(len(datalist)-1):continue
+		#
+		# 	if _value is None and not (datalist[i-1] is None) and not (datalist[i+1] is None):
+		# 		datalist[i]=(datalist[i-1]+datalist[i+1])/2
+		# 		datalist[i]=float('%.3f'%datalist[i])
 
 		return datalist
-	print('queryData_finedata_By_MissionID start')
-	t1=time.time()
+
 	_mission = LAMProcessMission.objects.get(id=MissionItemID)
-	_mission_timecut = Process_Mission_timecut.objects.get(process_mission=_mission)
+	# _mission_timecut = Process_Mission_timecut.objects.get(process_mission=_mission)
 	_worksection_id = _mission.work_section.id
-	# 获取全任务期间数据
-	# _finedata_list = RT_FineData.Realtime_FineData.getFineDataList_ByWSID(_worksection_id,
-	#                                                                       time_data1(
-	# 	                                                                      _mission_timecut.process_start_time),
-	#                                                                       time_data1(
-	# 	                                                                      _mission_timecut.process_finish_time))
+	_finedata_list = RT_FineData.Realtime_FineData.getFineDataList_ByWSID(_worksection_id, starttimestamp, finishstamp)
 
-	_start_datetime_str = '%s %s:00:00'%(DateStr, HourStr)
-	_end_datetime_str = (datetime.datetime.strptime(_start_datetime_str, '%Y-%m-%d %H:%M:%S')+datetime.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
-	# _end_datetime_str = '%s %02d:00:00' % (DateStr, int(HourStr)+6)
-	# print(_start_datetime_str, _end_datetime_str)
-	# print(time_data1(_start_datetime_str), time_data1(_end_datetime_str))
-	_finedata_list = RT_FineData.Realtime_FineData.getFineDataList_ByWSID(_worksection_id,
-	                                                                      time_data1(_start_datetime_str),
-	                                                                      time_data1(_end_datetime_str))
-
-
-	# _timelist = map(lambda d: d.acquisition_datetime.strftime('%Y/%m/%d %H:%M:%S'), _finedata_list)
-	_timelist = map(lambda d: d.acquisition_datetime.strftime('%H:%M:%S'), _finedata_list)
+	_timelist = map(lambda d: d.acquisition_datetime.strftime('%Y-%m-%d %H:%M:%S'), _finedata_list)
 	_oxygen_value_list = map(lambda d: d.oxygen_value, _finedata_list)
 	_laser_value_list = map(lambda d: d.laser_power, _finedata_list)
 	_Z_value_list = map(lambda d: d.Z_value, _finedata_list)
@@ -693,11 +697,31 @@ def queryData_finedata_By_MissionID(request, MissionItemID,DateStr,HourStr):
 		'cncfeedratedata': patchEmptyData(list(_feedrate_list)),
 		'cncscanningratedata': patchEmptyData(list(_scanningrate_list)),
 	}
+	return _dict
+
+
+@login_required
+@csrf_exempt
+def queryData_finedata_By_MissionID(request, MissionItemID,DateStr,HourStr):
+	print('queryData_finedata_By_MissionID start')
+	t1=time.time()
+	_start_datetime_str = '%s %s:00:00'%(DateStr, HourStr)
+	_end_datetime_str = (datetime.datetime.strptime(_start_datetime_str, '%Y-%m-%d %H:%M:%S')+datetime.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
+	_dict = queryData_finedata_By_MissionID_with_certain_timestamp(MissionItemID, time_data1(_start_datetime_str), time_data1(_end_datetime_str))
+
 	print(time.time()-t1)
 	print('queryData_finedata_By_MissionID return')
 	html = json.dumps(_dict, ensure_ascii=False)
 	return HttpResponse(html, content_type='application/json')
 
+
+@login_required
+@csrf_exempt
+def queryData_finedata_By_MissionID_timestamp(request, MissionItemID,startTimestamp,finishTimestamp):
+	'''对指定时间范围进行查询，返回数据'''
+	_dict = queryData_finedata_By_MissionID_with_certain_timestamp(MissionItemID, int(startTimestamp), int(finishTimestamp))
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
 
 @login_required
 @csrf_exempt
@@ -716,6 +740,8 @@ def queryData_Inspect_Complete_MissionLAMProcessRecords(request, MissionItemID):
 			'%d'%i.id:
 				{
 					'id':i.id,
+					'start_timestamp':i.start_timestamp,
+					'finish_timestamp':i.finish_timestamp,
 					'start_time':time_data2(i.start_timestamp),
 					'finish_time': time_data2(i.finish_timestamp),
 					'condition_cell':str(i.parameter_conditionalcell),

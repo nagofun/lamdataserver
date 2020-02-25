@@ -331,6 +331,9 @@ Common_URL['EditBasicInfomation'] = Common_URL['ProcessPath'] + 'EditBasicInfoma
 Common_URL['ProcessRecords'] = Common_URL['ProcessPath'] + 'ProcessRecords/'
 # 检验记录
 Common_URL['InspectionRecords'] = Common_URL['ProcessPath'] + 'InspectionRecords/'
+# 过程分析
+Common_URL['AnalyseLAMProcess'] = Common_URL['ProcessPath'] + 'AnalyseLAMProcess/'
+
 
 # 基本信息--分支
 Common_URL['Back_URL_workshop'] = Common_URL['EditBasicInfomation'] + 'Workshop/'
@@ -356,6 +359,8 @@ Common_URL['SubWindow_URL_LAMProcessParameters_Add'] = Common_URL['Back_URL_lamp
 Common_URL['SubWindow_URL_LAMProcessParameters_Edit'] = Common_URL['Back_URL_lamprocessparameters'] + 'EditLAMParameter/'
 Common_URL['SubWindow_URL_LAMProcessParametersConditionalCell_Add'] = Common_URL['Back_URL_lamprocessparameters'] + 'AddConditionalCell/'
 Common_URL['SubWindow_URL_LAMProcessParametersConditionalCell_Edit'] = Common_URL['Back_URL_lamprocessparameters'] + 'EditConditionalCell/'
+Common_URL['SubWindow_URL_LAMProcessParametersAccumulateCell_Edit'] = Common_URL['Back_URL_lamprocessparameters'] + 'EditAccumulateCell/'
+
 Common_URL['SubWindow_URL_LAMProcessParametersTechInstSerial_Edit'] = Common_URL['Back_URL_lamprocessparameters'] + 'EditTechInstSerial/'
 
 # 提交数据
@@ -396,8 +401,15 @@ Common_URL['Back_URL_InspectionRecords_ProcessMissionInspection_LAMProcess'] = C
 	                                                              'InspectionRecords'] + 'ProcessMissionInspection/LAMProcess/'
 Common_URL['SubWindow_URL_InspectionRecords_ProcessMissionInspection_LAMProcess'] = Common_URL[
 				'Back_URL_InspectionRecords_ProcessMissionInspection_LAMProcess'] + 'ByMissionID/'
+# 激光成形制造过程分析
+Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] = Common_URL['AnalyseLAMProcess'] + 'MissionFilter/'
+Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter_ZValue'] = Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] + 'ZValue/'
+Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter_AccumulateData'] = Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] + 'AccumulateData/'
+Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter_LayerData'] = Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] + 'LayerData/'
 
-
+Common_URL['Back_URL_AnalyseLAMProcess_ZValue'] = Common_URL['AnalyseLAMProcess'] + 'ZValue/'
+Common_URL['Back_URL_AnalyseLAMProcess_AccumulateData'] = Common_URL['AnalyseLAMProcess'] + 'AccumulateData/'
+Common_URL['Back_URL_AnalyseLAMProcess_LayerData'] = Common_URL['AnalyseLAMProcess'] + 'LayerData/'
 
 # 激光成形现场操作
 
@@ -444,9 +456,11 @@ Common_URL['Query_Mission_By_ProductCode'] = Common_URL['ProcessPath'] + 'QueryD
 Common_URL['Query_RecordLastTime_By_WorksectionID'] = Common_URL['ProcessPath'] + 'QueryData/RecordLastTime_by_WorksectionID/'
 Common_URL['Query_RealTimeRecord_By_WorksectionID'] = Common_URL['ProcessPath'] + 'QueryData/RealTimeRecord_by_WorksectionID/'
 Common_URL['Query_ConditionalCell_By_ProcessParameterID'] = Common_URL['ProcessPath'] + 'QueryData/LAMProcessParameterConditionalCell_By_ProcessParameterID/'
+Common_URL['Query_AccumulateCell_By_ProcessParameterID'] = Common_URL['ProcessPath'] + 'QueryData/LAMProcessParameterAccumulateCell_By_ProcessParameterID/'
 Common_URL['Query_ProcessParameterTechInstSerial_By_ProcessParameterID'] = Common_URL['ProcessPath'] + 'QueryData/LAMProcessParameter_TechInstSerial_By_ProcessParameterID/'
 Common_URL['Query_ProcessParameterTechInstSerial'] = Common_URL['ProcessPath'] + 'QueryData/LAMProcessParameter_TechInstSerial/'
 Common_URL['Query_ProcessFineData_By_MissionID'] = Common_URL['ProcessPath'] + 'QueryData/FineData_By_MissionID/'
+Common_URL['Query_ProcessFineData_By_MissionID_Datetime'] = Common_URL['ProcessPath'] + 'QueryData/FineData_By_MissionID_Datetime/'
 
 Common_URL['Query_ProgressBarValue'] = Common_URL['ProcessPath'] +'QueryData/ProgressBarValue/'
 Common_URL['Query_ProgressBarValue_InspectionLAMRecords_By_MissionID'] = Common_URL['Query_ProgressBarValue'] + 'InspectionLAMRecords_By_MissionID/'
@@ -1402,6 +1416,7 @@ def Inspect_MissionLAMProcessInspection(request, MissionItemID):
 	if _finish_datetime.strftime('%Y-%m-%d') not in _datetime_list:
 		_datetime_list.append(_finish_datetime.strftime('%Y-%m-%d'))
 
+	# 以2h切分一天24h，分为12块
 	_h_delta=2
 	_time_dict = {str(i): '%02d:00~%02d:00' % (i, i + _h_delta) for i in range(0, 24, _h_delta)}
 	_first_date = _start_datetime.strftime('%Y-%m-%d')
@@ -1430,6 +1445,75 @@ def Inspect_MissionLAMProcessInspection(request, MissionItemID):
 # def Inspect_Complete_MissionLAMProcessRecords(request, MissionItemID):
 # 	RT_FineData.Realtime_FineData.inspect_complete_processRecord(MissionItemID)
 
+# 任务选择页面，选择后分析成形制造过程
+def AnalyseLAMProcess_MissionFilter(request, AnalyseType):
+	'''
+	AnalyseType: ZValue, AccumulateData, LayerData
+	'''
+	_mission_all_dict = LAMProcessMission.objects.filter(available=True)
+
+
+	attlist = None
+	try:
+		all_entries = LAMProcessMission.objects.filter(available=True)
+		_modelfilednames = [f.attname for f in LAMProcessMission._meta.fields]
+		if not attlist:
+			attlist = [f.attname for f in LAMProcessMission._meta.fields]
+	except:
+		pass
+	all_entries_dict = []
+	for i in all_entries:
+		_dict = {}
+		for att in attlist:
+			if att in _modelfilednames:
+				# 替换_id, 从而获得外键实例的名称
+				if att == 'available':continue
+				_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
+				if att=='LAM_product_id':
+					_dict[att] = i.__getattribute__(att.replace('_id', '')).product_code
+
+			else:
+				_dict[att] = list(map(str, list(i.__getattribute__(att).all())))
+
+		all_entries_dict.append(_dict)
+	# _mission = LAMProcessMission.objects.get(id=MissionItemID)
+	# _mission_timecut = Process_Mission_timecut.objects.get(process_mission=_mission)
+	# _start_datetime = _mission_timecut.process_start_time
+	# _finish_datetime = _mission_timecut.process_finish_time
+	#
+	# _datetime_list = [(_start_datetime + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in
+	#                   range((_finish_datetime - _start_datetime).days)]
+	# if _finish_datetime.strftime('%Y-%m-%d') not in _datetime_list:
+	# 	_datetime_list.append(_finish_datetime.strftime('%Y-%m-%d'))
+	#
+	# # 以2h切分一天24h，分为12块
+	# _h_delta = 2
+	# _time_dict = {str(i): '%02d:00~%02d:00' % (i, i + _h_delta) for i in range(0, 24, _h_delta)}
+	# _first_date = _start_datetime.strftime('%Y-%m-%d')
+	# _first_time_hour = int(float(_start_datetime.strftime('%H')) / _h_delta) * _h_delta
+	# _first_time_text = _time_dict[str(_first_time_hour)]
+
+	return render(request, 'SubWindow_MissionFilter.html',
+	              {
+		              'all_mission': all_entries_dict,
+		              'form':LAMProcessMissionForm_Browse,
+		              'displayFieldLabel':['零件','任务工序','工段','下达','完成'],
+		              'title': '选择任务',
+		              'operate': AnalyseType,
+		              'Target_URL': Common_URL['Back_URL_AnalyseLAMProcess_'+AnalyseType],
+		              'Common_URL': Common_URL})
+	pass
+# 成形高度随时间变化分析
+def AnalyseLAMProcess_ZValue(request):
+	pass
+
+# 累计数据随时间变化分析
+def AnalyseLAMProcess_AccumulateData(request):
+	pass
+
+# 成形过程层内分析
+def AnalyseLAMProcess_LayerData(request):
+	pass
 
 '''============================================================================'''
 
@@ -2314,7 +2398,9 @@ def PostLAMProcessData_CNCdataScreenRecognition(request):
 				                                                 'Z_value': request.POST.get('Z_value'),
 				                                                 'ScanningRate_value': request.POST.get('ScanningRate'),
 				                                                 'FeedRate_value': request.POST.get('FeedRate'),
-				                                                 'program_name': request.POST.get('ProgramName')})
+				                                                 'program_name': request.POST.get('ProgramName'),
+				                                                 'if_exec_intr':request.POST.get('if_exec_intr'),
+				                                                 'if_interrupt_intr':request.POST.get('if_interrupt_intr')})
 
 				item_CNCProcessStatus.autodata = item_CNCProcessAutoData
 				item_CNCProcessStatus.program_name = request.POST.get('ProgramName')
@@ -2523,8 +2609,9 @@ def PostLAMProcessData_Laser(request):
 				# 	int('20' + matchObj.group(3)), int(matchObj.group(2)), int(matchObj.group(1)),
 				# 	int(matchObj.group(4)),
 				# 	int(matchObj.group(5)), int(matchObj.group(6)'''
-				if float(_rlist[2])<20.0:
-					return 'blank'
+				if float(_rlist[2])<20:
+					_rlist[2]=0
+					# return 'blank'
 				# 14.10.17 18:28:03.265    7478    30.0    21.4     4.3
 				# _rlist=['06.12.19', '08:39:56.746', '0', '29.9', '21.9']
 				_day, _month, _year=map(lambda x:int(x), _rlist[0].split('.'))
@@ -2932,6 +3019,7 @@ def OperateData_lamprocessparameters(request):
 	                                                              'serial_worktype',
 	                                                              'serial_note',
 	                                                              'process_parameter'])
+
 	# try:
 	# 	all_entries = LAMProcessParameters.objects.filter((Q(available=True)))
 	# 	_modelfilednames = [f.attname for f in LAMProcessParameters._meta.fields]
@@ -3154,6 +3242,26 @@ def edit_lamprocessparameterConditionalCell(request, ConditionalCellItemID):
 	                               ConditionalCellItemID,
 	                               Common_URL['Back_URL_lamprocessparameters'],
 	                               'withlabel')
+# 编辑累加单元 弹出子窗
+@login_required
+def edit_lamprocessparameterAccumulateCell(request, ProcessParameterItemID):
+	_parameter = LAMProcessParameters.objects.get(id=ProcessParameterItemID)
+	if _parameter.accumulate_cell is None:
+		_accumulate_cell = LAMProcessParameterAccumulateCell.objects.create()
+		_accumulate_cell.save()
+		_parameter.accumulate_cell = _accumulate_cell
+		_parameter.save()
+	else:
+		_accumulate_cell = _parameter.accumulate_cell
+
+
+
+	return edit_Template_SubWindow(request,
+	                               LAMProcessParameterAccumulateCell,
+	                               LAMProcessAccumulateCell_Edit,
+	                               _accumulate_cell.id,
+	                               Common_URL['Back_URL_lamprocessparameters'],
+	                               )
 
 # 保存适用的工序
 @login_required
@@ -3745,7 +3853,7 @@ def Update_ExistingFineData_datetime(request):
 	'''
 	def update_Finedate(_model):
 		t1 = time.time()
-		for _finedata in Process_Realtime_FineData_By_WorkSectionID_1.objects.all().iterator():
+		for _finedata in _model.objects.all().iterator():
 			_finedata.acquisition_datetime =datetime.datetime.fromtimestamp(_finedata.acquisition_timestamp)
 			_finedata.save()
 		print('%s:%.2f'%(_model, time.time()-t1))
@@ -3767,6 +3875,113 @@ def Update_ExistingFineData_datetime(request):
 	# Process_Realtime_FineData_By_WorkSectionID_1.objects.update(acquisition_datetime=date_format(F('acquisition_timestamp'),'%Y-%m-%d %H:%i:%s'))
 	print('end Update_ExistingFineData_datetime...')
 	html = "<html><body>Update_ExistingFineData_datetime Cost Time %f.</body></html>" % (time.time() - t1)
+	return HttpResponse(html)
+
+
+def Update_ExistingFinData_If_intr(request):
+	t1 = time.time()
+	print('start Update_ExistingFinData_If_intr...')
+
+	num_per_page = 2000
+	MaxID = CNCProcessStatus.objects.all().count()
+	Sum_i = int((MaxID / num_per_page) + 1)
+	for Current_i in range(Sum_i):
+		print('If_intr: %d / %d' % (Current_i, Sum_i))
+		if Current_i<987:
+			continue
+		qset = (
+				Q(id__gte=Current_i * num_per_page) &
+				Q(id__lt=(Current_i + 1) * num_per_page)
+		)
+		_list = CNCProcessStatus.objects.filter(qset).distinct()
+		for _cncstatus in _list:
+			_worksection = _cncstatus.work_section
+			_model = RT_FineData.Realtime_FineData.getFineDataModel_ByWSID(str(_worksection.id))
+			_finedata = _model.objects.get(acquisition_timestamp=_cncstatus.acquisition_timestamp)
+			_finedata.if_exec_intr = _cncstatus.if_exec_intr
+			_finedata.if_interrupt_intr = _cncstatus.if_interrupt_intr
+			_finedata.save()
+	print('end Update_ExistingFineData_PatchEmptyData...')
+	html = "<html><body>Update_ExistingFineData_PatchEmptyData Cost Time %f.</body></html>" % (time.time() - t1)
+	return HttpResponse(html)
+
+def Update_ExistingFineData_PatchEmptyData(request):
+	t1 = time.time()
+	print('start Update_ExistingFineData_PatchEmptyData...')
+	def update_Finedate(_model):
+		t1 = time.time()
+		preitem = [None,None]
+		num_per_page = 2000
+		MaxID = _model.objects.all().count()
+		Sum_i = int((MaxID / num_per_page) + 1)
+		t2 = time.time()
+		for Current_i in range(Sum_i):
+			if Current_i <0:
+				continue
+
+			print('PatchEmptyData: %d / %d Cost: %.3fs' % (Current_i, Sum_i,time.time()-t2))
+			t2 = time.time()
+			qset = (
+					Q(id__gte=Current_i * num_per_page) &
+					Q(id__lt=(Current_i + 1) * num_per_page)
+			)
+			_list = _model.objects.filter(qset).distinct()
+			for _finedata in _list:
+				if preitem[0] == None or preitem[1] == None:
+					preitem[0] = preitem[1]
+					preitem[1] = _finedata
+					continue
+
+				# 程序名
+				if preitem[1].program_name is None and preitem[0].program_name is not None and _finedata.program_name == preitem[0].program_name:
+					preitem[1].program_name = preitem[0].program_name
+
+				# 是否执行界面
+				if preitem[1].if_exec_intr is None and preitem[0].if_exec_intr is not None and _finedata.if_exec_intr == preitem[0].if_exec_intr:
+					preitem[1].if_exec_intr = preitem[0].if_exec_intr
+
+				# 是否执行中断界面
+				if preitem[1].if_interrupt_intr is None and preitem[0].if_interrupt_intr is not None and _finedata.if_interrupt_intr == preitem[0].if_interrupt_intr:
+					preitem[1].if_interrupt_intr = preitem[0].if_interrupt_intr
+
+				# 氧含量
+				if preitem[1].oxygen_value is None and preitem[0].oxygen_value is not None and _finedata.oxygen_value is not None:
+					_value = (preitem[0].oxygen_value + _finedata.oxygen_value) / 2
+					preitem[1].oxygen_value = float('%.3f' % _value)
+
+				# CNC坐标
+				if preitem[1].X_value is None and preitem[0].X_value is not None and _finedata.X_value is not None:
+					_value = (preitem[0].X_value + _finedata.X_value) / 2
+					preitem[1].X_value = float('%.3f' % _value)
+				if preitem[1].Y_value is None and preitem[0].Y_value is not None and _finedata.Y_value is not None:
+					_value = (preitem[0].Y_value + _finedata.Y_value) / 2
+					preitem[1].Y_value = float('%.3f' % _value)
+				if preitem[1].Z_value is None and preitem[0].Z_value is not None and _finedata.Z_value is not None:
+					_value = (preitem[0].Z_value + _finedata.Z_value) / 2
+					preitem[1].Z_value = float('%.3f' % _value)
+
+				# 进给率
+				if preitem[1].FeedRate_value is None and preitem[0].FeedRate_value is not None and _finedata.FeedRate_value is not None:
+					_value = (preitem[0].FeedRate_value + _finedata.FeedRate_value) / 2
+					preitem[1].FeedRate_value = float('%.3f' % _value)
+
+				# 扫描速率
+				if preitem[1].ScanningRate_value is None and preitem[0].ScanningRate_value is not None and _finedata.ScanningRate_value is not None:
+					_value = (preitem[0].ScanningRate_value + _finedata.ScanningRate_value) / 2
+					preitem[1].ScanningRate_value = float('%.3f' % _value)
+
+
+
+				preitem[1].save()
+				preitem[0] = preitem[1]
+				preitem[1] = _finedata
+				# _finedata.acquisition_datetime = datetime.datetime.fromtimestamp(_finedata.acquisition_timestamp)
+				# _finedata.save()
+		print('%s:%.2f' % (_model, time.time() - t1))
+
+	update_Finedate(Process_Realtime_FineData_By_WorkSectionID_1)
+	print('end Update_ExistingFineData_PatchEmptyData...')
+	html = "<html><body>Update_ExistingFineData_PatchEmptyData Cost Time %f.</body></html>" % (time.time() - t1)
 	return HttpResponse(html)
 
 '''清空缓存'''

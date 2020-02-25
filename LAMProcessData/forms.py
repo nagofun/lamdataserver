@@ -593,12 +593,22 @@ class LAMProcessParameters_Browse(ModelForm):
 	previewtableTitle = '条件单元'
 	previewtablefields = {'level': _('优先级别'), 'precondition': _('先决条件'),'expression': _('工艺范围描述'),
 	                      'comment': _('简述'),'instead_Cond_Cell':_('替换条件单元')}
+
 	previewtable2_Title = '适用工序'
 	previewtable2_fields = {'technique_instruction': _('工艺文件'),
 	                        'serial_number': _('编号'),
 	                        'serial_worktype': _('名称'),
 	                        'serial_note': _('概述'),
 	                        'process_parameter':_('参数包'),
+	                        }
+
+	previewtable3_Title = '累加单元'
+	previewtable3_fields = {'active':_('是否激活'),
+							'M1': _('能量系数M1'),
+	                        'M2': _('停光冷却系数M2'),
+	                        'l': _('停光冷却-聚集系数l'),
+	                        'tm': _('停光权重半衰期tm'),
+	                        'alarm_value':_('报警值'),
 	                        }
 	class Meta:
 		model = LAMProcessParameters
@@ -732,6 +742,68 @@ class LAMProcessConditionalCell_Edit(ModelForm):
 					self.error_messages = '只可替换比其级别低的条件单元'
 					return False
 
+		except:
+			self.error_messages = '未知错误'
+			return False
+
+		return self.is_valid()
+
+class LAMProcessAccumulateCell_Edit(ModelForm):
+	title = '激光成形参数累加单元实例'
+	modelname = 'LAMProcessParameterAccumulateCell'
+	class Meta:
+		model = LAMProcessParameterAccumulateCell
+		fields = ['active', 'M1', 'M2', 'l','tm','alarm_value']
+		# fields = "__all__"
+		# widgets = {
+		# 	'level': widgets.TextInput(
+		# 		attrs={'type': 'number', 'placeholder': '级别数值越小，表明条件越基础；级别数值越大，表明条件越特殊；'}),
+		# 	'precondition': widgets.Textarea(
+		# 		attrs={'type': 'text', 'placeholder': '本条件单元触发的先决条件'}),
+		# 	'expression': widgets.Textarea(
+		# 		attrs={'type': 'text', 'placeholder': '触发本条件单元后的工艺范围描述'}),
+		# }
+		labels = {
+			'active':_('是否启动累加单元'),
+			'M1': _('能量系数M1'),
+			'M2': _('停光冷却系数M2'),
+			'l': _('停光冷却-聚集系数l'),
+			'tm': _('停光冷却-权重半衰期tm'),
+			'alarm_value': _('报警值'),
+		}
+		error_messages = ''
+
+	def __init__(self, *args, **kwargs):
+		if 'ProcessParameterID' in kwargs:
+			# 新建
+			super().__init__(*args, {})
+		else:
+			# 编辑
+			super().__init__(*args, **kwargs)
+
+		if 'ProcessParameterID' in kwargs:
+			_parameter = LAMProcessParameters.objects.get(id=kwargs['ProcessParameterID'])
+		else:
+			# pass AccuCell_Parameter
+			_parameter=kwargs['instance'].AccuCell_Parameter.all()[0]
+		# qset = (
+		# 		Q(id__gte=Current_i * num_per_page) &
+		# 		Q(id__lt=(Current_i + 1) * num_per_page) &
+		# 		Q(acquisition_timestamp__isnull=True)
+		# )
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+
+	def is_valid_custom(self):
+		try:
+			if 'active' in self.data and self.data['active'] and \
+				not (self.data['M1'] and \
+				 self.data['M2'] and \
+				 self.data['l'] and \
+				 self.data['tm'] and \
+				 self.data['alarm_value']):
+				self.error_messages = '累加功能激活时各参数不能为空。'
+				return False
 		except:
 			self.error_messages = '未知错误'
 			return False

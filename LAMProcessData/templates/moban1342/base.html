@@ -357,10 +357,24 @@
                     </ul>
                 </li>
                 <li>
-                    <a href=""><i class="fa fa-bar-chart-o"></i>过程记录过检<span class="fa arrow"></span></a>
+                    <a href=""><i class="fa fa-table"></i>过程记录过检<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
                         <li>
                             <a href="{{ Common_URL.Back_URL_InspectionRecords_ProcessMissionInspection_LAMProcess }}">激光成形过程记录交检</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href=""><i class="fa fa-bar-chart-o"></i>制造过程分析<span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li>
+                            <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_ZValue }}', true);">成形高度随时间变化分析</a>
+                        </li>
+                        <li>
+                            <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_AccumulateData }}', true);">累计数据随时间变化分析</a>
+                        </li>
+                        <li>
+                            <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_LayerData }}', true);">成形过程层内分析</a>
                         </li>
                     </ul>
                 </li>
@@ -381,22 +395,22 @@
                     <!--</ul>-->
                 <!--</li>-->
 
-                <!--<li>-->
-                    <!--<a href="ui-elements.html"><i class="fa fa-desktop"></i> UI Elements</a>-->
-                <!--</li>-->
-                <!--<li>-->
-                    <!--<a href="chart.html"><i class="fa fa-bar-chart-o"></i> Charts</a>-->
-                <!--</li>-->
-                <!--<li>-->
-                    <!--<a href="tab-panel.html"><i class="fa fa-qrcode"></i> Tabs & Panels</a>-->
-                <!--</li>-->
+<!--                <li>-->
+<!--                    <a href="ui-elements.html"><i class="fa fa-desktop"></i> UI Elements</a>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                    <a href="chart.html"><i class="fa fa-bar-chart-o"></i> Charts</a>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                    <a href="tab-panel.html"><i class="fa fa-qrcode"></i> Tabs & Panels</a>-->
+<!--                </li>-->
 
-                <!--<li>-->
-                    <!--<a href="table.html"><i class="fa fa-table"></i> Responsive Tables</a>-->
-                <!--</li>-->
-                <!--<li>-->
-                    <!--<a href="form.html"><i class="fa fa-edit"></i> Forms </a>-->
-                <!--</li>-->
+<!--                <li>-->
+<!--                    <a href="table.html"><i class="fa fa-table"></i> Responsive Tables</a>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                    <a href="form.html"><i class="fa fa-edit"></i> Forms </a>-->
+<!--                </li>-->
 
 
                 <!--<li>-->
@@ -480,6 +494,14 @@
         }
         window.open(templatename,'content','width='+window_W+',height='+window_H+',top=150,left=280, toolbar=yes, menubar=yes, scrollbars=auto, resizable=no, location=no, status=no');
     }
+    function shownewpage_MissionFilter(URLPath, ifMax=false, window_W=600,window_H=700)
+    {
+        if(ifMax==true){
+            window_W = (screen.availWidth)
+            window_H = (screen.availHeight-40)
+        }
+        window.open(URLPath,'content','width='+window_W+',height='+window_H+',top=150,left=280, toolbar=yes, menubar=yes, scrollbars=auto, resizable=no, location=no, status=no');
+    }
     /**
 	 * 获取元素的当前背景颜色
 	 */
@@ -520,6 +542,43 @@
 		else
 			return actualColor;
 	}
+    <!--onload时给复合表格增加清除样式功能，需要更新table_id+'_select_Array'列表-->
+    function AddTableClearStyleFun(table_id){
+        var newf = function(){
+                <!--清空表格高亮样式-->
+                $('#'+table_id).dataTable();
+                TableRemoveAttribute_ByID(table_id);
+                <!--点亮列表中的行-->
+                varname = table_id+'_select_Array';
+                varname = varname.replace('-','_')
+                try{
+                   //在这里运行代码
+                    for(var _index in window[varname]){
+                        $("#"+window[varname][_index][0]).animate({backgroundColor:bgcolor_hightlight,color: fontcolor_hightligt},100);
+                        try{$("#"+window[varname][_index][1]).prop("checked", "checked");}catch(err){this;}
+                    }
+                }
+                catch(err)
+                {this;}
+        }
+        document.getElementById(table_id).onchange = newf
+        document.getElementById(table_id+"_length").onmouseup = newf
+        document.getElementById(table_id+"_filter").onkeyup = newf
+        document.getElementById(table_id+"_paginate").onmouseup = newf
+    }
+
+    <!--清除复合表格高亮显示等样式-->
+    function TableRemoveAttribute_ByID(table_id){
+        var tb =document.getElementById(table_id);
+        var rows = tb.rows;
+        for(var i = 0; i<rows.length; i++ ){
+           rows[i].removeAttribute("style");
+
+        }
+    }
+
+
+
 
 	Array.prototype.indexOf = function(val) {
         for (var i = 0; i < this.length; i++) {
@@ -540,13 +599,30 @@
         var timestamp = new Date(date).getTime();
         return timestamp;
     }
+    <!--时间戳转日期，用法：new Date(1542274800000).Format('yy-MM-dd hh:mm:ss'); //"2018-11-15 17:40:00"-->
+    Date.prototype.Format = function (fmt) {
+        var o = {
+                "M+": this.getMonth() + 1, // 月份
+                "d+": this.getDate(), // 日
+                "h+": this.getHours(), // 小时
+                "m+": this.getMinutes(), // 分
+                "s+": this.getSeconds(), // 秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+                "S": this.getMilliseconds() // 毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + ""));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
     <!--//使用for循环进行等待操作-->
-    <!--function sleep(delay) {-->
-        <!--var start = (new Date()).getTime();-->
-        <!--while((new Date()).getTime() - start < delay) {-->
-            <!--continue;-->
-        <!--}-->
-    <!--}-->
+    function sleep(delay) {
+        var start = (new Date()).getTime();
+        while((new Date()).getTime() - start < delay) {
+            continue;
+        }
+    }
 
 </script>
 <!--Custom Js -->
