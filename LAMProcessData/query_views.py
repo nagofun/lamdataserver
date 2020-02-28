@@ -21,7 +21,7 @@ from django.template import loader, RequestContext
 from django.template import Context, Template
 from django.conf import settings
 from django_lock import lock
-
+import math
 from LAMProcessData.models import *
 from LAMProcessData.forms import *
 import LAMProcessData.realtime_records as RealtimeRecord
@@ -699,6 +699,117 @@ def queryData_finedata_By_MissionID_with_certain_timestamp(MissionItemID, startt
 	}
 	return _dict
 
+@login_required
+@csrf_exempt
+def queryData_Analysedata_Zvalue_By_MissionIDList(request):
+
+	_missionID_list_str = request.GET.get('MissionID_list')
+	_missionID_list = _missionID_list_str.split(',')
+	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
+	                      in _missionID_list]
+	result = map(RT_FineData.AnalyseData.AnalyseData_ZValue_ByMissionID, _missionID_list)
+	jsondata_list = list(result)
+	data_3D = []
+	data_2D = {}
+
+	try:
+		# 取时间最长的任务
+		_minuteIndex_list = [[i[2] for i in _list] for _list in jsondata_list]
+		_max_minuteIndex_list = list(map(lambda l:max(l) ,_minuteIndex_list))
+		_max_minuteIndex = max(_max_minuteIndex_list)
+		data_2D['MinuteIndex'] = _minuteIndex_list[_max_minuteIndex_list.index(_max_minuteIndex)]
+	except:
+		pass
+
+	for index,_key in enumerate(_product_code_list):
+		data_2D[_key] = [i[3] for i in jsondata_list[index]]
+
+	for i in jsondata_list:
+		data_3D.extend(i)
+
+
+	jsondata = {
+		'data_3D':data_3D,
+		'data_2D':data_2D,
+	}
+	html = json.dumps(jsondata, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_Analysedata_LayerData_By_MissionIDList(request):
+	print('Start queryData_Analysedata_LayerData_By_MissionIDList')
+	t1 = time.time()
+	_missionID_list_str = request.GET.get('MissionID_list')
+	_missionID_list = _missionID_list_str.split(',')
+	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
+	                      in _missionID_list]
+	''''''
+	result = map(RT_FineData.AnalyseData.AnalyseData_LayerData_ByMissionID, _missionID_list)
+	jsondata_list = list(result)
+	data_3D = []
+	data_2D = []
+	# try:
+	# 	# 取时间最长的任务
+	# 	_minuteIndex_list = [[i[2] for i in _list] for _list in jsondata_list]
+	# 	_max_minuteIndex_list = list(map(lambda l:max(l) ,_minuteIndex_list))
+	# 	_max_minuteIndex = max(_max_minuteIndex_list)
+	# 	data_2D['MinuteIndex'] = _minuteIndex_list[_max_minuteIndex_list.index(_max_minuteIndex)]
+	# except:
+	# 	pass
+	#
+	# for index,_key in enumerate(_product_code_list):
+	# 	data_2D[_key] = [i[3] for i in jsondata_list[index]]
+	#
+	'''[[MissionID, ProductCode, XValue, YValue, ZValue, ScanningRate],[],[],...]'''
+
+	for i in jsondata_list:
+		data_3D.extend(i)
+	# data_2D = [[i[2],i[3],i[4],i[5],((math.atan(i[4])/math.pi)+1.5 if i[4]!= None else None )] for i in data_3D]
+	data_2D = [[i[2],i[3],i[4],i[5]] for i in data_3D]
+	# Z_range = [i[4] for i in data_2D]
+	# Z_min, Z_max = min(Z_range), max(Z_range)
+	# visualMap_2D_smallrange_list = [ [Z_min+5*_num,Z_min+5*(_num+1)]  for _num in range(int((Z_max-Z_min)/5.0))]
+	# '{min: %f, max: %f, label: "",  },'
+	jsondata = {
+		# 'data_3D':data_3D,
+		'data_2D':data_2D,
+	}
+
+
+	html = json.dumps(jsondata, ensure_ascii=False)
+	t2=time.time()
+	print('Finish queryData_Analysedata_LayerData_By_MissionIDList, Cost:%.4f'%(t2-t1))
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_Analysedata_ScanningRate3D_By_MissionIDList(request):
+	print('Start queryData_Analysedata_ScanningRate3D_By_MissionIDList')
+	t1 = time.time()
+	_missionID_list_str = request.GET.get('MissionID_list')
+	_missionID_list = _missionID_list_str.split(',')
+	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
+	                      in _missionID_list]
+	''''''
+	result = map(RT_FineData.AnalyseData.AnalyseData_LayerData_ByMissionID, _missionID_list)
+	jsondata_list = list(result)
+	data_3D = []
+	# data_2D = []
+
+	'''[[MissionID, ProductCode, XValue, YValue, ZValue, ScanningRate],[],[],...]'''
+	for i in jsondata_list:
+		data_3D.extend(i)
+
+	jsondata = {
+		'data_3D':data_3D,
+		# 'data_2D':data_2D,
+	}
+
+	html = json.dumps(jsondata, ensure_ascii=False)
+	t2=time.time()
+	print('Finish queryData_Analysedata_ScanningRate3D_By_MissionIDList, Cost:%.4f'%(t2-t1))
+	return HttpResponse(html, content_type='application/json')
 
 @login_required
 @csrf_exempt

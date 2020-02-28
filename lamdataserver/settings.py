@@ -36,7 +36,8 @@ SECRET_KEY = 'vkt*pd7y$+c9k#*j-)u_35lraqffr_eb^(wg9smv^^06qk(ear'
 DEBUG = True
 
 # ALLOWED_HOSTS = ['192.168.1.129','127.0.0.1']
-ALLOWED_HOSTS = ['127.0.0.1']
+# ALLOWED_HOSTS = ['127.0.0.1']
+
 # ALLOWED_HOSTS = []
 
 
@@ -96,6 +97,12 @@ MEDIA_BACKUP_URL = '/media/backup/'
 MEDIA_LOGFLE_URL = '/media/LogFile/'
 MEDIA_LASER_LOG_URL = os.path.join(MEDIA_URL, 'laserlog')
 REAL_TIME_SCREEN_URL = os.path.join(MEDIA_URL, 'realtime')
+ANALYSE_DATA_URL = os.path.join(MEDIA_URL, 'analyse/')
+# ANALYSE_CNCDATA_URL = os.path.join(ANALYSE_DATA_URL, 'CNCData/')
+# ANALYSE_ACCUMULATEDATA_URL = os.path.join(ANALYSE_DATA_URL, 'ACCUMULATEDATA/')
+
+ANALYSE_CNCDATA_URL = '/analyse/CNCData/'
+ANALYSE_ACCUMULATEDATA_URL = '/analyse/ACCUMULATEDATA/'
 
 WSGI_APPLICATION = 'lamdataserver.wsgi.application'
 

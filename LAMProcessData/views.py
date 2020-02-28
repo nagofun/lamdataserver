@@ -406,10 +406,12 @@ Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] = Common_URL['Analys
 Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter_ZValue'] = Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] + 'ZValue/'
 Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter_AccumulateData'] = Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] + 'AccumulateData/'
 Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter_LayerData'] = Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] + 'LayerData/'
+Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter_ScanningRate3D'] = Common_URL['SubWindow_URL_AnalyseLAMProcess_MissionFilter'] + 'ScanningRate3D/'
 
 Common_URL['Back_URL_AnalyseLAMProcess_ZValue'] = Common_URL['AnalyseLAMProcess'] + 'ZValue/'
 Common_URL['Back_URL_AnalyseLAMProcess_AccumulateData'] = Common_URL['AnalyseLAMProcess'] + 'AccumulateData/'
 Common_URL['Back_URL_AnalyseLAMProcess_LayerData'] = Common_URL['AnalyseLAMProcess'] + 'LayerData/'
+Common_URL['Back_URL_AnalyseLAMProcess_ScanningRate3D'] = Common_URL['AnalyseLAMProcess'] + 'ScanningRate3D/'
 
 # 激光成形现场操作
 
@@ -1451,9 +1453,12 @@ def AnalyseLAMProcess_MissionFilter(request, AnalyseType):
 	AnalyseType: ZValue, AccumulateData, LayerData
 	'''
 	_mission_all_dict = LAMProcessMission.objects.filter(available=True)
-
-
 	attlist = None
+	# ifmultiple_dict = {
+	# 	'ZValue': True,
+	# 	'AccumulateData': True,
+	# 	'LayerData': False,
+	# }
 	try:
 		all_entries = LAMProcessMission.objects.filter(available=True)
 		_modelfilednames = [f.attname for f in LAMProcessMission._meta.fields]
@@ -1471,27 +1476,10 @@ def AnalyseLAMProcess_MissionFilter(request, AnalyseType):
 				_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
 				if att=='LAM_product_id':
 					_dict[att] = i.__getattribute__(att.replace('_id', '')).product_code
-
 			else:
 				_dict[att] = list(map(str, list(i.__getattribute__(att).all())))
 
 		all_entries_dict.append(_dict)
-	# _mission = LAMProcessMission.objects.get(id=MissionItemID)
-	# _mission_timecut = Process_Mission_timecut.objects.get(process_mission=_mission)
-	# _start_datetime = _mission_timecut.process_start_time
-	# _finish_datetime = _mission_timecut.process_finish_time
-	#
-	# _datetime_list = [(_start_datetime + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in
-	#                   range((_finish_datetime - _start_datetime).days)]
-	# if _finish_datetime.strftime('%Y-%m-%d') not in _datetime_list:
-	# 	_datetime_list.append(_finish_datetime.strftime('%Y-%m-%d'))
-	#
-	# # 以2h切分一天24h，分为12块
-	# _h_delta = 2
-	# _time_dict = {str(i): '%02d:00~%02d:00' % (i, i + _h_delta) for i in range(0, 24, _h_delta)}
-	# _first_date = _start_datetime.strftime('%Y-%m-%d')
-	# _first_time_hour = int(float(_start_datetime.strftime('%H')) / _h_delta) * _h_delta
-	# _first_time_text = _time_dict[str(_first_time_hour)]
 
 	return render(request, 'SubWindow_MissionFilter.html',
 	              {
@@ -1500,20 +1488,62 @@ def AnalyseLAMProcess_MissionFilter(request, AnalyseType):
 		              'displayFieldLabel':['零件','任务工序','工段','下达','完成'],
 		              'title': '选择任务',
 		              'operate': AnalyseType,
+		              # 'ifMultipleSelect': ifmultiple_dict[AnalyseType],
 		              'Target_URL': Common_URL['Back_URL_AnalyseLAMProcess_'+AnalyseType],
 		              'Common_URL': Common_URL})
 	pass
 # 成形高度随时间变化分析
 def AnalyseLAMProcess_ZValue(request):
-	pass
+	if request.method == 'POST':
+		_missionId_list_str = request.POST.get('MissionID_list')
+		_missionId_list = _missionId_list_str.split(',')
+		_product_code_list = ['%s (id:%s)'%(LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id in _missionId_list]
+		# _product_code_list = [str(LAMProcessMission.objects.get(id=int(id))) for id in _missionId_list]
+		# _mission_list = map(lambda i: LAMProcessMission.objects.get(id=i), _missionId_list)
+		return render(request, 'SubWindow_Analyse_ZValue.html',
+		              {'Common_URL': Common_URL,
+		               'MissionID_list':_missionId_list_str,
+		               'Product_code_list':_product_code_list})
+		               # 'Product_code_list':json.dumps(_product_code_list, ensure_ascii=False)})
+	return render(request, 'SubWindow_Analyse_ZValue.html',
+	              {'Common_URL': Common_URL})
 
 # 累计数据随时间变化分析
 def AnalyseLAMProcess_AccumulateData(request):
+	if request.method == 'POST':
+		_missionId_list = request.POST.get('MissionID_list')
+
+		# _data_list = map(lambda id: , _missionId_list)
+		pass
 	pass
 
 # 成形过程层内分析
 def AnalyseLAMProcess_LayerData(request):
-	pass
+	if request.method == 'POST':
+		_missionId_list_str = request.POST.get('MissionID_list')
+		_missionId_list = _missionId_list_str.split(',')
+		_product_code_list = ['%s (id:%s)'%(LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id in _missionId_list]
+
+		return render(request, 'Analyse_LayerData.html',
+		              {'Common_URL': Common_URL,
+		               'MissionID_list':_missionId_list_str,
+		               'Product_code_list':_product_code_list})
+	return render(request, 'SubWindow_Analyse_LayerData.html',
+	              {'Common_URL': Common_URL})
+
+# 扫描速率空间分布分析
+def AnalyseLAMProcess_ScanningRate3D(request):
+	if request.method == 'POST':
+		_missionId_list_str = request.POST.get('MissionID_list')
+		_missionId_list = _missionId_list_str.split(',')
+		_product_code_list = ['%s (id:%s)'%(LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id in _missionId_list]
+
+		return render(request, 'Analyse_ScanningRate3D.html',
+		              {'Common_URL': Common_URL,
+		               'MissionID_list':_missionId_list_str,
+		               'Product_code_list':_product_code_list})
+	return render(request, 'Analyse_ScanningRate3D.html',
+	              {'Common_URL': Common_URL})
 
 '''============================================================================'''
 
@@ -3677,6 +3707,23 @@ def UpdateCNCStatusdata_Date_Worksection_indexing(request):
 	settings.GLOBAL_UPDATE_INDEXINGTABLE_FLAG_CNCSTATUS = False
 	html = "<html><body>UpdateCNCStatusdata_Date_Worksection_indexing Cost Time %f.</body></html>" % (time.time() - t1)
 	return HttpResponse(html)
+
+def get3DTestData(request):
+	# 读取数据
+	with open(r'E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\templates\moban1342\testdata.json', 'r') as f:
+		data = json.load(f)
+	# print('end save_lamprocessparameterTechInstSerial')
+	html = json.dumps(data, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+def get3DTestData2(request):
+	# 读取数据
+	with open(r'E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\templates\moban1342\testdata2.json', 'r') as f:
+		data = json.load(f)
+	# print('end save_lamprocessparameterTechInstSerial')
+	html = json.dumps(data, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
 
 # @cache_page(60 * 15)
 def DrawData_Oxygen(request):

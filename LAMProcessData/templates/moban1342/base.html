@@ -374,7 +374,10 @@
                             <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_AccumulateData }}', true);">累计数据随时间变化分析</a>
                         </li>
                         <li>
-                            <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_LayerData }}', true);">成形过程层内分析</a>
+                            <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_ScanningRate3D }}', true);">瞬时扫描速率在空间的分布</a>
+                        </li>
+                        <li>
+                            <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_LayerData }}', true);">激光成形过程分层分析</a>
                         </li>
                     </ul>
                 </li>
@@ -460,6 +463,34 @@
         $('#dataTables-example').dataTable();
         $('#dataTables-example2').dataTable();
     });
+
+<!--发送Post请求-->
+<!--用法：-->
+<!--    params = {-->
+<!--        'id':selectItemID,-->
+<!--        'name':selectItemName-->
+<!--    };-->
+<!--    Post('delete/',params);-->
+    function Post(URL, PARAMTERS) {
+            //创建form表单
+            var temp_form = document.createElement("form");
+            temp_form.action = URL;
+            //如需打开新窗口，form的target属性要设置为'_blank'
+            temp_form.target = "_self";
+            temp_form.method = "post";
+            temp_form.style.display = "none";
+            //添加参数
+            for (var item in PARAMTERS) {
+                var opt = document.createElement("textarea");
+                opt.name = item;
+                opt.value = PARAMTERS[item];
+                temp_form.appendChild(opt);
+            }
+            document.body.appendChild(temp_form);
+            //提交数据
+            temp_form.submit();
+        }
+
     <!--控件边框提示-->
     function NoticeInput(objid, colortype)
     {
@@ -498,7 +529,7 @@
     {
         if(ifMax==true){
             window_W = (screen.availWidth)
-            window_H = (screen.availHeight-40)
+            window_H = (screen.availHeight-10)
         }
         window.open(URLPath,'content','width='+window_W+',height='+window_H+',top=150,left=280, toolbar=yes, menubar=yes, scrollbars=auto, resizable=no, location=no, status=no');
     }
@@ -623,6 +654,26 @@
             continue;
         }
     }
+    /**
+     * 将数字取整为10的倍数
+     * @param {Number} num 需要取整的值
+     * @param {Boolean} ceil 是否向上取整
+     * @param {Number} prec 需要用0占位的数量
+     */
+    const formatInt = (num, prec = 2, ceil = true) => {
+      const len = String(num).length;
+      if (len <= prec) { return num };
+
+      const mult = Math.pow(10, prec);
+      return ceil ?
+        Math.ceil(num / mult) * mult :
+        Math.floor(num / mult) * mult;
+    }
+
+    // formatInt(2345, 2, true)  -> 2400
+    // formatInt(2345, 2. false) -> 2300
+    // formatInt(2345, 3, true)  -> 3000
+    // formatInt(2345, 3, false) -> 2000
 
 </script>
 <!--Custom Js -->

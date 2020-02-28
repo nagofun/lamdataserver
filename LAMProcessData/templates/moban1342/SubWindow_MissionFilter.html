@@ -541,11 +541,22 @@
 
     <!--跳转至分析页面-->
     function JumpToAnalyseLAMProcess(operationType){
+        params = {
+            'MissionID_list':Right_Mission_List,
+        };
+        if(operationType == 'LayerData' || operationType == 'ScanningRate3D'){
+            // 原窗口打开
+            window.opener.Post("{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/',params);
+<!--        window.opener.location="{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/';-->
+            window.opener=null;
+            window.open('','_self');
+            window.close();
+        }
+        else{
+            // 当前窗口打开
+            Post("{{ Target_URL }}",params);
+        }
 
-        window.opener.location="{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/';
-        window.opener=null;
-        window.open('','_self');
-        window.close();
     }
 
 

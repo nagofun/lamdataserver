@@ -23,6 +23,8 @@ urlpatterns = [
     path('time/', views.current_datetime),
     path('test/', views.test),
     path('test1/', views.test1),
+    path('3Dtestdata/', views.get3DTestData),
+    path('3Dtestdata2/', views.get3DTestData2),
 
     path('gettimeitem/', views.current_datetime_item),
     re_path(
@@ -227,10 +229,15 @@ urlpatterns = [
     re_path('AnalyseLAMProcess/MissionFilter/(?P<AnalyseType>(.+))/$', views.AnalyseLAMProcess_MissionFilter),
     # 分析成形制造过程-成形高度
     re_path('AnalyseLAMProcess/ZValue/$', views.AnalyseLAMProcess_ZValue),
-    # 分析成形制造过程-成形高度
+    re_path('QueryData/AnalyseLAMProcess_ZValue/$', query_views.queryData_Analysedata_Zvalue_By_MissionIDList),
+    # 分析成形制造过程-累加数据
     re_path('AnalyseLAMProcess/AccumulateData/$', views.AnalyseLAMProcess_AccumulateData),
-    # 分析成形制造过程-成形高度
+    # 分析成形制造过程-层内分析
     re_path('AnalyseLAMProcess/LayerData/$', views.AnalyseLAMProcess_LayerData),
+    re_path('QueryData/AnalyseLAMProcess_LayerData/$', query_views.queryData_Analysedata_LayerData_By_MissionIDList),
+    # 分析成形制造过程-瞬时速率空间分布
+    re_path('AnalyseLAMProcess/ScanningRate3D/$', views.AnalyseLAMProcess_ScanningRate3D),
+    re_path('QueryData/AnalyseLAMProcess_ScanningRate3D/$', query_views.queryData_Analysedata_ScanningRate3D_By_MissionIDList),
 
 
 

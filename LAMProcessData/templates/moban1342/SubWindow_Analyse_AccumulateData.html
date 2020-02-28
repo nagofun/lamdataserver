@@ -1,0 +1,698 @@
+{% extends "SubWindow_base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+<!--<script src="/assets/js/dark.js"></script>-->
+<script src="/assets/ECharts/incubator-echarts/theme/dark.js"></script>
+<script type="text/javascript">
+    function calMax(arr) {
+        let max = 0;
+        arr.forEach((el) => {
+          el.forEach((el1) => {
+            if (!(el1 === undefined || el1 === '')) {
+              if (max < el1) {
+                max = el1;
+              }
+            }
+          })
+        })
+        let maxint = Math.ceil(max / 9.5);//不让最高的值超过最上面的刻度
+        let maxval = maxint * 10;//让显示的刻度是整数
+        return maxval;
+  }
+
+  //计算最小值
+  function calMin(arr) {
+    let min = 0;
+    arr.forEach((el) => {
+      el.forEach((el1) => {
+        if (!(el1 === undefined || el1 === '')) {
+          if (min > el1) {
+            min = el1;
+          }
+        }
+      })
+    })
+    let minint = Math.floor(min / 10);
+    let minval = minint * 10;//让显示的刻度是整数
+    return minval;
+  }
+
+
+
+
+<!--{{ time_dict|safe }}-->
+<!--定义颜色-->
+    var bgcolor_hightlight = "#337ab7"
+    var fontcolor_hightligt = "#fff"
+    var bgcolor_odd = "#f9f9f9"
+    var bgcolor_even = "#ffffff"
+    var fontcolor = "#000"
+
+
+
+    function onload()
+    {
+        this;
+
+    }
+
+<!--        &lt;!&ndash;每隔一段时间查询一次后台计算进度&ndash;&gt;-->
+<!--        var sitv = setInterval(function(){-->
+<!--            $.get(-->
+<!--                &lt;!&ndash;URL待更新&ndash;&gt;-->
+<!--                '{{ Common_URL.Query_ProgressBarValue_InspectionLAMRecords_By_MissionID }}'+missionID+'/',-->
+<!--                function(res, textStatus)-->
+<!--                {-->
+<!--                    document.getElementById("progress_bar").style.width=res['progress_rate'];-->
+<!--                    if(if_reload==true && res['progress_rate']=='100%'){-->
+<!--                        alert('reload Inspection from database');-->
+<!--                        clearInterval(sitv);-->
+<!--                    }-->
+<!--                }-->
+<!--            )-->
+<!--        }, 3000);-->
+
+
+
+
+
+
+</script>
+
+<div id="page-inner">
+    <div class="row">
+<!--        <div class="col-md-12">-->
+<!--            <h1 class="page-header">-->
+<!--                {{ title }}-->
+<!--                <small>{{ smalltitle|upper }}</small>-->
+<!--            </h1>-->
+<!--        </div>-->
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="progress_bar_headdiv">
+                            加载进度...
+                        </div>
+                        <div class="panel-body" id="progress_bar_bodybody">
+                            <div class="progress progress-striped active">
+                                <div class="progress-bar progress-bar-primary" id="progress_bar" role="progressbar"
+                                     aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                    <span class="sr-only">0% Complete (success)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-heading">
+
+                        </div>
+                        <div class="panel-body">
+                            <div id="2D_main" style="width: 100%;height:600px;">
+                                <body style="height: 100%; margin: 0">
+                                    <div id="2Dcontainer" style="height: 100%">
+
+                                    </div>
+
+                                </body>
+                            </div>
+                        </div>
+                        <!--</form>-->
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+<!--                            <div class="row">-->
+<!--                               -->
+<!--                            </div>-->
+                        </div>
+                        <div class="panel-body">
+                            <div id="3D_main" style="width: 100%;height:800px;">
+                                <body style="height: 100%; margin: 0">
+                                <div id="3Dcontainer" style="height: 100%"></div>
+
+                                </body>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+</div>
+<script type="text/javascript">
+<!--    $("#page-inner").css('height','1000px');-->
+    $("#page-wrapper").css('min-height','800px');
+    $("#page-inner").css('min-height','800px');
+
+    var dom = document.getElementById("3Dcontainer");
+    var myChart = echarts.init(dom,'dark');//黑色主题
+    var app = {};
+    option = null;
+
+
+
+    var indices = {
+        name: 0,
+        group: 1,
+        id: 16
+    };
+    var schema = [
+        {name: 'name', index: 0},
+        {name: 'group', index: 1},
+        {name: 'protein', index: 2},
+        {name: 'calcium', index: 3},
+        {name: 'sodium', index: 4},
+        {name: 'fiber', index: 5},
+        {name: 'vitaminc', index: 6},
+        {name: 'potassium', index: 7},
+        {name: 'carbohydrate', index: 8},
+        {name: 'sugars', index: 9},
+        {name: 'fat', index: 10},
+        {name: 'water', index: 11},
+        {name: 'calories', index: 12},
+        {name: 'saturated', index: 13},
+        {name: 'monounsat', index: 14},
+        {name: 'polyunsat', index: 15},
+        {name: 'id', index: 16}
+    ];
+    var data;
+
+    var fieldIndices = schema.reduce(function (obj, item) {
+        obj[item.name] = item.index;
+        return obj;
+    }, {});
+
+    var groupCategories = [];
+    var groupColors = [];
+    var data;
+    var fieldNames = schema.map(function (item) {
+        return item.name;
+    });
+    fieldNames = fieldNames.slice(2, fieldNames.length - 2);
+
+    function getMaxOnExtent(data) {
+        var colorMax = -Infinity;
+        var symbolSizeMax = -Infinity;
+        for (var i = 0; i < data.length; i++) {
+            var item = data[i];
+            var colorVal = item[fieldIndices[config.color]];
+            var symbolSizeVal = item[fieldIndices[config.symbolSize]];
+            colorMax = Math.max(colorVal, colorMax);
+            symbolSizeMax = Math.max(symbolSizeVal, symbolSizeMax);
+        }
+        return {
+            color: colorMax,
+            symbolSize: symbolSizeMax
+        };
+    }
+
+    var config = app.config = {
+        xAxis3D: 'protein',
+        yAxis3D: 'fiber',
+        zAxis3D: 'sodium',
+        color: 'fiber',
+        symbolSize: 'vitaminc',
+
+        onChange: function () {
+            var max = getMaxOnExtent(data);
+            if (data) {
+                myChart.setOption({
+                    visualMap: [{
+                        max: max.color / 2
+                    }, {
+                        max: max.symbolSize / 2
+                    }],
+                    xAxis3D: {
+                        name: config.xAxis3D
+                    },
+                    yAxis3D: {
+                        name: config.yAxis3D
+                    },
+                    zAxis3D: {
+                        name: config.zAxis3D
+                    },
+                    series: {
+                        dimensions: [
+                            config.xAxis3D,
+                            config.yAxis3D,
+                            config.yAxis3D,
+                            config.color,
+                            config.symbolSiz
+                        ],
+                        data: data.map(function (item, idx) {
+                            return [
+                                item[fieldIndices[config.xAxis3D]],
+                                item[fieldIndices[config.yAxis3D]],
+                                item[fieldIndices[config.zAxis3D]],
+                                item[fieldIndices[config.color]],
+                                item[fieldIndices[config.symbolSize]],
+                                idx
+                            ];
+                        })
+                    }
+                });
+            }
+        }
+    };
+    app.configParameters = {};
+    ['xAxis3D', 'yAxis3D', 'zAxis3D', 'color', 'symbolSize'].forEach(function (fieldName) {
+        app.configParameters[fieldName] = {
+            options: fieldNames
+        };
+    });
+
+
+    //查看示例源码后，加入下面的代码可以实现
+    var gui = new dat.GUI();
+    $(gui.domElement).css({
+        position:"absolute",
+        right:5,
+        top:10,
+        height:180,
+        zIndex:1e3
+        });
+<!--    $(".right-container").append(gui.domElement);-->
+    guiisColor="#000";
+    $("#3Dcontainer").append(gui.domElement);
+    var configParameters=app.configParameters||{};
+    for(var name in app.config){
+            var value=app.config[name];
+            if("onChange"!==name&&"onFinishChange"!==name){
+                var isColor=!1,controller;
+                if(configParameters[name]&&(configParameters[name].options?controller=gui.add(app.config,name,configParameters[name].options):null!=configParameters[name].min&&(controller=gui.add(app.config,name,configParameters[name].min,configParameters[name].max))),"string"==typeof obj)
+                    try{
+                        var colorArr=echarts.color.parse(value);
+                        isColor=!!colorArr,isColor&&(value=echarts.color.stringify(colorArr,"rgba"))
+                    }catch(e){
+                    }
+                    controller||(controller=guiisColor?"addColor":"add"),app.config.onChange&&controller.onChange(app.config.onChange),app.config.onFinishChange&&controller.onFinishChange(app.config.onFinishChange)
+            }
+    }
+<!--    $(".dg .c").color="#000";-->
+    $(".dg .c").css('color','#000');
+
+
+$.getJSON('/LAMProcessData/3Dtestdata/', function (_data) {
+    data = _data;
+
+    var max = getMaxOnExtent(data);
+    myChart.setOption({
+        tooltip: {},
+
+<!--        tooltip: {-->
+<!--            trigger: 'axis',-->
+<!--            axisPointer: {-->
+<!--                animation: false-->
+<!--            }-->
+<!--        },-->
+<!--        tooltip: {-->
+<!--            trigger: 'axis',-->
+<!--&lt;!&ndash;            formatter: function (params) {&ndash;&gt;-->
+<!--&lt;!&ndash;                return params;&ndash;&gt;-->
+<!--&lt;!&ndash;            }&ndash;&gt;-->
+<!--        },-->
+        visualMap: [{
+            top: 10,
+            calculable: true,
+            dimension: 3,
+            max: max.color / 2,
+            inRange: {
+                color: ['#1710c0', '#0b9df0', '#00fea8', '#00ff0d', '#f5f811', '#f09a09', '#fe0300']
+            },
+            textStyle: {
+                color: '#fff'
+            }
+        }, {
+            bottom: 10,
+            calculable: true,
+            dimension: 4,
+            max: max.symbolSize / 2,
+            inRange: {
+                symbolSize: [10, 40]
+            },
+            textStyle: {
+                color: '#fff'
+            }
+        }],
+        xAxis3D: {
+            name: config.xAxis3D,
+            type: 'value'
+        },
+        yAxis3D: {
+            name: config.yAxis3D,
+            type: 'value'
+        },
+        zAxis3D: {
+            name: config.zAxis3D,
+            type: 'value'
+        },
+        grid3D: {
+            axisLine: {
+                lineStyle: {
+                    color: '#fff'
+                }
+            },
+            axisPointer: {
+                lineStyle: {
+                    color: '#ffbd67'
+                }
+            },
+            viewControl: {
+                // autoRotate: true
+                // projection: 'orthographic'
+            }
+        },
+        series: [{
+            type: 'scatter3D',
+            dimensions: [
+                config.xAxis3D,
+                config.yAxis3D,
+                config.yAxis3D,
+                config.color,
+                config.symbolSiz
+            ],
+            data: data.map(function (item, idx) {
+                return [
+                    item[fieldIndices[config.xAxis3D]],
+                    item[fieldIndices[config.yAxis3D]],
+                    item[fieldIndices[config.zAxis3D]],
+                    item[fieldIndices[config.color]],
+                    item[fieldIndices[config.symbolSize]],
+                    idx
+                ];
+            }),
+            symbolSize: 12,
+            // symbol: 'triangle',
+            itemStyle: {
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.8)'
+            },
+            emphasis: {
+                itemStyle: {
+                    color: '#fff'
+                }
+            }
+        }]
+    });
+});
+
+
+<!--====================================================-->
+
+
+
+
+if (option && typeof option === "object") {
+myChart.setOption(option, true);
+}
+
+
+<!--===========================================================================================-->
+
+<!--    var dom = document.getElementById("2Dcontainer");-->
+<!--    var myChart = echarts.init(dom);-->
+<!--    var app = {};-->
+<!--    option = null;-->
+
+<!--    $.get('/LAMProcessData/3Dtestdata2/', function (data) {-->
+<!--        var symbolSize = 2.5;-->
+<!--        option = {-->
+<!--            grid3D: {},-->
+<!--            xAxis3D: {-->
+<!--                type: 'category'-->
+<!--            },-->
+<!--            yAxis3D: {},-->
+<!--            zAxis3D: {},-->
+<!--            dataset: {-->
+<!--                dimensions: [-->
+<!--                    'Income',-->
+<!--                    'Life Expectancy',-->
+<!--                    'Population',-->
+<!--                    'Country',-->
+<!--                    {name: 'Year', type: 'ordinal'}-->
+<!--                ],-->
+<!--                source: data-->
+<!--            },-->
+<!--            series: [-->
+<!--                {-->
+<!--                    type: 'scatter3D',-->
+<!--                    symbolSize: symbolSize,-->
+<!--                    encode: {-->
+<!--                        x: 'Country',-->
+<!--                        y: 'Life Expectancy',-->
+<!--                        z: 'Income',-->
+<!--                        tooltip: [0, 1, 2, 3, 4]-->
+<!--                    }-->
+<!--                }-->
+<!--            ]-->
+<!--        };-->
+
+<!--        myChart.setOption(option);-->
+<!--    });-->
+
+
+<!--以下代码仅供参考-->
+
+<!--        var dom = document.getElementById("container");-->
+<!--        var myChart = echarts.init(dom);-->
+<!--        var app = {};-->
+<!--        option = null;-->
+<!--        var base = +new Date(1968, 9, 3);-->
+<!--        option = {-->
+<!--            title: {-->
+<!--                text: '激光成形过程采集数据',-->
+<!--                subtext: '{{ smalltitle|upper }} '+select_date+' '+select_time_text,-->
+<!--                left: 'center'-->
+<!--            },-->
+<!--            tooltip: {-->
+<!--                trigger: 'axis',-->
+<!--                axisPointer: {-->
+<!--                    animation: false-->
+<!--                }-->
+<!--            },-->
+<!--            legend: {-->
+<!--                data: ['氧含量', '激光功率', '成形高度','进给率','移动速率'],-->
+<!--                left: 10,-->
+<!--            },-->
+<!--            toolbox: {-->
+<!--                feature: {-->
+<!--                    dataZoom: {-->
+<!--                        yAxisIndex: 'none'-->
+<!--                    },-->
+<!--                    restore: {},-->
+<!--                    saveAsImage: {}-->
+<!--                }-->
+<!--            },-->
+<!--            axisPointer: {-->
+<!--                link: {xAxisIndex: 'all'}-->
+<!--            },-->
+<!--            dataZoom: [-->
+<!--                {-->
+<!--                    show: true,-->
+<!--                    realtime: true,-->
+<!--                    start: 0,-->
+<!--                    end: 100,-->
+<!--                    xAxisIndex: [0, 1, 2, 3]-->
+<!--                },-->
+<!--                {-->
+<!--                    type: 'inside',-->
+<!--                    realtime: true,-->
+<!--                    start: 0,-->
+<!--                    end: 100,-->
+<!--                    xAxisIndex:[0, 1, 2, 3]-->
+<!--                },-->
+<!--                {-->
+<!--                    type: 'inside',-->
+<!--                    realtime: true,-->
+<!--                    start: 0,-->
+<!--                    end: 100,-->
+<!--                    xAxisIndex: [0, 1, 2, 3]-->
+<!--                },-->
+<!--                {-->
+<!--                    type: 'inside',-->
+<!--                    realtime: true,-->
+<!--                    start: 0,-->
+<!--                    end: 100,-->
+<!--                    xAxisIndex: [0, 1, 2, 3]-->
+<!--                },-->
+<!--                &lt;!&ndash;{&ndash;&gt;-->
+<!--                    &lt;!&ndash;type: 'inside',&ndash;&gt;-->
+<!--                    &lt;!&ndash;realtime: true,&ndash;&gt;-->
+<!--                    &lt;!&ndash;start: 0,&ndash;&gt;-->
+<!--                    &lt;!&ndash;end: 100,&ndash;&gt;-->
+<!--                    &lt;!&ndash;xAxisIndex: [0, 1, 2, 3, 4]&ndash;&gt;-->
+<!--                &lt;!&ndash;}&ndash;&gt;-->
+<!--            ],-->
+<!--            grid: [{-->
+<!--                left: 50,-->
+<!--                right: 50,-->
+<!--                top: '5%',-->
+<!--                height: '20%'-->
+<!--            }, {-->
+<!--                left: 50,-->
+<!--                right: 50,-->
+<!--                top: '28%',-->
+<!--                height: '20%'-->
+<!--            }, {-->
+<!--                left: 50,-->
+<!--                right: 50,-->
+<!--                top: '51%',-->
+<!--                height: '20%'-->
+<!--            }, {-->
+<!--                left: 50,-->
+<!--                right: 50,-->
+<!--                top: '74%',-->
+<!--                height: '20%'-->
+<!--            },-->
+<!--            &lt;!&ndash;{&ndash;&gt;-->
+<!--                &lt;!&ndash;left: 50,&ndash;&gt;-->
+<!--                &lt;!&ndash;right: 50,&ndash;&gt;-->
+<!--                &lt;!&ndash;top: '80%',&ndash;&gt;-->
+<!--                &lt;!&ndash;height: '10.5%'&ndash;&gt;-->
+<!--            &lt;!&ndash;}&ndash;&gt;-->
+<!--            ],-->
+<!--            xAxis: [-->
+<!--                {-->
+<!--                    gridIndex: 0,-->
+<!--                    type: 'category',-->
+<!--                    boundaryGap: false,-->
+<!--                    axisLine: {onZero: true},-->
+<!--                    data: []-->
+<!--                },-->
+<!--                {-->
+<!--                    gridIndex: 1,-->
+<!--                    type: 'category',-->
+<!--                    boundaryGap: false,-->
+<!--                    axisLine: {onZero: true},-->
+<!--                    data: []-->
+<!--                },-->
+<!--                {-->
+<!--                    gridIndex: 2,-->
+<!--                    type: 'category',-->
+<!--                    boundaryGap: false,-->
+<!--                    axisLine: {onZero: true},-->
+<!--                    data: []-->
+<!--                },-->
+<!--                {-->
+<!--                    gridIndex: 3,-->
+<!--                    type: 'category',-->
+<!--                    boundaryGap: false,-->
+<!--                    axisLine: {onZero: true},-->
+<!--                    data: []-->
+<!--                },-->
+<!--                &lt;!&ndash;{&ndash;&gt;-->
+<!--                    &lt;!&ndash;gridIndex: 3,&ndash;&gt;-->
+<!--                    &lt;!&ndash;type: 'category',&ndash;&gt;-->
+<!--                    &lt;!&ndash;boundaryGap: false,&ndash;&gt;-->
+<!--                    &lt;!&ndash;axisLine: {onZero: true},&ndash;&gt;-->
+<!--                    &lt;!&ndash;data: []&ndash;&gt;-->
+<!--                &lt;!&ndash;}&ndash;&gt;-->
+<!--            ],-->
+<!--            yAxis: [-->
+<!--                {-->
+<!--                    gridIndex: 0,-->
+<!--                    name: '氧含量(ppm)',-->
+<!--                    type: 'value',-->
+<!--                    &lt;!&ndash;min: 100,&ndash;&gt;-->
+<!--                    splitNumber: 4,-->
+<!--                },-->
+<!--                {-->
+<!--                    gridIndex: 1,-->
+<!--                    name: '激光功率(W)',-->
+<!--                    type: 'value',-->
+<!--                    splitNumber: 4,-->
+<!--                },-->
+<!--                {-->
+<!--                    gridIndex: 2,-->
+<!--                    name: '成形高度(mm)',-->
+<!--                    type: 'value',-->
+<!--                    splitNumber: 4,-->
+
+<!--                },-->
+<!--                {-->
+<!--                    gridIndex: 3,-->
+<!--                    name: '进给率(%)',-->
+<!--                    type: 'value',-->
+<!--                    &lt;!&ndash;min: 100,&ndash;&gt;-->
+<!--                    splitNumber: 4,-->
+<!--                },-->
+<!--                {-->
+<!--                    &lt;!&ndash;gridIndex: 4,&ndash;&gt;-->
+<!--                    gridIndex: 3,-->
+<!--                    name: '速率(mm/min)',-->
+<!--                    type: 'value',-->
+<!--                    splitNumber: 4,-->
+<!--                }-->
+<!--            ],-->
+<!--            series: [-->
+<!--                {-->
+<!--                    name: '氧含量',-->
+<!--                    type: 'line',-->
+<!--                    &lt;!&ndash;xAxisIndex: 0,&ndash;&gt;-->
+<!--                    &lt;!&ndash;yAxisIndex: 0,&ndash;&gt;-->
+<!--                    symbolSize: 8,-->
+<!--                    hoverAnimation: false,-->
+<!--                    data: []-->
+<!--                },-->
+<!--                {-->
+<!--                    name: '激光功率',-->
+<!--                    type: 'line',-->
+<!--                    xAxisIndex: 1,-->
+<!--                    yAxisIndex: 1,-->
+<!--                    symbolSize: 8,-->
+<!--                    hoverAnimation: false,-->
+<!--                    data: []-->
+<!--                },-->
+<!--                {-->
+<!--                    name: '成形高度',-->
+<!--                    type: 'line',-->
+<!--                    xAxisIndex: 2,-->
+<!--                    yAxisIndex: 2,-->
+<!--                    symbolSize: 8,-->
+<!--                    hoverAnimation: false,-->
+<!--                    data: []-->
+<!--                },-->
+<!--                {-->
+<!--                    name: '进给率',-->
+<!--                    type: 'line',-->
+<!--                    xAxisIndex: 3,-->
+<!--                    yAxisIndex: 3,-->
+<!--                    symbolSize: 8,-->
+<!--                    hoverAnimation: false,-->
+<!--                    data: []-->
+<!--                },-->
+<!--                {-->
+<!--                    name: '移动速率',-->
+<!--                    type: 'scatter',-->
+<!--                    xAxisIndex: 3,-->
+<!--                    &lt;!&ndash;xAxisIndex: 4,&ndash;&gt;-->
+<!--                    yAxisIndex: 4,-->
+<!--                    symbolSize: 5,-->
+<!--                    hoverAnimation: false,-->
+<!--                    data: []-->
+<!--                }-->
+<!--            ]-->
+<!--        };-->
+<!--        -->
+<!--    if (option && typeof option === "object") {-->
+<!--        myChart.setOption(option, true);-->
+<!--        -->
+<!--    }-->
+
+
+
+
+
+    onload();
+
+
+</script>
+{% endblock %}

@@ -19,6 +19,20 @@
     <!-- ECharts-->
     <link href="/assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet"/>
     <script src="/assets/js/echarts.js"></script>
+<!--    <script src="/assets/ECharts/incubator-echarts/src/echarts.js"></script>-->
+    <script src="/assets/js/echarts-gl.js"></script>
+<!--    <script src="/assets/js/echarts-gl.min.js"></script>-->
+<!--    <script src="/assets/js/dataTool.min.js"></script>-->
+    <script src="/assets/ECharts/incubator-echarts/dist/extension/dataTool.min.js"></script>
+<!--    <script src="/assets/js/dat.gui.min.js"></script>-->
+    <script src="/assets/ECharts/incubator-echarts/test/lib/dat.gui.min.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/vintage.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/dark.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/macarons.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/infographic.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/shine.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/roma.js"></script>
+
 
 
     <!--&lt;!&ndash;时间css start&ndash;&gt;-->
@@ -173,6 +187,33 @@
         return fmt;
     }
 
+
+<!--发送Post请求-->
+<!--用法：-->
+<!--    params = {-->
+<!--        'id':selectItemID,-->
+<!--        'name':selectItemName-->
+<!--    };-->
+<!--    Post('delete/',params);-->
+    function Post(URL, PARAMTERS) {
+            //创建form表单
+            var temp_form = document.createElement("form");
+            temp_form.action = URL;
+            //如需打开新窗口，form的target属性要设置为'_blank'
+            temp_form.target = "_self";
+            temp_form.method = "post";
+            temp_form.style.display = "none";
+            //添加参数
+            for (var item in PARAMTERS) {
+                var opt = document.createElement("textarea");
+                opt.name = item;
+                opt.value = PARAMTERS[item];
+                temp_form.appendChild(opt);
+            }
+            document.body.appendChild(temp_form);
+            //提交数据
+            temp_form.submit();
+        }
 </script>
 <!-- JS Scripts-->
 <!-- jQuery Js -->

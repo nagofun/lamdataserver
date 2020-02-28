@@ -2,6 +2,7 @@
 
 from django.contrib.auth.models import User
 from django.db import models
+from lamdataserver.settings import ANALYSE_CNCDATA_URL,ANALYSE_ACCUMULATEDATA_URL
 # from django.db.models.signals import pre_delete
 # from django.dispatch.dispatcher import receiver
 
@@ -594,7 +595,7 @@ class TemporaryParameter_ID(models.Model):
 # 根据成形过程起止时间划分激光、氧含量、CNC等参数的id信息
 class Process_Mission_timecut(models.Model):
     # 任务号
-    process_mission = models.OneToOneField(LAMProcessMission, on_delete=models.DO_NOTHING, null=True)
+    process_mission = models.OneToOneField(LAMProcessMission,related_name='Mission_Timecut', on_delete=models.DO_NOTHING, null=True)
     # 开始时间
     process_start_time = models.DateTimeField(null=True, blank=True)
     # 结束时间
@@ -683,34 +684,52 @@ class Process_CNCStatusdata_Date_Worksection_indexing(models.Model):
 
 
 # 针对任务，按照现存的类假数据参数，以及任务过程记录中开光停光数据计算累加值，按天存入本表中
-class Process_Accumulatedata_Date_Mission(models.Model):
+class Process_Accumulatedata_Mission(models.Model):
     # 任务信息
-    process_mission = models.ForeignKey(LAMProcessMission, on_delete=models.DO_NOTHING, null=True, blank=True)
-    # 日期
-    index_date = models.DateField()
-    # 日期对应的整数 8位 YYYYMMDD
-    index_date_int = models.IntegerField(null=True)
-    # 第一个数据为自任务开始后第几分钟
-    minute_index = models.IntegerField(null=True)
-    # (list:24*60), 列表  1分钟内开光功率累加值
-    P = models.TextField(null=True)
-    # (list:24*60), 列表  1分钟内停光秒数
-    K = models.TextField(null=True)
+    process_mission = models.ForeignKey(LAMProcessMission, related_name='Mission_Accumulatedata', on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 存储数据 包含P, K, 等
+    data_file = models.FileField(upload_to='.'+ANALYSE_ACCUMULATEDATA_URL, null=True)
+    # 能量系数M1
+    M1 = models.FloatField(null=True, blank=True)
+    # 停光冷却系数M2
+    M2 = models.FloatField(null=True, blank=True)
+    # 停光冷却-聚集系数l
+    l = models.FloatField(null=True, blank=True)
+    # 停光冷却-权重半衰期tm
+    tm = models.FloatField(null=True, blank=True)
+    # # 日期
+    # index_date = models.DateField()
+    # # 日期对应的整数 8位 YYYYMMDD
+    # index_date_int = models.IntegerField(null=True)
+    # # 第一个数据为自任务开始后第几分钟
+    # minute_index = models.IntegerField(null=True)
+    # # (list:24*60), 列表  1分钟内开光功率累加值
+    # P = models.TextField(null=True)
+    # # (list:24*60), 列表  1分钟内停光秒数
+    # K = models.TextField(null=True)
 
 # 针对任务，按照现存的类假数据参数，以及任务过程记录中开光停光数据计算累加值，按天存入本表中
-class Process_CNCData_Date_Mission(models.Model):
+class Process_CNCData_Mission(models.Model):
     # 任务信息
-    process_mission = models.ForeignKey(LAMProcessMission, on_delete=models.DO_NOTHING, null=True, blank=True)
-    # 日期
-    index_date = models.DateField()
-    # 日期对应的整数 8位 YYYYMMDD
-    index_date_int = models.IntegerField(null=True)
-    # 第一个数据为自任务开始后第几分钟
-    minute_index = models.IntegerField(null=True)
-    # (list:24*60), 列表  1分钟内Z最小值
-    Z_value = models.TextField(null=True)
-    # (list:24*60), 列表  1分钟内层厚度
-    layer_thickness = models.TextField(null=True)
+    process_mission = models.ForeignKey(LAMProcessMission, related_name='Mission_CNCData', on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 存储数据 包含Z_value, layer_thickness 等
+    data_file = models.FileField(upload_to='.'+ANALYSE_CNCDATA_URL, null=True)
+    # # 日期
+    # index_date = models.DateField()
+    # # 日期对应的整数 8位 YYYYMMDD
+    # index_date_int = models.IntegerField(null=True)
+    # # 第一个数据为自任务开始后第几分钟
+    # minute_index = models.IntegerField(null=True)
+    # # (list:24*60), 列表  1分钟内Z最小值
+    # Z_value = models.TextField(null=True)
+    # # (list:24*60), 列表  1分钟内层厚度
+    # layer_thickness = models.TextField(null=True)
+
+class Process_CNCData_Layer_Mission(models.Model):
+    # 任务信息
+    process_mission = models.ForeignKey(LAMProcessMission, related_name='Mission_LayerCNCData', on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 存储数据 包含X_value, Y_value, Z_value, ScanSpd 等
+    data_file = models.FileField(upload_to='.'+ANALYSE_CNCDATA_URL, null=True)
 
 class Process_Realtime_FineData_By_WorkSectionID(models.Model):
     # 获取的时间戳

@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+<!--<script src="/assets/js/dark.js"></script>-->
+    <script src="/assets/js/echarts.js"></script>
+<!--    <script src="/assets/ECharts/incubator-echarts/src/echarts.js"></script>-->
+    <script src="/assets/js/echarts-gl.js"></script>
+<!--    <script src="/assets/js/echarts-gl.min.js"></script>-->
+<!--    <script src="/assets/js/dataTool.min.js"></script>-->
+    <script src="/assets/ECharts/incubator-echarts/dist/extension/dataTool.min.js"></script>
+<!--    <script src="/assets/js/dat.gui.min.js"></script>-->
+    <script src="/assets/ECharts/incubator-echarts/test/lib/dat.gui.min.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/vintage.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/dark.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/macarons.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/infographic.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/shine.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/roma.js"></script>
+
+<script type="text/javascript">
+    function calMax(arr) {
+        let max = 0;
+        arr.forEach((el) => {
+          el.forEach((el1) => {
+            if (!(el1 === undefined || el1 === '')) {
+              if (max < el1) {
+                max = el1;
+              }
+            }
+          })
+        })
+        let maxint = Math.ceil(max / 9.5);//不让最高的值超过最上面的刻度
+        let maxval = maxint * 10;//让显示的刻度是整数
+        return maxval;
+  }
+
+  //计算最小值
+  function calMin(arr) {
+    let min = 0;
+    arr.forEach((el) => {
+      el.forEach((el1) => {
+        if (!(el1 === undefined || el1 === '')) {
+          if (min > el1) {
+            min = el1;
+          }
+        }
+      })
+    })
+    let minint = Math.floor(min / 10);
+    let minval = minint * 10;//让显示的刻度是整数
+    return minval;
+  }
+
+<!--        &lt;!&ndash;每隔一段时间查询一次后台计算进度&ndash;&gt;-->
+<!--        var sitv = setInterval(function(){-->
+<!--            $.get(-->
+<!--                &lt;!&ndash;URL待更新&ndash;&gt;-->
+<!--                '{{ Common_URL.Query_ProgressBarValue_InspectionLAMRecords_By_MissionID }}'+missionID+'/',-->
+<!--                function(res, textStatus)-->
+<!--                {-->
+<!--                    document.getElementById("progress_bar").style.width=res['progress_rate'];-->
+<!--                    if(if_reload==true && res['progress_rate']=='100%'){-->
+<!--                        alert('reload Inspection from database');-->
+<!--                        clearInterval(sitv);-->
+<!--                    }-->
+<!--                }-->
+<!--            )-->
+<!--        }, 3000);-->
+</script>
+<!--<div id="page-inner">-->
+<!--    <div class="row">-->
+<!--        <div class="row">-->
+<!--            <div class="col-md-12">-->
+<!--                    <div class="panel panel-default">-->
+<!--                        -->
+<!--                        -->
+                        <div class="panel-body">
+                            <div id="2D_main" style="width: 100%;height:800px;">
+                                <body style="height: 100%; margin: 0">
+                                <div id="2Dcontainer" style="height: 100%">
+
+                                </div>
+                                </body>
+                            </div>
+                        </div>
+
+
+                        <!--</form>-->
+<!--                    </div>-->
+<!--            </div>-->
+
+<!--        </div>-->
+
+<!--    </div>-->
+<!--</div>-->
+<script type="text/javascript">
+    function load()
+    {
+        this;
+        $("#page-wrapper").css('min-height','800px');
+        $("#page-inner").css('min-height','800px');
+        onInit_2D_Chart();
+
+        onLoadData();
+    }
+
+    function onInit_2D_Chart(){
+        var dom = document.getElementById("2Dcontainer");
+        myChart_2D = echarts.init(dom,'dark');
+        var app = {};
+        grid_offset = [60, 60, 120, 120];
+
+        option = {
+            title : {
+                text: '成形高度-成形时间散点图',
+<!--                subtext: '2D',-->
+                x: 'center',
+                align: 'right'
+            },
+            grid: {
+                top: grid_offset[0],
+                bottom: grid_offset[1],
+                left: grid_offset[2],
+                right: grid_offset[3],
+            },
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+
+<!--            legend: {-->
+<!--                data:[{% for code in Product_code_list %}'{{ code|safe }}'{% if not forloop.last %},{% endif %}{% endfor %}],-->
+<!--                orient: 'vertical',-->
+<!--                x:'left',      //可设定图例在左、右、居中-->
+<!--                y:'top',     //可设定图例在上、下、居中-->
+<!--                padding:[80,0,0,120],   //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]-->
+<!--            },-->
+
+            dataZoom: [
+                {
+                    type: 'slider',
+                    xAxisIndex: 0,
+                    filterMode: 'empty'
+                },
+                {
+                    type: 'slider',
+                    yAxisIndex: 0,
+                    filterMode: 'empty'
+                },
+                {
+                    type: 'inside',
+                    xAxisIndex: 0,
+                    filterMode: 'empty'
+                },
+                {
+                    type: 'inside',
+                    yAxisIndex: 0,
+                    filterMode: 'empty'
+                }
+            ],
+            xAxis : [
+                {
+                    name: 'Xvalue',
+                    nameLocation :'start',
+                    type : 'value',
+<!--                    boundaryGap : false,-->
+                    axisLine: {onZero: false},
+                    interval:50,
+                    data : []
+                }
+            ],
+            yAxis: [{
+                    name: 'Yvalue',
+                    type: 'value',
+                    position:'right',
+                    axisLine: {onZero: false},
+                    interval:50,
+                }
+            ],
+<!--            series: [-->
+<!--                {% for code in Product_code_list %}-->
+<!--                {-->
+<!--                    name: '{{ code|safe }}',-->
+<!--                    type: 'line',-->
+<!--                    animation: false,-->
+<!--                    data:[]-->
+<!--                }{% if not forloop.last %},{% endif %}-->
+<!--                {% endfor %}-->
+<!--            ]-->
+        };
+        myChart_2D.setOption(option, true);
+        myChart_2D.showLoading({
+            text: '数据正在努力加载...',
+            textStyle: { fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+    }
+
+
+
+    function onLoadData()
+    {
+        $.get('/LAMProcessData/QueryData/AnalyseLAMProcess_LayerData/',
+            {'MissionID_list':'{{ MissionID_list }}'},
+            function (data) {
+                <!--2D绘图-->
+                onLoadData_2D(data['data_2D']);
+            }
+        );
+    }
+
+
+
+    function onLoadData_2D(data)
+    {
+<!--    [[XValue, YValue, ZValue, ScanningRate],[],[],...]-->
+<!--        X       Y      size      color-->
+
+        function getXYZRangeOnExtent(data) {
+            var X_Max = -Infinity;
+            var Y_Max = -Infinity;
+            var Z_Max = -Infinity;
+            var X_Min = Infinity;
+            var Y_Min = Infinity;
+            var Z_Min = Infinity;
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                var X_Val = item[0];
+                var Y_Val = item[1];
+                var Z_Val = item[2];
+                X_Max = Math.max(X_Val, X_Max);
+                Y_Max = Math.max(Y_Val, Y_Max);
+                Z_Max = Math.max(Z_Val, Z_Max);
+                X_Min = Math.min(X_Val, X_Min);
+                Y_Min = Math.min(Y_Val, Y_Min);
+                Z_Min = Math.min(Z_Val, Z_Min);
+            }
+            return {
+                X_Max: X_Max,
+                Y_Max: Y_Max,
+                Z_Max: Z_Max,
+                X_Min: X_Min,
+                Y_Min: Y_Min,
+                Z_Min: Z_Min,
+            };
+        }
+
+        var range = getXYZRangeOnExtent(data);
+
+
+        var containerHeight = document.getElementById('2Dcontainer').offsetHeight;
+        var containerWidth = document.getElementById('2Dcontainer').offsetWidth;
+
+        var grid_width = containerWidth-grid_offset[2]-grid_offset[3];
+        var grid_height = containerHeight-grid_offset[0]-grid_offset[1];
+        var W_H_ratio = grid_width/grid_height;
+
+        if(range.X_Max-range.X_Min > W_H_ratio*(range.Y_Max-range.Y_Min)){
+             var X_Value_Range = range.X_Max-range.X_Min;
+             var Y_Value_Range = (range.X_Max-range.X_Min)/W_H_ratio;
+        }
+        else{
+             var Y_Value_Range = range.Y_Max-range.Y_Min;
+             var X_Value_Range = W_H_ratio*(range.Y_Max-range.Y_Min);
+        }
+        var X_Value_Max = formatInt((range.X_Max+range.X_Min)/2+X_Value_Range/2, 1, true);
+        var X_Value_Min = formatInt((range.X_Max+range.X_Min)/2-X_Value_Range/2, 1, false);
+
+        var Y_Value_Max = formatInt((range.Y_Max+range.Y_Min)/2+Y_Value_Range/2, 1, true);
+        var Y_Value_Min = formatInt((range.Y_Max+range.Y_Min)/2-Y_Value_Range/2, 1, false);
+
+        var option = {
+            title: {
+                text: '激光成形过程 坐标-瞬时速率散点图',
+                left: 'center',
+                top: 5
+            },
+            animation: false,//是否开启动画，默认是开启的，true是开启的,false是关闭的???
+            visualMap:  [
+                {
+<!--                高度-->
+                    top: 10,
+                    type: 'continuous',
+                    calculable: true,
+                    dimension: 2,                           //指定用数据的『哪个维度』，映射到视觉元素上。『数据』即 series.data。 可以把 series.data 理解成一个二维数组,其中每个列是一个维度,默认取 data 中最后一个维度
+                    hoverLink:false,                        //鼠标悬浮到 visualMap 组件上时，鼠标位置对应的数值 在 图表中对应的图形元素，会高亮
+                    min:range.Z_Min,
+                    max:range.Z_Max,
+                    realtime: true,                        //表示拖拽时是否实时更新
+                    itemWidth:20,                           //图形的宽度，即长条的宽度。
+                    itemHeight:grid_height,                         //图形的高度，即长条的高度。
+                    range:[range.Z_Min, range.Z_Min+5],                          //指定手柄对应数值的位置。range 应在 min max 范围内
+                    text:['成形高度(mm)',''],
+                    symbolSize: [range.Z_Min, range.Z_Max],
+                    textStyle: {color: '#fff'}
+                },
+                {
+<!--                 扫描速率-->
+                    top: 40,
+                    left: 100,
+                    type: 'piecewise',
+                    dimension: 3,
+                    hoverLink:true,                         //鼠标悬浮到 visualMap 组件上时，鼠标位置对应的数值 在 图表中对应的图形元素，会高亮
+
+                    pieces: [
+                        {min: 1250, label: '>1250', color: 'grey'},
+                        {min: 1000, max: 1250, label: '1000~1250',color:'#00FF00'},
+                        {min: 800, max: 1000, label: '800~1000', color:'#00CC00'},
+                        {min: 600, max: 800, label: '600~800', color:'#339900'},
+                        {min: 400, max: 600, label: '400~600',color:'#CC9900'},
+                        {min: 200, max: 400, label: '200~400', color:'#FF9900'},
+                        {max: 200, label: '<200', color:'#FF0000'}
+                    ],
+<!--                    text:['瞬时扫描速率(mm/min)',''],-->
+                    textStyle: {color: '#ffffff'}
+                }
+            ],
+            tooltip:{
+                trigger: 'item',
+                axisPointer: {
+                    type: 'cross'
+                },
+                formatter:function(params){
+                    var res = "X: "+params.value[0];
+                    res += "<br>Y: "+params.value[1];
+                    res += "<br>Z: "+params.value[2];
+                    res += "<br>SPD: "+params.value[3];
+                    return res;
+                },
+<!--                position: function (pos, params, el, elRect, size){-->
+<!--                        var obj = {top: 10};-->
+<!--                        obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;-->
+<!--                        return obj;-->
+<!--                    },-->
+            },
+            xAxis: [{
+                type: 'value',
+                min: X_Value_Min,
+                max: X_Value_Max,
+            }],
+            yAxis: [{
+                type: 'value',
+                min: Y_Value_Min,
+                max: Y_Value_Max,
+            }],
+            animation: false,
+            series: [{
+                name: '瞬时速率',
+                type: 'scatter',
+                symbolSize: 3,
+                data: data,
+<!--                blendMode: 'lighter',-->
+<!--                large: true,-->
+<!--                largeThreshold: 2000,-->
+            }]
+        };
+        myChart_2D.hideLoading();
+        myChart_2D.setOption(option);
+        myChart_2D.dispatchAction({
+            type: 'selectDataRange',
+            // 选取 20 到 40 的值范围
+            selected: [20, 40],
+            // 取消选中第二段
+            selected: { 1: false },
+            // 取消选中类目 `优`
+            selected: { '优': false }
+        });
+
+    }
+
+
+
+</script>
+{% endblock %}
