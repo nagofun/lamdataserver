@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<p>实现功能：</p>
+<div  style="text-indent:35px">通过拆分每层的负搭接弓字步扫描子程序，一分为二，依次扫描，可实现在不改变工艺参数的前提下减缓构件热量积累速度，降低组织粗化风险。</div>
+<p>局限性：</p>
+<ol>
+  <li>暂只适用于拆分负搭接弓字步扫描子程序</li>
+  <li>暂不适用于具有“识别规则方波”、“变速扫描”功能的子程序</li>
+  <li>此方法将对成形过程的成形效率产生不利影响，将使沉积效率降低、层提升参数减小，造成成形时间延长，故不推荐在追求成形效率的过程中使用</li>
+</ol>
+<p>使用方法：</p>
+<ol>
+  <li>对编程用sub.nc文件或sub.pim文件进行拆分处理</li>
+    假设一层之内n个多边形(polygon)的负搭接扫描G代码包含以下内容：
+    <pre><code style="font-size: 15px;" >
+    polygon_1的Track1+2轨迹，
+    polygon_2的Track1+2轨迹，
+        ...
+    polygon_n的Track1+2轨迹。
+    </code></pre>
+    则拆分处理后，将按以下规律重新排列:
+    <pre><code style="font-size: 15px;" >
+    polygon_1的Track1轨迹，
+        调用<strong>polygon切换函数</strong>，
+    polygon_2的Track1轨迹，
+        调用<strong>polygon切换函数</strong>，
+        ...
+    polygon_n的Track1轨迹，
+        调用<strong>polygon切换函数</strong>，
+
+    调用<strong>Track切换函数</strong>，
+
+    polygon_1的Track2轨迹，
+        调用<strong>polygon切换函数</strong>，
+    polygon_2的Track2轨迹，
+        调用<strong>polygon切换函数</strong>，
+        ...
+    polygon_n的Track2轨迹，
+        调用<strong>polygon切换函数</strong>，
+
+    </code></pre>
+<br>*<B>层间切换函数</B>与<B>层内分块间切换函数</B>可用来控制粉流通断、调整移动路线、设定停顿时间等，
+<br>*<B>层间切换函数</B>可选择启用或不启用，若启用，则在Track1与Track2间调用。
+<br>*<B>层内分块间切换函数</B>可选择启用或不启用，若启用，则在分块填充Track1或Track2后调用，
+  <li>对处理后的子程序文件用GCodeGenerator重新生成数控程序</li>
+</ol>
+
+</body>
+</html>

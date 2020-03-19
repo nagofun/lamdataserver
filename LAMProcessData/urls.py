@@ -220,6 +220,10 @@ urlpatterns = [
     path('InspectionRecords/PhysicochemicalTest/RawStock/add/', views.new_RawStockPhyChemTest),
     path('InspectionRecords/PhysicochemicalTest/RawStock/edit/', views.edit_RawStockPhyChemTest),
 
+
+
+
+
     # 检查成形记录
     re_path('QueryData/InspectLAMProcessRecords/Complete/(?P<MissionItemID>(.+))/$', query_views.queryData_Inspect_Complete_MissionLAMProcessRecords),
     re_path('QueryData/ProgressBarValue/InspectionLAMRecords_By_MissionID/(?P<MissionID>(.+))/$',
@@ -232,6 +236,7 @@ urlpatterns = [
     re_path('QueryData/AnalyseLAMProcess_ZValue/$', query_views.queryData_Analysedata_Zvalue_By_MissionIDList),
     # 分析成形制造过程-累加数据
     re_path('AnalyseLAMProcess/AccumulateData/$', views.AnalyseLAMProcess_AccumulateData),
+    re_path('QueryData/AnalyseLAMProcess_AccumulateData/$', query_views.queryData_Analysedata_AccumulateData_By_MissionIDList),
     # 分析成形制造过程-层内分析
     re_path('AnalyseLAMProcess/LayerData/$', views.AnalyseLAMProcess_LayerData),
     re_path('QueryData/AnalyseLAMProcess_LayerData/$', query_views.queryData_Analysedata_LayerData_By_MissionIDList),
@@ -250,20 +255,39 @@ urlpatterns = [
             views.PhyChemTest_AddToughness),
     re_path('InspectionRecords/PhysicochemicalTest/EditToughness/(?P<ToughnessID>(.+))/$',
             views.PhyChemTest_EditToughness),
+    re_path('InspectionRecords/PhysicochemicalTest/AddFracturetoughness/(?P<MissionItemID>(.+))/$',
+            views.PhyChemTest_AddFracturetoughness),
+    re_path('InspectionRecords/PhysicochemicalTest/EditFracturetoughness/(?P<FracturetoughnessID>(.+))/$',
+            views.PhyChemTest_EditFracturetoughness),
     re_path('InspectionRecords/PhysicochemicalTest/AddChemicalElement/(?P<MissionItemID>(.+))/(?P<IfProductTest>(.+))/$',
             views.PhyChemTest_AddChemicalElement),
     re_path('InspectionRecords/PhysicochemicalTest/EditChemicalElement/(?P<MissionItemID>(.+))/(?P<ChemicalItemID>(.+))/(?P<IfProductTest>(.+))/$',
             views.PhyChemTest_EditChemicalElement),
 
+    # 编程小工具
+    # 复位后自上次已成形的分块继续成形
+    path('PracticalTools/BreakBlockResumption/', views.PracticalTools_BreakBlockResumption),
+    # 负搭接弓字步拆分输出
+    path('PracticalTools/SShapeBreak/', views.PracticalTools_SShapeBreak),
+    re_path('QueryData/ProgressBarValue/PracticalTools_SShapeBreak_By_GUID/(?P<GUID>(.+))/$',
+            query_views.queryData_ProgressBarValue_PracticalTools_SShapeBreak_By_GUID),
+    re_path('QueryData/ProgressBarValue/PracticalTools_BreakBlockResumption_By_GUID/(?P<GUID>(.+))/$',
+            query_views.queryData_ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID),
 
-
-
+    # 下载文件
+    re_path('DownLoadTempFile/(?P<tempfilepath>(.+))/$',
+            views.download_template),
 
     # axjx查询URL
     re_path('QueryData/PreviewTable/LAMTechniqueInstruction/(?P<TechInstID>(.+))/$',
             query_views.queryData_LAMTechInst_Preview),
     re_path('QueryData/PreviewTable/LAMProductMission/(?P<ProductID>(.+))/$',
             query_views.queryData_LAMProductMission_Preview),
+
+    re_path('QueryData/PreviewTable/ProductPhyChemTestMission/(?P<ProductID>(.+))/$',
+            query_views.queryData_ProductPhyChemTestMission_Preview),
+    re_path('QueryData/PreviewTable/RawStockPhyChemTestMission/(?P<RawStockID>(.+))/$',
+            query_views.queryData_RawStockPhyChemTestMission_Preview),
 
 
     # re_path('QueryData/LAMTechniqueInstruction_By_ProductCategory/(?P<ProductCategoryID>(.+))/$',
@@ -295,6 +319,18 @@ urlpatterns = [
     re_path('QueryData/WorkType_By_LAMTechInst/(?P<LAMTechInstID>(.+))/$',
             query_views.queryData_WorkType_By_LAMTechInst),
 
+    # 以工艺文件id查询该工艺文件所有可被激光成形模块选择的工序
+    re_path('QueryData/WorkType_By_LAMTechInst_filter_LAM/(?P<LAMTechInstID>(.+))/$',
+            query_views.queryData_WorkType_By_LAMTechInst_filter_LAM),
+
+    # 以工艺文件id查询该工艺文件所有可被检验模块选择的工序
+    re_path('QueryData/WorkType_By_LAMTechInst_filter_PhyChemTest/(?P<LAMTechInstID>(.+))/$',
+            query_views.queryData_WorkType_By_LAMTechInst_filter_PhyChemTest),
+
+    # 以工艺文件id查询该工艺文件所有可被库房模块选择的工序
+    re_path('QueryData/WorkType_By_LAMTechInst_filter_RawStockSendRetrieve/(?P<LAMTechInstID>(.+))/$',
+            query_views.queryData_WorkType_By_LAMTechInst_filter_RawStockSendRetrieve),
+
     # 以零件类型查询产品列表
     re_path('QueryData/Product_By_ProductCategory/(?P<ProductCategoryID>(.+))/$',
             query_views.queryData_Product_By_ProductCategory),
@@ -303,6 +339,9 @@ urlpatterns = [
     re_path('QueryData/ProductID_By_ProductCode/(?P<ProductCode>(.+))/$',
             query_views.queryData_ProductID_By_ProductCode),
 
+    # 以原材料批号查询原材料id
+    re_path('QueryData/RawStockID_By_RawStockBatchNumber/(?P<RawStockBatchNumber>(.+))/$',
+            query_views.queryData_RawStockID_By_RawStockBatchNumber),
     # 以任务id查询工段id
     re_path('QueryData/WorksectionId_By_MissionID/(?P<MissionID>(.+))/$',
             query_views.queryData_WorksectionId_By_MissionID),

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<p>实现功能：</p>
+<div  style="text-indent:35px">在无法使用重定位功能的数控系统上，若数控程序不得不复位退出，重新调用程序运行时加工头可自动定位到上次关光位置、跳过已成形部分继续成形。</div>
+<p>局限性：</p>
+<ol>
+  <li>只适用于Fagor CNC 8070数控系统</li>
+  <li>只适用于一个Do循环内只调用一次sub子程序的情况</li>
+</ol>
+<p>使用方法：</p>
+<ol>
+  <li>首先在确认轮廓程序段（如：010001.nc）中对参数进行初始赋值，并按指定路线运动到指定点</li>
+<pre><code style="font-size: 15px;" >
+<em>010001.nc</em>
+    ...
+    (初始赋值)
+    <strong>P196=*** (INIT X-POS)
+    P197=*** (INIT Y-POS)
+    P198=*** (INIT Z-POS)</strong>
+    (按指定路线运动到指定点)
+    <strong>G90 G01 Z200 F2000
+    G90 G01 XP196 YP197 F1000
+    G90 G01 ZP198 F800</strong>
+    ...
+</code></pre>
+    <li>然后在成形程序段中设置语句运行到上一停光点位置</li>
+<pre><code style="font-size: 15px;" >
+<em>010002.nc</em>
+    ...
+    (定位到上一停光点位置)
+    <strong>G90 G01 Z200 F2000
+    G90 G01 XP196 YP197 F1000
+    G90 G01 ZP198 F800</strong>
+    SP181 M3
+    M12
+    G04 K10
+    P182=-20+P180
+    P183=60+P180
+    $IF [V.A.PPOS.Z >=P182] * [V.A.PPOS.Z <=P183]
+        $DO
+            ...
+            G91 G01 ZP191 FP109
+            (将已成形分块计数器重置为1)
+            <strong>P199=1</strong>
+        $ENDDO V.A.PPOS.Z < P183
+    $ENDIF
+</code></pre>
+    <li>最后用此工具修改SUB子程序文件（如：sub.nc），下载后重新用GCodeGenerator切分该子程序文件。</li>
+<pre><code style="font-size: 15px;" >
+<em>sub.nc</em>
+    ...
+(0000.igs)
+%L 3000
+	(*********  G Code Refering to Note Sequence  *********)
+    <strong>$IF [P199<=1]</strong>
+	(1-1 (0000.igs))
+	G91 G01 ZP192 FP109
+	G90 G01 X-219.702 Y137.256 FP109
+	G91 G01 Z-P192 FP109
+	#CALL 1120
+	G91 G01 X-1.407 Y-4.081 FP103
+	X-2.135 Y-3.752 FP103
+	...
+	#CALL 1121
+	<strong>P199=2
+	P196=V.A.PPOS.X
+	P197=V.A.PPOS.Y
+	P198=V.A.PPOS.Z
+    $ENDIF</strong>
+
+    <strong>$IF [P199<=2]</strong>
+	(2-1 (0000.igs))
+	G91 G01 ZP192 FP109
+	G90 G01 X-30.851 Y95.963 FP109
+	G91 G01 Z-P192 FP109
+	#CALL 1120
+	G91 G01 X-1.407 Y-4.081 FP103
+	X-2.135 Y-3.752 FP103
+	...
+	#CALL 1121
+	<strong>P199=3
+	P196=V.A.PPOS.X
+	P197=V.A.PPOS.Y
+	P198=V.A.PPOS.Z
+    $ENDIF</strong>
+...
+#RET
+</code></pre>
+
+</ol>
+</body>
+</html>

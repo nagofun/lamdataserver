@@ -253,6 +253,7 @@
         <div class="sidebar-collapse">
             <ul class="nav" id="main-menu">
 
+                {% if perms.LAMProcessData.SystemInformation %}
                 <li>
                     <a href="{{ Common_URL.EditBasicInfomation }}"><i class="fa fa-edit"></i>基础信息设定<span
                             class="fa arrow"></span></a>
@@ -286,6 +287,8 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Technique %}
                 <li>
                     <a href="{{ Common_URL.EditBasicInfomation }}"><i class="fa fa-dashboard"></i>工艺信息设定<span
                             class="fa arrow"></span></a>
@@ -311,6 +314,8 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Manufacture %}
                 <li>
                     <a href=""><i class="fa fa-desktop"></i>生产过程记录<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
@@ -318,11 +323,18 @@
                             <a href="{{ Common_URL.Back_URL_lamproduct }}">产品实例</a>
                         </li>
                         <li>
-                            <a href="{{ Common_URL.Back_URL_lamprocessmission }}">生产任务</a>
+                            <a href="{{ Common_URL.Back_URL_lamprocessmission }}">激光成形生产任务</a>
                         </li>
                         <li>
                             <a href="{{ Common_URL.LamProcessMission_TimeCutRecords }}">已有数据按生产任务划分</a>
                         </li>
+                    </ul>
+                </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Operator_STOREROOM %}
+                <li>
+                    <a href=""><i class="fa fa-desktop"></i>库房管理<span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
                         <li>
                             <a href="{{ Common_URL.Back_URL_rawstock }}">原材料库存记录</a>
                         </li>
@@ -331,6 +343,8 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Quality %}
                 <li>
                     <a href=""><i class="fa fa-qrcode"></i>质量检验记录<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
@@ -342,6 +356,8 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Operator_LAM %}
                 <li>
                     <a href=""><i class="fa fa-sitemap"></i>激光成形班组<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
@@ -356,6 +372,8 @@
 
                     </ul>
                 </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Operator_INSP %}
                 <li>
                     <a href=""><i class="fa fa-table"></i>过程记录过检<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
@@ -364,6 +382,8 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Technique %}
                 <li>
                     <a href=""><i class="fa fa-bar-chart-o"></i>制造过程分析<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
@@ -381,6 +401,22 @@
                         </li>
                     </ul>
                 </li>
+                {% endif %}
+                {% if perms.LAMProcessData.Technique %}
+                <li>
+                    <a href="{{ Common_URL.EditBasicInfomation }}"><i class="fa fa-qrcode"></i>编程小工具<span
+                            class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_BreakBlockResumption }}">断点分块恢复成形</a>
+                        </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_SShapeBreak }}">负搭接弓字步拆分</a>
+                        </li>
+
+                    </ul>
+                </li>
+                {% endif %}
 
                 <!--<li>-->
                     <!--<a href=""><i class="fa fa-sitemap"></i>激光成形过程参数实时采集<span-->
@@ -674,6 +710,14 @@
     // formatInt(2345, 2. false) -> 2300
     // formatInt(2345, 3, true)  -> 3000
     // formatInt(2345, 3, false) -> 2000
+
+    function S4() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    // Generate a pseudo-GUID by concatenating random hexadecimal.
+    function guid() {
+       return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    };
 
 </script>
 <!--Custom Js -->

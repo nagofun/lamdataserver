@@ -218,6 +218,33 @@ def queryData_LAMProductMission_Preview(request, ProductID):
 	# return HttpResponse(TechInst_dict, content_type='application/json')
 	return HttpResponse(html, content_type='application/json')
 
+@login_required
+@csrf_exempt
+def queryData_ProductPhyChemTestMission_Preview(request, ProductID):
+	all_datadict = PhysicochemicalTest_Mission.objects.filter(available=True, LAM_product=ProductID).order_by('commission_date')
+	Mission_dict = {
+		'id_%d' % data.id:
+			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
+			 'commission_date': str(data.commission_date),
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(Mission_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_RawStockPhyChemTestMission_Preview(request, RawStockID):
+	all_datadict = PhysicochemicalTest_Mission.objects.filter(available=True, RawStock=RawStockID).order_by('commission_date')
+	Mission_dict = {
+		'id_%d' % data.id:
+			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
+			 'commission_date': str(data.commission_date),
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(Mission_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
 
 # 根据产品类型查询该产品涉及的所有工艺文件
 # 此函数失效 at 20190804
@@ -280,6 +307,63 @@ def queryData_WorkType_By_LAMTechInst(request, LAMTechInstID):
 	return HttpResponse(html, content_type='application/json')
 
 
+# 以工艺文件id查询该工艺文件所有可被激光成形模块选择的工序
+@login_required
+@csrf_exempt
+def queryData_WorkType_By_LAMTechInst_filter_LAM(request, LAMTechInstID):
+	# print(ProductCategoryID)
+	all_datadict = LAM_TechInst_Serial.objects.filter(available=True, technique_instruction=LAMTechInstID, selectable_LAM=True).order_by(
+		'serial_number')
+	TechInst_dict = {
+		'id_%d' % data.id:
+			{
+				'id': data.id,
+				'worktype': '%d-%s[%s]' % (data.serial_number, data.serial_worktype, data.serial_note)
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(TechInst_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+
+
+# 以工艺文件id查询该工艺文件所有可被检验模块选择的工序
+@login_required
+@csrf_exempt
+def queryData_WorkType_By_LAMTechInst_filter_PhyChemTest(request, LAMTechInstID):
+	# print(ProductCategoryID)
+	all_datadict = LAM_TechInst_Serial.objects.filter(available=True, technique_instruction=LAMTechInstID, selectable_PhyChemTest=True).order_by(
+		'serial_number')
+	TechInst_dict = {
+		'id_%d' % data.id:
+			{
+				'id': data.id,
+				'worktype': '%d-%s[%s]' % (data.serial_number, data.serial_worktype, data.serial_note)
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(TechInst_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+# 以工艺文件id查询该工艺文件所有可被库房模块选择的工序
+@login_required
+@csrf_exempt
+def queryData_WorkType_By_LAMTechInst_filter_RawStockSendRetrieve(request, LAMTechInstID):
+	# print(ProductCategoryID)
+	all_datadict = LAM_TechInst_Serial.objects.filter(available=True, technique_instruction=LAMTechInstID, selectable_RawStockSendRetrieve=True).order_by(
+		'serial_number')
+	TechInst_dict = {
+		'id_%d' % data.id:
+			{
+				'id': data.id,
+				'worktype': '%d-%s[%s]' % (data.serial_number, data.serial_worktype, data.serial_note)
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(TechInst_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+
 # 根据产品类型id查询所有产品实例
 @login_required
 @csrf_exempt
@@ -311,6 +395,22 @@ def queryData_ProductID_By_ProductCode(request, ProductCode):
 	# print('queryData_ProductID_By_ProductCode:'+str(productid))
 	_dict = {
 		'productid': productid,
+	}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+# 根据原材料批号查询原材料实例id
+@login_required
+@csrf_exempt
+def queryData_RawStockID_By_RawStockBatchNumber(request, RawStockBatchNumber):
+	# print(ProductCategoryID)
+	try:
+		productid = RawStock.objects.get(available=True, batch_number=RawStockBatchNumber).id
+	except:
+		productid = -1
+	# print('queryData_ProductID_By_ProductCode:'+str(productid))
+	_dict = {
+		'rawstockid': productid,
 	}
 	html = json.dumps(_dict, ensure_ascii=False)
 	return HttpResponse(html, content_type='application/json')
@@ -737,8 +837,31 @@ def queryData_Analysedata_Zvalue_By_MissionIDList(request):
 
 @login_required
 @csrf_exempt
+def queryData_Analysedata_AccumulateData_By_MissionIDList(request):
+	t1 = time.time()
+	_missionID_list_str = request.GET.get('MissionID_list')
+	_missionID_list = _missionID_list_str.split(',')
+	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
+	                      in _missionID_list]
+	''''''
+	# ?????
+	result = map(RT_FineData.AnalyseData.AnalyseData_AccumulateData_ByMissionID, _missionID_list)
+	jsondata_list = list(result)
+	data_3D = []
+	for i in jsondata_list:
+		data_3D.extend(i)
+	jsondata = {
+		'data_3D':data_3D,
+	}
+	html = json.dumps(jsondata, ensure_ascii=False)
+	t2 = time.time()
+	print('Finish queryData_Analysedata_LayerData_By_MissionIDList, Cost:%.4f'%(t2-t1))
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
 def queryData_Analysedata_LayerData_By_MissionIDList(request):
-	print('Start queryData_Analysedata_LayerData_By_MissionIDList')
+	# print('Start queryData_Analysedata_LayerData_By_MissionIDList')
 	t1 = time.time()
 	_missionID_list_str = request.GET.get('MissionID_list')
 	_missionID_list = _missionID_list_str.split(',')
@@ -779,13 +902,13 @@ def queryData_Analysedata_LayerData_By_MissionIDList(request):
 
 	html = json.dumps(jsondata, ensure_ascii=False)
 	t2=time.time()
-	print('Finish queryData_Analysedata_LayerData_By_MissionIDList, Cost:%.4f'%(t2-t1))
+	# print('Finish queryData_Analysedata_LayerData_By_MissionIDList, Cost:%.4f'%(t2-t1))
 	return HttpResponse(html, content_type='application/json')
 
 @login_required
 @csrf_exempt
 def queryData_Analysedata_ScanningRate3D_By_MissionIDList(request):
-	print('Start queryData_Analysedata_ScanningRate3D_By_MissionIDList')
+	# print('Start queryData_Analysedata_ScanningRate3D_By_MissionIDList')
 	t1 = time.time()
 	_missionID_list_str = request.GET.get('MissionID_list')
 	_missionID_list = _missionID_list_str.split(',')
@@ -808,7 +931,7 @@ def queryData_Analysedata_ScanningRate3D_By_MissionIDList(request):
 
 	html = json.dumps(jsondata, ensure_ascii=False)
 	t2=time.time()
-	print('Finish queryData_Analysedata_ScanningRate3D_By_MissionIDList, Cost:%.4f'%(t2-t1))
+	# print('Finish queryData_Analysedata_ScanningRate3D_By_MissionIDList, Cost:%.4f'%(t2-t1))
 	return HttpResponse(html, content_type='application/json')
 
 @login_required
@@ -997,19 +1120,52 @@ def queryData_RealTimeRecord_by_WorksectionID(requests, WorksectionID):
 
 # print('query_view.py end')
 
-
-@login_required
-@csrf_exempt
-def queryData_ProgressBarValue_InspectionLAMRecords_By_MissionID(request, MissionID):
-
-	cache_value = CacheOperator('ProgressBarValue_CompleteInspect_MissionId', True, MissionID, None)
-	# print('get:',cache_value)
+def queryData_ProgressBarValue(Type,ID):
+	cache_value = CacheOperator(Type, True, ID, None)
 	if cache_value == None:
 		cache_value = 0.0
-
-		pass
 	_dict = {
 		'progress_rate':'%.5f%%'%(100*cache_value),
 	}
 	html = json.dumps(_dict, ensure_ascii=False)
+	return html
+
+@login_required
+@csrf_exempt
+def queryData_ProgressBarValue_InspectionLAMRecords_By_MissionID(request, MissionID):
+	# cache_value = CacheOperator('ProgressBarValue_CompleteInspect_MissionId', True, MissionID, None)
+	# if cache_value == None:
+	# 	cache_value = 0.0
+	# 	pass
+	# _dict = {
+	# 	'progress_rate':'%.5f%%'%(100*cache_value),
+	# }
+	html = queryData_ProgressBarValue('ProgressBarValue_CompleteInspect_MissionId', MissionID)
+	return HttpResponse(html, content_type='application/json')
+
+
+@login_required
+@csrf_exempt
+def queryData_ProgressBarValue_PracticalTools_SShapeBreak_By_GUID(request, GUID):
+	# cache_value = CacheOperator('ProgressBarValue_PracticalTools_SShapeBreak_By_GUID', True, GUID, None)
+	# if cache_value == None:
+	# 	cache_value = 0.0
+	# 	pass
+	# _dict = {
+	# 	'progress_rate':'%.5f%%'%(100*cache_value),
+	# }
+	html = html = queryData_ProgressBarValue('ProgressBarValue_PracticalTools_SShapeBreak_By_GUID', GUID)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID(request, GUID):
+	# cache_value = CacheOperator('ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID', True, GUID, None)
+	# if cache_value == None:
+	# 	cache_value = 0.0
+	# 	pass
+	# _dict = {
+	# 	'progress_rate':'%.5f%%'%(100*cache_value),
+	# }
+	html = queryData_ProgressBarValue('ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID', GUID)
 	return HttpResponse(html, content_type='application/json')

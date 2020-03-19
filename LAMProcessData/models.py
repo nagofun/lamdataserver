@@ -15,6 +15,22 @@ from lamdataserver.settings import ANALYSE_CNCDATA_URL,ANALYSE_ACCUMULATEDATA_UR
 # )
 '''框架表'''
 # print('start models.py')
+
+
+
+class ModulePermission(models.Model):
+    class Meta:
+        permissions = (
+            ("SystemInformation", u"基础信息"),
+            ("Technique", u"技术管理"),
+            ("Quality", u"质量管理"),
+            ("Manufacture", u"生产管理"),
+            ("Operator_LAM", u"激光成形操作者"),
+            ("Operator_HT", u"热处理操作者"),
+            ("Operator_STOREROOM", u"库房管理者"),
+            ("Operator_INSP", u"检验者"),
+        )
+
 # 厂房
 class Workshop(models.Model):
     # 名称
@@ -105,7 +121,7 @@ class RawStock(models.Model):
     # 原材料类别
     rawstock_category = models.ForeignKey(RawStockCategory, on_delete=models.CASCADE)
     # 供应商
-    rawstock_supplier =models.CharField(max_length=30, null=True, blank=True)
+    rawstock_supplier = models.CharField(max_length=30, null=True, blank=True)
     # 是否有效
     available = models.BooleanField(default=True)
     # 入厂复验情况-化学成分 存于检测流水表内
@@ -287,6 +303,20 @@ class LAM_TechInst_Serial(models.Model):
     available = models.BooleanField(default=True)
     # 选定成形参数包
     process_parameter = models.ForeignKey(LAMProcessParameters, on_delete=models.CASCADE, null=True, blank=True)
+    # 是否可被调度模块选择
+    selectable_Scheduling = models.BooleanField(default=True)
+    # 是否可被激光成形模块选择
+    selectable_LAM = models.BooleanField(default=False)
+    # 是否可被热处理模块选择
+    selectable_HeatTreatment = models.BooleanField(default=False)
+    # 是否可被检验模块选择
+    selectable_PhyChemTest = models.BooleanField(default=False)
+    # 是否可被库房模块选择
+    selectable_RawStockSendRetrieve = models.BooleanField(default=False)
+    # 是否可被称重模块选择
+    selectable_Weighing = models.BooleanField(default=False)
+
+
     def __str__(self):
         return "%s [%d-%s-%s]"%(self.technique_instruction,self.serial_number, self.serial_worktype, self.serial_note)
 
@@ -425,7 +455,26 @@ class MechanicalTest_Toughness(models.Model):
     def __str__(self):
         return self.sample_number
 
+class MechanicalTest_FractureToughness(models.Model):
+    # 试样编号
+    sample_number = models.CharField(max_length=10, null=True, blank=True)
+    # 取样部位
+    sampling_position = models.ForeignKey(SamplingPosition, on_delete=models.CASCADE)
+    # 取样方向
+    sampling_direction = models.ForeignKey(SamplingDirection, on_delete=models.CASCADE)
+    # 测试温度
+    test_temperature = models.FloatField(default=25, null=True, blank=True)
+    # 断裂韧性
+    fracturetoughness_KIC = models.FloatField(null=True, blank=True)
+    # 断裂韧性
+    fracturetoughness_KQ = models.FloatField(null=True, blank=True)
+    # 数据有效性判定
+    Effectiveness = models.BooleanField(null=True, blank=True)
+    # 是否有效
+    available = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.sample_number
 
 
 # 化学成分测试
@@ -481,6 +530,8 @@ class PhysicochemicalTest_Mission(models.Model):
     mechanicaltest_tensile = models.ManyToManyField(MechanicalTest_Tensile, blank=True)
     # 冲击测试
     mechanicaltest_toughness = models.ManyToManyField(MechanicalTest_Toughness, blank=True)
+    # 断裂韧度测试
+    mechanicaltest_fracturetoughness = models.ManyToManyField(MechanicalTest_FractureToughness, blank=True)
     # 化学成分测试
     chemicaltest = models.ManyToManyField(ChemicalTest, blank=True)
         # models.ForeignKey(ChemicalTest, on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -713,7 +764,10 @@ class Process_CNCData_Mission(models.Model):
     # 任务信息
     process_mission = models.ForeignKey(LAMProcessMission, related_name='Mission_CNCData', on_delete=models.DO_NOTHING, null=True, blank=True)
     # 存储数据 包含Z_value, layer_thickness 等
-    data_file = models.FileField(upload_to='.'+ANALYSE_CNCDATA_URL, null=True)
+    # zip(missionid_list, productcode_list, minute_index_list, ZValue_list, _P191_list)
+    zvalue_data_file = models.FileField(upload_to='.'+ANALYSE_CNCDATA_URL, null=True)
+    # 存储数据 包含每分钟开光能量累计总数、每分钟停光秒数。
+    accumulate_data_file = models.FileField(upload_to='.'+ANALYSE_ACCUMULATEDATA_URL, null=True)
     # # 日期
     # index_date = models.DateField()
     # # 日期对应的整数 8位 YYYYMMDD

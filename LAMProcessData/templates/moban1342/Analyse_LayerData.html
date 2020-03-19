@@ -109,6 +109,7 @@
     function onInit_2D_Chart(){
         var dom = document.getElementById("2Dcontainer");
         myChart_2D = echarts.init(dom,'dark');
+        myChart_2D_VisualMap_selected = null;
         var app = {};
         grid_offset = [60, 60, 120, 120];
 
@@ -310,14 +311,15 @@
                     hoverLink:true,                         //鼠标悬浮到 visualMap 组件上时，鼠标位置对应的数值 在 图表中对应的图形元素，会高亮
 
                     pieces: [
-                        {min: 1250, label: '>1250', color: 'grey'},
-                        {min: 1000, max: 1250, label: '1000~1250',color:'#00FF00'},
-                        {min: 800, max: 1000, label: '800~1000', color:'#00CC00'},
-                        {min: 600, max: 800, label: '600~800', color:'#339900'},
-                        {min: 400, max: 600, label: '400~600',color:'#CC9900'},
-                        {min: 200, max: 400, label: '200~400', color:'#FF9900'},
-                        {max: 200, label: '<200', color:'#FF0000'}
+                        {'min': 1250, 'max':Infinity, 'label':'>1250(mm/min)', 'color': 'grey'},
+                        {'min': 950, 'max': 1250, 'label': '950~1250(mm/min)','color':'#00FF00'},
+                        {'min': 750, 'max': 950, 'label': '750~950(mm/min)', 'color':'#00CC00'},
+                        {'min': 550, 'max': 750, 'label': '550~750(mm/min)', 'color':'#FF55FF'},
+                        {'min': 400, 'max': 550, 'label': '400~550(mm/min)','color':'#CC9900'},
+                        {'min': 200, 'max': 400, 'label': '200~400(mm/min)', 'color':'#FF9900'},
+                        {'min': 1, 'max': 200, 'label': '<200(mm/min)', 'color':'#FF0000'}
                     ],
+
 <!--                    text:['瞬时扫描速率(mm/min)',''],-->
                     textStyle: {color: '#ffffff'}
                 }
@@ -350,7 +352,6 @@
                 min: Y_Value_Min,
                 max: Y_Value_Max,
             }],
-            animation: false,
             series: [{
                 name: '瞬时速率',
                 type: 'scatter',
@@ -363,15 +364,27 @@
         };
         myChart_2D.hideLoading();
         myChart_2D.setOption(option);
-        myChart_2D.dispatchAction({
-            type: 'selectDataRange',
-            // 选取 20 到 40 的值范围
-            selected: [20, 40],
-            // 取消选中第二段
-            selected: { 1: false },
-            // 取消选中类目 `优`
-            selected: { '优': false }
-        });
+        myChart_2D.on('datarangeselected',params => {
+            if (params.visualMapId[8]=='1')
+            {
+                myChart_2D_VisualMap_selected = params.selected;
+                return
+            }
+            var smallData = data.filter(function (e) { return e[2]>=params.selected[0] && e[2]<=params.selected[1]; });
+
+            myChart_2D.setOption(
+            {
+                visualMap:  [
+                    {},
+                    {
+                        selected:myChart_2D_VisualMap_selected,
+                    }
+                ],
+                series: [{
+                    data: smallData,
+                }],
+            });
+        })
 
     }
 

@@ -126,6 +126,17 @@
             textStyle: {fontSize : 30 , color: '#444' },
             effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
         });
+        myChart_3D_VisualMap_selected = null;
+        myChart_3D_VisualMap_pieces = [
+            {'min': 1250, 'max':Infinity, 'label':'>1250(mm/min)', 'symbolSize':0.5, 'color': 'grey'},
+            {'min': 950, 'max': 1250, 'label': '950~1250(mm/min)','symbolSize':1,'color':'#00FF00'},
+            {'min': 750, 'max': 950, 'label': '750~950(mm/min)', 'symbolSize':1,'color':'#00CC00'},
+            {'min': 550, 'max': 750, 'label': '550~750(mm/min)', 'symbolSize':1.8,'color':'#FF55FF'},
+            {'min': 400, 'max': 550, 'label': '400~550(mm/min)','symbolSize':2,'color':'#CC9900'},
+            {'min': 200, 'max': 400, 'label': '200~400(mm/min)', 'symbolSize':3,'color':'#FF9900'},
+            {'min': 1, 'max': 200, 'label': '<200(mm/min)', 'symbolSize':4,'color':'#FF0000'}
+        ];
+        myChart_3D_grid3D_viewControl_view = {'alpha':0, 'beta':0, 'distance':80, 'center':[0,0,0]};
 
     }
 
@@ -152,6 +163,7 @@
             effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
         });
     }
+
 
 
 
@@ -189,23 +201,26 @@
 
         range = getXYZRangeOnExtent(data);
         box_length = Math.max(range.Y_Max-range.Y_Min, range.X_Max-range.X_Min);
+        box_length = Math.max(box_length, range.Z_Max-range.Z_Min);
 
         box_range = new Array(
             formatInt((range.X_Max+range.X_Min-box_length)/2,2,false),formatInt((range.X_Max+range.X_Min-box_length)/2,2,false)+formatInt(box_length,2,true)+100,
             formatInt((range.Y_Max+range.Y_Min-box_length)/2,2,false),formatInt((range.Y_Max+range.Y_Min-box_length)/2,2,false)+formatInt(box_length,2,true)+100,
+            formatInt(range.Z_Min,2,false),formatInt(range.Z_Min,2,false)+formatInt(box_length,2,true)+100,
             );
 
 
         var symbolSize = 2;
         myChart_3D.hideLoading();
         option = {
+            animation: false,
             grid3D: {
                 postEffect:{
 			        enable:false					//开启特效
 				    },
 				viewControl:{
 						projection: 'orthographic',		//默认为透视投影'perspective'，也支持设置为正交投影'orthographic'
-						autoRotate: true,				//自动旋转
+						autoRotate: false,				//自动旋转
 						autoRotateDirection: 'ccw',     //默认是 'cw' 从上往下看是顺时针 也可以取 'ccw'逆时针
 						autoRotateSpeed: 10,				//默认10 自转速度
 						autoRotateAfterStill: 10,		//默认3秒 鼠标静止操作后恢复自动旋转的时间间隔
@@ -223,36 +238,35 @@
                 axisPointer: {
                     lineStyle: { color: '#fff' }
                     },
-
             },
-<!--            visualMap: {-->
-<!--                show: true,-->
-<!--                min: 200,-->
-<!--                max: 1200,-->
-<!--                inRange: {-->
-<!--                    symbolSize: [20,1],-->
-<!--&lt;!&ndash;                    color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'],&ndash;&gt;-->
-<!--                    color: ['#FFFF00',' #00CCCC' ,'#00FFFF'],-->
-<!--                    colorAlpha: [1, 0.2]-->
-<!--                },-->
-<!--                            textStyle: {-->
-<!--                                color: '#ffffff'-->
-<!--                            }-->
-<!--            },-->
             visualMap: {
                 type: 'piecewise',
-                pieces: [
-                    {min: 1250, label: '>1250(mm/min)', symbolSize:0.5, color: 'grey'},
-                    {min: 1000, max: 1250, label: '1000~1250(mm/min)', symbolSize:1, color:'#00FF00'},
-                    {min: 800, max: 1000, label: '800~1000(mm/min)', symbolSize:1, color:'#00CC00'},
-                    {min: 600, max: 800, label: '600~800(mm/min)', symbolSize:1.5, color:'#339900'},
-                    {min: 400, max: 600, label: '400~600(mm/min)', symbolSize:2, color:'#CC9900'},
-                    {min: 200, max: 400, label: '200~400(mm/min)', symbolSize:3, color:'#FF9900'},
-                    {max: 200, label: '<200(mm/min)', symbolSize:4, color:'#FF0000'}
-                ],
+                dimension: 5,
+                hoverLink: false,                           //鼠标悬浮到 visualMap 组件上时，鼠标位置对应的数值 在 图表中对应的图形元素，会高亮
+                pieces:myChart_3D_VisualMap_pieces,
                 textStyle: {color: '#ffffff'}
             },
-            tooltip: {},
+<!--            tooltip: {},-->
+            tooltip:{
+                trigger: 'item',
+                axisPointer: {
+                    type: 'cross'
+                },
+                formatter:function(params){
+                    var res = "MissionID: "+params.value[0];
+                    res += "<br>Product: "+params.value[1];
+                    res += "<br>X: "+params.value[2];
+                    res += "<br>Y: "+params.value[3];
+                    res += "<br>Z: "+params.value[4];
+                    res += "<br>SPD: "+params.value[5];
+                    return res;
+                },
+                position: function (pos, params, el, elRect, size){
+                        var obj = {top: 10};
+                        obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+                        return obj;
+                    },
+            },
             title: {
                 text: '激光成形过程位置坐标-瞬时扫描速率散点图',
 <!--            subtext: '3D{{ smalltitle|upper }} ',-->
@@ -268,8 +282,6 @@
                         },
                 min: box_range[0],
                 max: box_range[1],
-<!--                min: -300,-->
-<!--                max: 300,-->
                 },
             yAxis3D: {
                 name: 'YValue',
@@ -281,62 +293,88 @@
                         },
                 min: box_range[2],
                 max: box_range[3],
-<!--                min: -200,-->
-<!--                max: 400,-->
                 },
             zAxis3D: {
                 name: 'ZValue',
                 axisLabel: {
                             show: true,
-                            textStyle: {
-                                color: '#ffffff'
-                            }
-                        }
-                },
-<!--                min: box_range[4],-->
-<!--                max: box_range[5],-->
-                min: 'dataMin',
-                max: 'dataMax',
+                            textStyle: {color: '#ffffff'},
+                        },
 
+                min: box_range[4],
+                max: box_range[5],
+<!--                min: 'dataMin',-->
+<!--                max: 'dataMax',-->
+                },
 <!--            [[MissionID, ProductCode, XValue, YValue, ZValue, ScanningRate],[],[],...]-->
-<!--            dataset: {-->
-<!--                dimensions: [-->
-<!--                    'MissionID',-->
-<!--                    'ProductCode',-->
-<!--                    'XValue',-->
-<!--                    'YValue',-->
-<!--                    'ZValue',-->
-<!--                    'ScanningRate',-->
-<!--                ],-->
-<!--                source: data-->
-<!--            },-->
+
             series: [
                 {
                     type: 'scatter3D',
-<!--                    symbolSize: symbolSize,-->
-                    data: data.map(function (item, idx) {
-                        var size = 0;
-                        if(item[5]>1300){
-                            size = 0.5;
-                        }
-                        else if(item[5]>850){
-                        size = 1;
-                        }
-                        else if(item[5]>650){size = 20;
-                        }
-                        else if(item[5]>450){size = 30;
-                        }
-                        else{size = 40;
-                        }
-                        return [item[2],item[3],item[4],item[5]];
-<!--                        return [item[2],item[3],item[4],size,item[5]];-->
-                    }),
-
-
-                }
-            ]
+                    dimensions: [
+                        'MissionID',
+                        'ProductCode',
+                        'XValue',
+                        'YValue',
+                        'ZValue',
+                        'ScanningRate',
+                        ],
+                    data:data,
+                    encode: {
+                            x: 'XValue',
+                            y: 'YValue',
+                            z: 'ZValue',
+                        },
+                },
+            ],
         };
         myChart_3D.setOption(option);
+        myChart_3D.on('datarangeselected',params => {
+            myChart_3D_VisualMap_selected = params.selected;
+            myChart_3D_grid3D_viewControl_view = {
+                'distance': myChart_3D.getOption().grid3D[0].viewControl.distance,
+                'alpha': myChart_3D.getOption().grid3D[0].viewControl.alpha,
+                'beta': myChart_3D.getOption().grid3D[0].viewControl.beta,
+                'center': myChart_3D.getOption().grid3D[0].viewControl.center,
+                };
+
+<!--        '''[[MissionID, ProductCode, XValue, YValue, ZValue, ScanningRate],[],[],...]'''-->
+            var smallData = data.filter(function (e) {
+<!--                var qset = (params.selected[0] && e[5] >= myChart_3D_VisualMap_pieces[0]['min'] && e[5] <= myChart_3D_VisualMap_pieces[0]['max']) ||-->
+<!--                        (params.selected[1] && e[5] >= myChart_3D_VisualMap_pieces[1]['min'] && e[5] <= myChart_3D_VisualMap_pieces[1]['max']) ||-->
+<!--                        (params.selected[2] && e[5] >= myChart_3D_VisualMap_pieces[2]['min'] && e[5] <= myChart_3D_VisualMap_pieces[2]['max']) ||-->
+<!--                        (params.selected[3] && e[5] >= myChart_3D_VisualMap_pieces[3]['min'] && e[5] <= myChart_3D_VisualMap_pieces[3]['max']) ||-->
+<!--                        (params.selected[4] && e[5] >= myChart_3D_VisualMap_pieces[4]['min'] && e[5] <= myChart_3D_VisualMap_pieces[4]['max']) ||-->
+<!--                        (params.selected[5] && e[5] >= myChart_3D_VisualMap_pieces[5]['min'] && e[5] <= myChart_3D_VisualMap_pieces[5]['max']) ||-->
+<!--                        (params.selected[6] && e[5] >= myChart_3D_VisualMap_pieces[6]['min'] && e[5] <= myChart_3D_VisualMap_pieces[6]['max']);-->
+
+                var qset = false;
+                for(let i in params.selected){
+                    qset = qset ||  (params.selected[i] && e[5] >= myChart_3D_VisualMap_pieces[i]['min'] && e[5] <= myChart_3D_VisualMap_pieces[i]['max']);
+                }
+                return qset;
+            });
+            myChart_3D.setOption(
+            {
+                grid3D:{
+                    viewControl:{
+                        'alpha': myChart_3D_grid3D_viewControl_view['alpha'],
+                        'beta': myChart_3D_grid3D_viewControl_view['beta'],
+                        'distance': myChart_3D_grid3D_viewControl_view['distance'],
+                        'center': myChart_3D_grid3D_viewControl_view['center'],
+                    }
+                },
+                visualMap:  [
+                    {
+                        selected:myChart_3D_VisualMap_selected,
+                    }
+                ],
+                series: [{
+                    data: smallData,
+                }],
+            });
+        });<!--end on('datarangeselected',-->
+
     }
 
 

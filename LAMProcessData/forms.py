@@ -351,6 +351,12 @@ class LAMProductionWorkTypeForm(ModelForm):
 		fields = "__all__"
 		labels = {
 			'worktype_name': _('工序名称'),
+			# 'selectable_Scheduling': _('是否可被调度模块选择'),
+			# 'selectable_LAM': _('是否可被激光成形模块选择'),
+			# 'selectable_HeatTreatment': _('是否可被热处理模块选择'),
+			# 'selectable_PhyChemTest': _('是否可被检验模块选择'),
+			# 'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
+			# 'selectable_Weighing': _('是否可被称重模块选择'),
 			'available': _('是否激活'),
 		}
 		error_messages = ''
@@ -411,7 +417,19 @@ class LAMTechInstSerialForm(ModelForm):
 
 	class Meta:
 		model = LAM_TechInst_Serial
-		fields = ['technique_instruction', 'serial_number', 'serial_worktype', 'serial_note', 'serial_content','process_parameter']
+		fields = ['technique_instruction',
+		          'serial_number',
+		          'serial_worktype',
+		          'serial_note',
+		          'serial_content',
+		          'process_parameter',
+		          'selectable_Scheduling',
+		          'selectable_LAM',
+		          'selectable_HeatTreatment',
+		          'selectable_PhyChemTest',
+		          'selectable_RawStockSendRetrieve',
+		          'selectable_Weighing',
+		          ]
 		# widgets = {
 		#     'technique_instruction': widgets.TextInput(attrs={'class': 'form-control', 'list':"techinst_list"}),
 		#     'serial_worktype': widgets.TextInput(attrs={'class': 'form-control', 'list': "worktype_list"}),
@@ -425,6 +443,12 @@ class LAMTechInstSerialForm(ModelForm):
 			'serial_note': _('工序概述'),
 			'serial_content': _('工序内容'),
 			'process_parameter':_('激光成形参数包'),
+			'selectable_Scheduling': _('是否可被调度模块选择'),
+			'selectable_LAM': _('是否可被激光成形模块选择'),
+			'selectable_HeatTreatment': _('是否可被热处理模块选择'),
+			'selectable_PhyChemTest': _('是否可被检验模块选择'),
+			'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
+			'selectable_Weighing': _('是否可被称重模块选择'),
 			# 'available': _('是否激活'),
 		}
 		error_messages = ''
@@ -473,7 +497,19 @@ class LAMTechInstSerialForm(ModelForm):
 		self.AuxiliarySelection = ('filter_techinst',
 		                           'filter_worktype')
 		self.OriginalFields = (
-			'technique_instruction', 'serial_number', 'serial_worktype', 'serial_note', 'serial_content', 'process_parameter')
+			'technique_instruction',
+			'serial_number',
+			'serial_worktype',
+			'serial_note',
+			'serial_content',
+			'process_parameter',
+			'selectable_Scheduling',
+			'selectable_LAM',
+			'selectable_HeatTreatment',
+			'selectable_PhyChemTest',
+			'selectable_RawStockSendRetrieve',
+			'selectable_Weighing',
+		)
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 
@@ -510,7 +546,20 @@ class LAMTechInstSerialForm_Edit(ModelForm):
 	# showPreviewTable = True
 	class Meta:
 		model = LAM_TechInst_Serial
-		fields = ['technique_instruction', 'serial_number', 'serial_worktype', 'serial_note', 'serial_content', 'process_parameter']
+		fields = [
+			'technique_instruction',
+		    'serial_number',
+		    'serial_worktype',
+		    'serial_note',
+		    'serial_content',
+		    'process_parameter',
+			'selectable_Scheduling',
+			'selectable_LAM',
+			'selectable_HeatTreatment',
+			'selectable_PhyChemTest',
+			'selectable_RawStockSendRetrieve',
+			'selectable_Weighing'
+		]
 
 		# fields = "__all__"
 		labels = {
@@ -520,6 +569,12 @@ class LAMTechInstSerialForm_Edit(ModelForm):
 			'serial_note': _('工序概述'),
 			'serial_content': _('工序内容'),
 			'process_parameter':_('激光成形参数包'),
+			'selectable_Scheduling': _('是否可被调度模块选择'),
+			'selectable_LAM': _('是否可被激光成形模块选择'),
+			'selectable_HeatTreatment': _('是否可被热处理模块选择'),
+			'selectable_PhyChemTest': _('是否可被检验模块选择'),
+			'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
+			'selectable_Weighing': _('是否可被称重模块选择'),
 			# 'available': _('是否激活'),
 		}
 		error_messages = ''
@@ -571,6 +626,12 @@ class LAMTechInstSerialForm_Browse(ModelForm):
 			'serial_content': _('工序内容'),
 			'available': _('是否激活'),
 			'process_parameter': _('参数包'),
+			'selectable_Scheduling': _('是否可被调度模块选择'),
+			'selectable_LAM': _('是否可被激光成形模块选择'),
+			'selectable_HeatTreatment': _('是否可被热处理模块选择'),
+			'selectable_PhyChemTest': _('是否可被检验模块选择'),
+			'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
+			'selectable_Weighing': _('是否可被称重模块选择'),
 		}
 		error_messages = ''
 
@@ -1387,8 +1448,11 @@ class LAMProcess_Worksection_OperateForm(ModelForm):
 			self.fields['process_mission'].disabled = True
 			_mission_attr_obj = Process_Mission_timecut.objects.get(process_mission = crtmission_obj.process_mission)
 
-			self.fields['process_start_time'].widget.attrs.update({'value': _mission_attr_obj.process_start_time.strftime("%Y-%m-%dT%H:%M:%S")})
-			self.fields['process_finish_time'].widget.attrs.update({'value': _mission_attr_obj.process_finish_time.strftime("%Y-%m-%dT%H:%M:%S")})
+			try:
+				self.fields['process_start_time'].widget.attrs.update({'value': _mission_attr_obj.process_start_time.strftime("%Y-%m-%dT%H:%M:%S")})
+				self.fields['process_finish_time'].widget.attrs.update({'value': _mission_attr_obj.process_finish_time.strftime("%Y-%m-%dT%H:%M:%S")})
+			except:
+				pass
 			# print(_mission_attr_obj.process_start_time)
 			# print(_mission_attr_obj.process_finish_time)
 		return crtmission_obj.if_onwork
@@ -1683,6 +1747,54 @@ class MechanicalTest_ToughnessForm(ModelForm):
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 
+# 断裂韧性测试数据
+class MechanicalTest_FracturetoughnessForm(ModelForm):
+	title = '断裂韧性性能测试'
+	modelname = 'MechanicalTest_FractureToughness'
+
+	# previewtablefields = {
+	#         'sample_number': _('试样编号'),
+	#         'sampling_position': _('取样部位'),
+	#         'sampling_direction': _('取样方向'),
+	#         'test_temperature': _('测试温度'),
+	#         'tensile_strength': _('抗拉强度/MPa'),
+	#         'yield_strength': _('屈服强度/MPa'),
+	#         'elongation': _('断后延伸率/%'),
+	#         'areareduction': _('断面收缩率/%'),
+	#         'modulus': _('弹性模量/GPa'),
+	#     }
+
+	class Meta:
+		model = MechanicalTest_FractureToughness
+		# fields = ['id','sample_number',
+		#     'sampling_position',
+		#     'sampling_direction',
+		#     'test_temperature',
+		#     'tensile_strength',
+		#     'yield_strength',
+		#     'elongation',
+		#     'areareduction',
+		#     'modulus','available','preWTestItemID']
+
+		fields = "__all__"
+		labels = {
+			'sample_number': _('试样编号'),
+			'sampling_position': _('取样部位'),
+			'sampling_direction': _('取样方向'),
+			'test_temperature': _('测试温度/℃'),
+			'fracturetoughness_KIC': _('KIC / MPa×m<sup>1/2</sup>'),
+			'fracturetoughness_KQ': _('KQ / MPa×m<sup>1/2</sup>'),
+			'Effectiveness': _('有效性判定'),
+			'toughness': _('冲击韧性 / J/cm<sup>2</sup>'),
+			'available': _('是否有效'),
+		}
+		error_messages = ''
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+
 
 # 化学成分测试数据
 class MechanicalTest_ChemicalForm(ModelForm):
@@ -1718,8 +1830,47 @@ class MechanicalTest_ChemicalForm(ModelForm):
 
 # 产品理化检测
 class ProductPhyChemTestForm_New(ModelForm):
+	# title = '产品理化检测'
+	# modelname = 'PhysicochemicalTest_Mission'
+	#
+	# class Meta:
+	# 	model = PhysicochemicalTest_Mission
+	# 	fields = ['LAM_product',
+	# 	          'LAM_techinst_serial',
+	# 	          'commission_date',
+	# 	          'heat_treatment_state',
+	# 	          ]
+	# 	widgets = {
+	# 		'commission_date': widgets.TextInput(
+	# 			attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
+	# 	}
+	# 	labels = {
+	# 		'LAM_product': _('产品实例'),
+	# 		'RawStock': _('原材料实例'),
+	# 		'LAM_techinst_serial': _('工序'),
+	# 		'commission_date': _('开始日期'),
+	# 		'heat_treatment_state': _('热处理状态'),
+	# 		'mechanicaltest_tensile': _('拉伸测试'),
+	# 		'mechanicaltest_toughness': _('冲击测试'),
+	# 		'chemicaltest': _('化学成分测试'),
+	# 	}
+	# 	error_messages = ''
+	#
+	# def __init__(self, *args, **kwargs):
+	# 	super().__init__(*args, **kwargs)
+	# 	# self.fields['LAM_product'].disabled = True
+	# 	# self.fields['LAM_techinst_serial'].disabled = True
+	# 	# self.fields['commission_date'].disabled = True
+	# 	# self.fields['heat_treatment_state'].disabled = True
+	#
+	# 	for field in self.fields.values():
+	# 		field.widget.attrs.update({'class': 'form-control'})
+# # 激光成形生产任务_编辑
+# class LAMProcessMissionForm_Edit(ModelForm):
 	title = '产品理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
+	previewtableTitle = '产品检测任务'
+	previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期')}
 
 	class Meta:
 		model = PhysicochemicalTest_Mission
@@ -1728,6 +1879,7 @@ class ProductPhyChemTestForm_New(ModelForm):
 		          'commission_date',
 		          'heat_treatment_state',
 		          ]
+		# fields = "__all__"
 		widgets = {
 			'commission_date': widgets.TextInput(
 				attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
@@ -1740,20 +1892,109 @@ class ProductPhyChemTestForm_New(ModelForm):
 			'heat_treatment_state': _('热处理状态'),
 			'mechanicaltest_tensile': _('拉伸测试'),
 			'mechanicaltest_toughness': _('冲击测试'),
+			'mechanicaltest_fracturetoughness': _('断裂韧性测试'),
 			'chemicaltest': _('化学成分测试'),
 		}
 		error_messages = ''
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		# self.fields['LAM_product'].disabled = True
-		# self.fields['LAM_techinst_serial'].disabled = True
-		# self.fields['commission_date'].disabled = True
-		# self.fields['heat_treatment_state'].disabled = True
+		self.fields['LAM_product'].widget.attrs.update(
+			{'onchange': 'loadTableData_ProductMission(this.value)'})
+
+		# 辅助选择数据集
+		self.techinst_datalist = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
+			'instruction_code', '-version_code', '-version_number')
+		# print(self.techinst_datalist)
+		self.worktype_datalist = LAMProductionWorkType.objects.filter(Q(available=True))
+		self.productcode_datalist = LAMProduct.objects.filter(available=True)
+
+		self.fields['LAM_product'].queryset = LAMProduct.objects.filter(available=True)
+
+		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
+		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
+			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemTest=True))
+		# self.fields['work_section'].queryset = Worksection.objects.filter(available=True)
+		# self.fields['completion_date'].disabled = True
+		# self.fields['available'].disabled = True
+
+		# 辅助选择下拉菜单及文本框
+		# self.fields['product_category'] = forms.ModelChoiceField(label='产品类别',
+		#                                                          queryset=LAMProductCategory.objects.filter(
+		#                                                              available=True),
+		#                                                          empty_label='请选择产品类别',
+		#                                                          required=False)
+		self.fields['product_code'] = forms.CharField(label='零件编号',
+		                                              max_length=50,
+		                                              required=False)
+		self.fields['technique_instruction'] = forms.ModelChoiceField(label='工艺文件',
+		                                                              queryset=self.techinst_datalist,
+		                                                              empty_label='请选择工艺文件',
+		                                                              required=False)
+		self.fields['work_type'] = forms.ModelChoiceField(label='工序',
+		                                                  queryset=self.worktype_datalist,
+		                                                  empty_label='请选择工序',
+		                                                  required=False)
+
+		# 更新属性
+		# 产品类别
+		# self.fields['product_category'].widget.attrs.update(
+		#     {'onchange': 'load_LAMTechInstandProduct_By_ProductCategory(this.value);'})
+		# 工艺文件
+		self.fields['technique_instruction'].widget.attrs.update(
+			{'onchange': 'load_WorkType_By_LAMTechInst(this.value);'})
+		# 工序
+		self.fields['work_type'].widget.attrs.update(
+			{'onchange': 'refresh_techinst_serial();'})
+
+		self.fields['product_code'].widget.attrs.update(
+			{'list': 'product_code_list', 'onblur': 'refresh_product();'})
+
+		# 辅助选择field
+		self.AuxiliarySelection = ('product_category',
+		                           'technique_instruction',
+		                           'work_type',
+		                           'product_code')
+		# 原始field
+		self.OriginalFields = ('LAM_product',
+		                       'LAM_techinst_serial',
+		                       'commission_date',
+		                       'heat_treatment_state',
+		                       )
 
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 
+	def is_valid_custom(self):
+
+		try:
+			_Product = LAMProduct.objects.get(id=self.data['LAM_product'])
+			_ProdCate = _Product.product_category
+			_TechInst = LAM_TechInst_Serial.objects.get(id=self.data['LAM_techinst_serial']).technique_instruction
+
+			if not (_Product in _TechInst.product.all() or _ProdCate in _TechInst.product_category.all()):
+				self.error_messages = '该产品与选中工艺文件未关联'
+				return False
+		# LAMTechniqueInstruction.objects.filter(Q(product_category=_ProdCate) | Q(product=_Product))
+
+		# all_datadict = LAMTechniqueInstruction.objects.filter(
+		#     Q(product_category=filtecondition_ProdCate) | Q(product=filtecondition_Product)).order_by(
+		#     'instruction_code')
+		#
+		#
+		# # _ProdCate_id = LAMProduct.objects.get(id=self.data['LAM_product']).product_category
+		# _TechInst_id = LAM_TechInst_Serial.objects.get(id=self.data['LAM_techinst_serial']).technique_instruction.id
+		#
+		# _filter_list = LAMProdCate_TechInst.objects.filter(lamproductcategory = _ProdCate_id,
+		#                                     lamtechniqueinstruction = _TechInst_id)
+		# if len(_filter_list)==0:
+		#     self.error_messages = '该产品与选中工艺文件未关联'
+		#     return False
+		except:
+			self.error_messages = '未知错误'
+			return False
+
+		return self.is_valid()
 
 # 产品理化检测
 class ProductPhyChemTestForm_Edit(ModelForm):
@@ -1781,6 +2022,16 @@ class ProductPhyChemTestForm_Edit(ModelForm):
 		'冲击韧性 / J/cm<sup>2</sup>',
 		'是否有效',
 	]
+	fracturetoughness_fields = [
+		'试样编号',
+		'取样部位',
+		'取样方向',
+		'测试温度/℃',
+		'K<sub>IC</sub> / MPa×m<sup>1/2</sup>',
+		'K<sub>Q</sub> / MPa×m<sup>1/2</sup>',
+		'有效性判定',
+		'是否有效',
+	]
 
 	class Meta:
 		model = PhysicochemicalTest_Mission
@@ -1805,6 +2056,7 @@ class ProductPhyChemTestForm_Edit(ModelForm):
 			'heat_treatment_state': _('热处理状态'),
 			'mechanicaltest_tensile': _('拉伸测试'),
 			'mechanicaltest_toughness': _('冲击测试'),
+			'mechanicaltest_fracturetoughness': _('断裂韧性测试'),
 			'chemicaltest': _('化学成分测试'),
 		}
 		error_messages = ''
@@ -1833,6 +2085,7 @@ class ProductPhyChemTestForm_Browse(ModelForm):
 		          'heat_treatment_state',
 		          'mechanicaltest_tensile',
 		          'mechanicaltest_toughness',
+		          'mechanicaltest_fracturetoughness',
 		          'chemicaltest']
 		widgets = {
 			'commission_date': widgets.TextInput(
@@ -1846,6 +2099,7 @@ class ProductPhyChemTestForm_Browse(ModelForm):
 			'heat_treatment_state': _('热处理状态'),
 			'mechanicaltest_tensile': _('拉伸测试'),
 			'mechanicaltest_toughness': _('冲击测试'),
+			'mechanicaltest_fracturetoughness':_('断裂韧性测试'),
 			'chemicaltest': _('化学成分测试'),
 		}
 		error_messages = ''
@@ -1860,8 +2114,41 @@ class ProductPhyChemTestForm_Browse(ModelForm):
 
 # 原材料理化检测
 class RawStockPhyChemTestForm_New(ModelForm):
+	# title = '原材料理化检测'
+	# modelname = 'PhysicochemicalTest_Mission'
+	#
+	# class Meta:
+	# 	model = PhysicochemicalTest_Mission
+	# 	fields = ['RawStock',
+	# 	          'LAM_techinst_serial',
+	# 	          'commission_date',
+	# 	          'heat_treatment_state',
+	# 	          ]
+	# 	widgets = {
+	# 		'commission_date': widgets.TextInput(
+	# 			attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
+	# 	}
+	# 	labels = {
+	# 		'LAM_product': _('产品实例'),
+	# 		'RawStock': _('原材料实例'),
+	# 		'LAM_techinst_serial': _('工序'),
+	# 		'commission_date': _('开始日期'),
+	# 		'heat_treatment_state': _('热处理状态'),
+	# 		'mechanicaltest_tensile': _('拉伸测试'),
+	# 		'mechanicaltest_toughness': _('冲击测试'),
+	# 		'chemicaltest': _('化学成分测试'),
+	# 	}
+	# 	error_messages = ''
+	#
+	# def __init__(self, *args, **kwargs):
+	# 	super().__init__(*args, **kwargs)
+	#
+	# 	for field in self.fields.values():
+	# 		field.widget.attrs.update({'class': 'form-control'})
 	title = '原材料理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
+	previewtableTitle = '原材料检测任务'
+	previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期')}
 
 	class Meta:
 		model = PhysicochemicalTest_Mission
@@ -1870,6 +2157,7 @@ class RawStockPhyChemTestForm_New(ModelForm):
 		          'commission_date',
 		          'heat_treatment_state',
 		          ]
+		# fields = "__all__"
 		widgets = {
 			'commission_date': widgets.TextInput(
 				attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
@@ -1882,15 +2170,96 @@ class RawStockPhyChemTestForm_New(ModelForm):
 			'heat_treatment_state': _('热处理状态'),
 			'mechanicaltest_tensile': _('拉伸测试'),
 			'mechanicaltest_toughness': _('冲击测试'),
+			'mechanicaltest_fracturetoughness': _('断裂韧性测试'),
 			'chemicaltest': _('化学成分测试'),
 		}
 		error_messages = ''
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+		self.fields['RawStock'].widget.attrs.update(
+			{'onchange': 'loadTableData_RawStockMission(this.value)'})
+
+		# 辅助选择数据集
+		self.techinst_datalist = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
+			'instruction_code', '-version_code', '-version_number')
+		# print(self.techinst_datalist)
+		self.worktype_datalist = LAMProductionWorkType.objects.filter(Q(available=True))
+		self.productcode_datalist = LAMProduct.objects.filter(available=True)
+		self.RawStockBatchNumber_datalist = RawStock.objects.filter(available=True)
+
+		self.fields['RawStock'].queryset = RawStock.objects.filter(available=True)
+
+		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
+		# 检验可选择的工序
+		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
+			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemTest=True))
+		# self.fields['work_section'].queryset = Worksection.objects.filter(available=True)
+		# self.fields['completion_date'].disabled = True
+		# self.fields['available'].disabled = True
+
+		# 辅助选择下拉菜单及文本框
+		# self.fields['product_category'] = forms.ModelChoiceField(label='产品类别',
+		#                                                          queryset=LAMProductCategory.objects.filter(
+		#                                                              available=True),
+		#                                                          empty_label='请选择产品类别',
+		#                                                          required=False)
+		self.fields['RawStock_batchnumber'] = forms.CharField(label='原材料批号',
+		                                              max_length=50,
+		                                              required=False)
+		self.fields['technique_instruction'] = forms.ModelChoiceField(label='工艺文件',
+		                                                              queryset=self.techinst_datalist,
+		                                                              empty_label='请选择工艺文件',
+		                                                              required=False)
+		self.fields['work_type'] = forms.ModelChoiceField(label='工序',
+		                                                  queryset=self.worktype_datalist,
+		                                                  empty_label='请选择工序',
+		                                                  required=False)
+
+		# 更新属性
+		# 产品类别
+		# self.fields['product_category'].widget.attrs.update(
+		#     {'onchange': 'load_LAMTechInstandProduct_By_ProductCategory(this.value);'})
+		# 工艺文件
+		self.fields['technique_instruction'].widget.attrs.update(
+			{'onchange': 'load_WorkType_By_LAMTechInst(this.value);'})
+		# 工序
+		self.fields['work_type'].widget.attrs.update(
+			{'onchange': 'refresh_techinst_serial();'})
+
+		self.fields['RawStock_batchnumber'].widget.attrs.update(
+			{'list': 'RawStock_BatchNumber_list', 'onblur': 'refresh_rawstock();'})
+
+		# 辅助选择field
+		self.AuxiliarySelection = ('product_category',
+		                           'technique_instruction',
+		                           'work_type',
+		                           'RawStock_batchnumber')
+		# 原始field
+		self.OriginalFields = ('RawStock',
+		                       'LAM_techinst_serial',
+		                       'commission_date',
+		                       'heat_treatment_state',
+		                       )
 
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
+
+	def is_valid_custom(self):
+
+		# try:
+		# 	_Product = LAMProduct.objects.get(id=self.data['LAM_product'])
+		# 	_ProdCate = _Product.product_category
+		# 	_TechInst = LAM_TechInst_Serial.objects.get(id=self.data['LAM_techinst_serial']).technique_instruction
+		#
+		# 	if not (_Product in _TechInst.product.all() or _ProdCate in _TechInst.product_category.all()):
+		# 		self.error_messages = '该产品与选中工艺文件未关联'
+		# 		return False
+		# except:
+		# 	self.error_messages = '未知错误'
+		# 	return False
+
+		return self.is_valid()
 
 
 # 原材料理化检测
@@ -1917,6 +2286,16 @@ class RawStockPhyChemTestForm_Edit(ModelForm):
 		'取样方向',
 		'测试温度/℃',
 		'冲击韧性 / J/cm<sup>2</sup>',
+		'是否有效',
+	]
+	fracturetoughness_fields = [
+		'试样编号',
+		'取样部位',
+		'取样方向',
+		'测试温度/℃',
+		'K<sub>IC</sub> / MPa×m<sup>1/2</sup>',
+		'K<sub>Q</sub> / MPa×m<sup>1/2</sup>',
+		'有效性判定',
 		'是否有效',
 	]
 
@@ -1971,6 +2350,7 @@ class RawStockPhyChemTestForm_Browse(ModelForm):
 		          'heat_treatment_state',
 		          'mechanicaltest_tensile',
 		          'mechanicaltest_toughness',
+		          'mechanicaltest_fracturetoughness',
 		          'chemicaltest']
 		widgets = {
 			'commission_date': widgets.TextInput(
@@ -1984,6 +2364,7 @@ class RawStockPhyChemTestForm_Browse(ModelForm):
 			'heat_treatment_state': _('热处理状态'),
 			'mechanicaltest_tensile': _('拉伸测试'),
 			'mechanicaltest_toughness': _('冲击测试'),
+			'mechanicaltest_fracturetoughness': _('断裂韧性测试'),
 			'chemicaltest': _('化学成分测试'),
 		}
 		error_messages = ''
@@ -1992,5 +2373,44 @@ class RawStockPhyChemTestForm_Browse(ModelForm):
 		super().__init__(*args, **kwargs)
 		# self.fields['available'].disabled = True
 
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+
+
+#
+class BreakBlockResumptionForm(forms.Form):
+	name = 'BreakBlockResumptionForm'
+	title='断点分块恢复成形'
+	GUID = forms.CharField(max_length=50, label=None, widget=forms.HiddenInput())
+	ParamCurrentPPOSX = forms.CharField(max_length=10, label='上一分块停光点X坐标P参数')
+	ParamCurrentPPOSY = forms.CharField(max_length=10, label='上一分块停光点Y坐标P参数')
+	ParamCurrentPPOSZ = forms.CharField(max_length=10, label='上一分块停光点Z坐标P参数')
+	ParamCounter = forms.CharField(max_length=10, label='当前层已成形分块计数P参数')
+	File = forms.FileField(required=True, label='待处理的Sub文件(*.nc)')
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# self.fields['available'].disabled = True
+		self.defaultParams = ['P196','P197','P198','P199']
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+
+class SShapeBreakForm(forms.Form):
+	name = 'SShapeBreakForm'
+	title = '负搭接弓字步拆分'
+	# PowderOnOrder = forms.CharField(max_length=10, label='开粉指令')
+	# PowderOffOrder = forms.CharField(max_length=10, label='关粉指令')
+	GUID = forms.CharField(max_length=50, label=None, widget=forms.HiddenInput())
+	TurningFunction = forms.CharField(max_length=10, label='Track 切换函数')
+	SwitchBlockFunction = forms.CharField(max_length=10, label='polygon 切换函数')
+	IfPrintTurningFunction = forms.BooleanField(label='是否启用 Track 切换函数', required=False)
+	IfPrintSwitchBlockFunction = forms.BooleanField(label='是否启用 polygon 切换函数', required=False)
+	File = forms.FileField(required=True, label='待处理的Sub文件(*.nc/*.pim)')
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# self.fields['available'].disabled = True
+		# self.defaultParams = ['M12', 'M13', '1400', '1401', 'true', 'true']
+		self.defaultParams = ['1400', '1401', 'true', 'true']
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})

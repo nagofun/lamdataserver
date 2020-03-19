@@ -10,6 +10,39 @@
 <script type="text/javascript" src="/assets/js/echarts.min.js"></script>
 
 <script>
+function calMax(arr) {
+        let max = 0;
+        arr.forEach((el) => {
+          el.forEach((el1) => {
+            if (!(el1 === undefined || el1 === '')) {
+              if (max < el1) {
+                max = el1;
+              }
+            }
+          })
+        })
+        let maxint = Math.ceil(max / 9.5);//不让最高的值超过最上面的刻度
+        let maxval = maxint * 10;//让显示的刻度是整数
+        return maxval;
+  }
+
+  //计算最小值
+  function calMin(arr) {
+    let min = 0;
+    arr.forEach((el) => {
+      el.forEach((el1) => {
+        if (!(el1 === undefined || el1 === '')) {
+          if (min > el1) {
+            min = el1;
+          }
+        }
+      })
+    })
+    let minint = Math.floor(min / 10);
+    let minval = minint * 10;//让显示的刻度是整数
+    return minval;
+  }
+
 function load()
 {
     LastTimeSearch();
@@ -33,24 +66,47 @@ function LastTimeSearch(){
     );
 }
 function RealTimeRecordSearch(){
-    myChart.showLoading({
-                text: '数据正在努力加载...',
-                textStyle: { fontSize : 30 , color: '#444' },
-                effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
-             });
+    <!--myChart.showLoading({-->
+                <!--text: '数据正在努力加载...',-->
+                <!--textStyle: { fontSize : 30 , color: '#444' },-->
+                <!--effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}-->
+             <!--});-->
 
     $.get(
          '{{ Common_URL.Query_RealTimeRecord_By_WorksectionID }}'+{{ worksection_id }}+'/',
          function(res, textStatus)
          {
              this;
-             myChart.hideLoading();
+             var MaxLaser = calMax([res['laser']]), MinLaser = calMin([res['laser']]),
+                MaxZvalue = calMax([res['cncstatus']]), MinZvalue = calMin([res['cncstatus']]),
+                MaxOxygen = calMax([res['oxygen']]), MinOxygen = calMin([res['oxygen']]);
+
+
+             <!--myChart.hideLoading();-->
              myChart.setOption({
                  xAxis:{
                      data:res['datetime'].map(function (str) {
                         return str.replace(' ', '\n')
                      })
                  },
+                 yAxis:[{
+                    min: Math.floor(MinOxygen),
+                    max: Math.ceil((MaxOxygen - Math.floor(MinOxygen)) / 60)*60+Math.floor(MinOxygen),
+                    splitNumber: 6,
+                    interval: Math.ceil((MaxOxygen - Math.floor(MinOxygen)) / 60)*10
+                 },
+                 {
+                    min: Math.floor(MinLaser),
+                    max: Math.ceil((MaxLaser - Math.floor(MinLaser)) / 60)*60+Math.floor(MinLaser),
+                    splitNumber: 6,
+                    interval: Math.ceil((MaxLaser - Math.floor(MinLaser)) / 60)*10
+                 },
+                 {
+                    min: Math.floor(MinZvalue),
+                    max: Math.ceil((MaxZvalue - Math.floor(MinZvalue)) / 60)*60+Math.floor(MinZvalue),
+                    splitNumber: 6,
+                    interval: Math.ceil((MaxZvalue - Math.floor(MinZvalue)) / 60)*10
+                 }],
                  series:[
                      {
                          data:res['oxygen']
@@ -334,8 +390,10 @@ function RealTimeRecordSearch(){
                                     series: [
                                         {
                                             name:'氧含量',
-                                            type:'line',
-                                            animation: false,
+                                            <!--type:'line',-->
+                                            type: 'scatter',
+                                            symbolSize: 3,
+                                            animation: true,
                                             areaStyle: {
                                             },
                                             lineStyle: {
@@ -367,9 +425,12 @@ function RealTimeRecordSearch(){
                                         },
                                         {
                                             name:'激光功率',
-                                            type:'line',
+                                            <!--type:'line',-->
+
+                                            type: 'scatter',
+                                            symbolSize: 3,
                                             yAxisIndex:1,
-                                            animation: false,
+                                            animation: true,
                                             areaStyle: {
                                             },
                                             lineStyle: {
@@ -401,9 +462,11 @@ function RealTimeRecordSearch(){
                                         },
                                         {
                                             name:'激光成形高度',
-                                            type:'line',
+                                            <!--type:'line',-->
+                                            type: 'scatter',
+                                            symbolSize: 3,
                                             yAxisIndex:2,
-                                            animation: false,
+                                            animation: true,
                                             areaStyle: {
                                             },
                                             lineStyle: {

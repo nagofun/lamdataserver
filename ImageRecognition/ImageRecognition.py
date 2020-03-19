@@ -4,7 +4,7 @@ import cv2
 import pytesseract
 import os, shutil
 # import matplotlib.pyplot as plt
-import ImageBinaryCode as ImgBC
+import ImageRecognition.ImageBinaryCode as ImgBC
 # import initImageSectionJsonFile as initImageSectionJsonFile
 import numpy as np
 # import numpy.core._dtype_ctypes
@@ -12,7 +12,7 @@ import urllib.request
 import time
 import json
 # from datetime import datetime
-from LoadSettings import SettingDict
+from ImageRecognition.LoadSettings import SettingDict
 # import threading
 import multiprocessing
 import requests
@@ -28,7 +28,7 @@ print('--***--  SSTTAARRTT  --***--')
 TemplateHASHList = []
 ClassifyDir = []
 TemplateImageName = []
-with open("./IMAGE Templates/ImageSectionInfo_code.json", 'r') as load_f:
+with open("./ImageRecognition/IMAGE Templates/ImageSectionInfo_code.json", 'r') as load_f:
 	ImageSectionInfo_dict = json.load(load_f)
 
 
@@ -657,8 +657,44 @@ def GenerateOneImage(CharacterImageList, SingleSize):
 	#     OneImage[0:SingleSize,0*]
 	# pass
 
+def getCutImg(image, regionCoordinate):
+	if not regionCoordinate:
+		return None, None
+	cutimageCoordinate = regionCoordinate
+	IdentifyRegion_Image = image[cutimageCoordinate[1]:cutimageCoordinate[3],
+	                       cutimageCoordinate[0]:cutimageCoordinate[2]]
+	grayImage = cv2.cvtColor(IdentifyRegion_Image, cv2.COLOR_BGR2GRAY)
+	ret2, thresh = cv2.threshold(grayImage, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+	del IdentifyRegion_Image
+	del grayImage
+	del cutimageCoordinate
+	# gc.collect()
+	return ret2, thresh
 
+def getCutImgCode(image, regionCoordinate):
+	ret2, thresh = getCutImg(image, regionCoordinate)
+	re = dHash_ndarray(thresh)
+	del thresh
+	return re
+
+def checkImage(image, Device):
+	if not Device:
+		pass
+	if_auto_exec_intr = False
+	if_exec_intr = False
+	if_interrupt_intr = False  # 与if_exec_intr互斥
+	'''判断是否为自动界面'''
+	if getCutImgCode(image, Device["IdentifyAutoRegion"]) == Device["IdentifyAutoCode"]:
+		if_auto_exec_intr = True
+		'''判断是否执行程序中断'''
+		if getCutImgCode(image, Device["IdentifyInterruptRegion"]) == Device["IdentifyInterruptCode"]:
+			if_interrupt_intr=True
+		'''判断是否在执行程序'''
+		if getCutImgCode(image, Device["IdentifyExecuteRegion"]) == Device["IdentifyExecuteCode"]:
+			if_exec_intr = True
+	return if_auto_exec_intr, if_exec_intr, if_interrupt_intr
 # print('before RecognitionImage')
+
 def RecognitionImage(image, DeviceCode, language='eng', config='-c -psm %d %s'):
 	Error_Flag = False
 	# t0=time.time()
@@ -888,6 +924,71 @@ def RecognitionImage(image, DeviceCode, language='eng', config='-c -psm %d %s'):
 	else:
 		return (re_ImageStatus, if_auto_exec_intr, if_exec_intr, if_interrupt_intr)
 
+def realtimeRecognizeImage(image, DeviceCode):
+	# 实时识别图片
+	def matchDeviceCode(device):
+		return device["DeviceCode"].upper() == DeviceCode.upper()
+	try:
+		Device = filter(matchDeviceCode, ImageSectionInfo_dict).__next__()
+		Page = filter(
+			lambda page: getCutImgCode(image, page["IdentifyPageRegion"]) == page["IdentifyPageCode"],
+			Device["PageInfo"]).__next__()
+	except:
+		# Error_Flag = True
+		raise ValueError
+	ret2, Img_XValue = getCutImg(image, Page["XValueRegion"])
+	ret2, Img_YValue = getCutImg(image, Page["YValueRegion"])
+	ret2, Img_ZValue = getCutImg(image, Page["ZValueRegion"])
+	ret2, Img_ScanningRate = getCutImg(image, Page["ScanningRateRegion"])
+	ret2, Img_FeedRate = getCutImg(image, Page["FeedRateRegion"])
+	re_img = []
+	_psm, _img = MakeStandardizedLineImage(Img_XValue, re_img, Page["XYZValueType"])
+	XValue = pytesseract.image_to_string(_img,
+	                                     lang='eng',
+	                                     config='-c -psm %d %s' % (_psm, 'digits'),
+	                                     timeout=200,
+	                                     ).replace(' ','')
+	_psm, _img = MakeStandardizedLineImage(Img_YValue, re_img, Page["XYZValueType"])
+	YValue = pytesseract.image_to_string(_img,
+	                                     lang='eng',
+	                                     config='-c -psm %d %s' % (_psm, 'digits'),
+	                                     timeout=200,
+	                                     ).replace(' ','')
+	_psm, _img = MakeStandardizedLineImage(Img_ZValue, re_img, Page["XYZValueType"])
+	ZValue = pytesseract.image_to_string(_img,
+	                                     lang='eng',
+	                                     config='-c -psm %d %s' % (_psm, 'digits'),
+	                                     timeout=200,
+	                                     ).replace(' ','')
+	'''扫描速率'''
+	if 'cutdot' in Page["ScanningRateType"]:
+		_psm1, img1, _psm2, img2 = [], [], [], []
+		_psm_and_imglist = MakeStandardizedLineImage_CutDot(Img_ScanningRate, _psm1, img1, _psm2, img2, re_img,
+		                                                    Page["ScanningRateType"])
+		_word1 = pytesseract.image_to_string(_psm_and_imglist[0][1], lang='eng',
+		                                     config='-c -psm %d %s' % (_psm_and_imglist[0][0], 'CNC-digits-positive')).replace(' ', '')
+		_word2 = pytesseract.image_to_string(_psm_and_imglist[1][1], lang='eng',
+		                                     config='-c -psm %d %s' % (_psm_and_imglist[1][0], 'CNC-digits-positive')).replace(' ', '')
+		ScanningRate = _word1 + '.' + _word2
+		del _psm_and_imglist
+	else:
+		_psm, _img = MakeStandardizedLineImage(Img_ScanningRate, re_img, Page["ScanningRateType"])
+		ScanningRate = pytesseract.image_to_string(_img, lang='eng',
+		                                           config='-c -psm %d %s' % (_psm, 'CNC-digits-positive')).replace(' ', '')
+	if not Img_FeedRate is None:
+		# print('debug_num ',debug_num)
+		_psm, _img = MakeStandardizedLineImage(Img_FeedRate, re_img, Page["FeedRateType"])
+		FeedRate = pytesseract.image_to_string(_img, lang='eng',
+		                                       config='-c -psm %d %s' % (_psm, 'CNC-digits-positive')).replace(' ', '')
+
+	redict = {
+				'XValue': XValue,
+				'YValue': YValue,
+				'ZValue': ZValue,
+				'ScanningRate': ScanningRate,
+				'FeedRate': FeedRate,
+			}
+	return redict
 
 # print('before UpdateLAMProcessData_CNCData')
 def UpdateLAMProcessData_CNCData(CNCProcessStatus_id, ImageStatus_value, UpdateScreenRecognition):

@@ -1,0 +1,751 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+<!--<script src="/assets/js/dark.js"></script>-->
+<script src="/assets/js/echarts.js"></script>
+<!--    <script src="/assets/ECharts/incubator-echarts/src/echarts.js"></script>-->
+<script src="/assets/js/echarts-gl.js"></script>
+<!--    <script src="/assets/js/echarts-gl.min.js"></script>-->
+<!--    <script src="/assets/js/dataTool.min.js"></script>-->
+<script src="/assets/ECharts/incubator-echarts/dist/extension/dataTool.min.js"></script>
+<!--    <script src="/assets/js/dat.gui.min.js"></script>-->
+<script src="/assets/ECharts/incubator-echarts/test/lib/dat.gui.min.js"></script>
+<script src="/assets/ECharts/incubator-echarts/theme/vintage.js"></script>
+<script src="/assets/ECharts/incubator-echarts/theme/dark.js"></script>
+<script src="/assets/ECharts/incubator-echarts/theme/macarons.js"></script>
+<script src="/assets/ECharts/incubator-echarts/theme/infographic.js"></script>
+<script src="/assets/ECharts/incubator-echarts/theme/shine.js"></script>
+<script src="/assets/ECharts/incubator-echarts/theme/roma.js"></script>
+
+<script type="text/javascript">
+    function calMax(arr) {
+        let max = 0;
+        arr.forEach((el) => {
+          el.forEach((el1) => {
+            if (!(el1 === undefined || el1 === '')) {
+              if (max < el1) {
+                max = el1;
+              }
+            }
+          })
+        })
+        let maxint = Math.ceil(max / 9.5);//不让最高的值超过最上面的刻度
+        let maxval = maxint * 10;//让显示的刻度是整数
+        return maxval;
+  }
+
+  //计算最小值
+  function calMin(arr) {
+    let min = 0;
+    arr.forEach((el) => {
+      el.forEach((el1) => {
+        if (!(el1 === undefined || el1 === '')) {
+          if (min > el1) {
+            min = el1;
+          }
+        }
+      })
+    })
+    let minint = Math.floor(min / 10);
+    let minval = minint * 10;//让显示的刻度是整数
+    return minval;
+  }
+
+
+
+
+<!--{{ time_dict|safe }}-->
+<!--定义颜色-->
+    var bgcolor_hightlight = "#337ab7"
+    var fontcolor_hightligt = "#fff"
+    var bgcolor_odd = "#f9f9f9"
+    var bgcolor_even = "#ffffff"
+    var fontcolor = "#000"
+
+    var K_tm=8*60;
+    var K_l=20;
+    var M1=1.0;
+    var M2=1.0;
+
+    function onload()
+    {
+        this;
+        document.getElementById('input_range_tm').value=K_tm;
+        document.getElementById('input_range_l').value=K_l;
+        document.getElementById('input_range_tm_label').innerHTML='加权系数半衰期tm='+K_tm+'('+seconds_to_hm(K_tm)+')';
+        document.getElementById('input_range_l_label').innerHTML='收缩系数l='+K_l;
+        document.getElementById('input_range_M1').value=M1;
+        document.getElementById('input_range_M2').value=M2;
+
+    }
+
+
+
+
+
+
+</script>
+
+<div id="page-inner">
+    <!--    <div class="row">-->
+    <!--        <div class="col-md-12">-->
+    <!--            <h1 class="page-header">-->
+    <!--                {{ title }}-->
+    <!--                <small>{{ smalltitle|upper }}</small>-->
+    <!--            </h1>-->
+    <!--        </div>-->
+
+    <!-- /. ROW  -->
+    <div class="row">
+        <div class="col-md-12">
+            <!--            -->
+            <div class="col-md-3">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        累积参数
+
+                        <!--                                                <h4 class="panel-title">-->
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" class="collapsed"
+                           aria-expanded="false">说明</a>
+                        <!--                                                </h4>-->
+
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse" style="height: 0px;"
+                         aria-expanded="false">
+                        <div class="panel-body">
+                            假定在某一时刻i（单位分钟），零件最大的集中应力F(i)与累加热输入P正相关，与停光散热时间加权值K正相关。<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F(i)=M1*∑I(i)×P + M2*∑J(i)×K<br/>
+                            其中：
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;K=1/(1+e<sup>(delta_t -
+                            tm)/l</sup>);<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delta_t=ti-tn,<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I(i)表示此时刻是否开光，开光为1，停光为0<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;J(i)表示此时刻是否停光，停光为1，开光为0<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P为此时刻功率值<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ti为某时刻的时间戳，<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tn为累加过程中当前记录的时间戳，<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tm为加权系数半衰期（秒）,<br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l为收缩系数，l减小则K曲线以tm为中心收缩<br/>
+                        </div>
+
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label>能量系数M1</label>
+                            <input type="number" class="form-control" min="0.00" max="100.00" step="0.01" id="input_range_M1" onchange="M1=this.value;"/>
+                        </div>
+                        <div class="form-group">
+                            <label>停光冷却系数M2</label>
+                            <input type="number" class="form-control" min="0.00" max="100.00" step="0.01" id="input_range_M2" onchange="M2=this.value;"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="input_range_tm" id="input_range_tm_label">加权系数半衰期tm</label>
+                            <input type="range" id="input_range_tm" name="input_range_tm"
+                                   min="0" max="1440" value="K_tm"
+                                   οninput="K_tm=value; document.getElementById('input_range_tm_label').innerHTML='加权系数半衰期tm='+K_tm+'('+seconds_to_hm(K_tm)+')';onInit_2D_Chart();"
+                                   onchange="K_tm=value; document.getElementById('input_range_tm_label').innerHTML='加权系数半衰期tm='+K_tm+'('+seconds_to_hm(K_tm)+')';onInit_2D_Chart();">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="input_range_l" id="input_range_l_label">收缩系数l</label>
+                            <input type="range" id="input_range_l" name="input_range_l" min="1" max="300" value="K_l"
+                                   οninput="K_l=value; document.getElementById('input_range_l_label').innerHTML='收缩系数l='+K_l;onInit_2D_Chart();"
+                                   onchange="K_l=value; document.getElementById('input_range_l_label').innerHTML='收缩系数l='+K_l;onInit_2D_Chart();">
+
+                        </div>
+                        <div id="2D_function_main" style="width: 100%;height:200px;">
+                            <body style="height: 100%; margin: 0">
+                            <div id="2D_function_container" style="height: 100%"></div>
+
+                            </body>
+                            <a href="#" class="btn btn-success" onclick="onQueryData();">计算积累数据并显示</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-9">
+                <div class="panel panel-default">
+
+                    <div class="panel-body">
+                        <div id="3D_main" style="width: 100%;height:780px;">
+                            <body style="height: 100%; margin: 0">
+                            <div id="3Dcontainer" style="height: 100%"></div>
+
+                            </body>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--        &lt;!&ndash; /.col-lg-12 &ndash;&gt;-->
+    <!--    </div>-->
+</div>
+<script type="text/javascript">
+
+    function seconds_to_hm(t){
+        return parseInt(t/60)+ 'h '+parseInt(t%60)+'m '
+    }
+    function load()
+    {
+        this;
+        $("#page-wrapper").css('min-height','780px');
+        $("#page-inner").css('min-height','780px');
+
+        myChart_2D_Zoom_X_range = [0,48*60];
+        myChart_2D_Zoom_Y_range = [-0.5,1.5];
+
+        myChart_2D = null;
+        F_FunDict = new Array();
+        onInit_2D_Chart();
+        onInit_3D_Chart();
+<!--        onQueryData();-->
+<!--        onLoadData_3D();-->
+    }
+    function onInit_3D_Chart()
+    {
+        var dom = document.getElementById("3Dcontainer");
+        myChart_3D = echarts.init(dom,'dark');          //黑色主题
+        app = {};
+        option = null;
+        Querydata = null;
+        myChart_3D.showLoading({
+            text: '数据正在努力加载...',
+            textStyle: {fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+    }
+
+
+    function onInit_2D_Chart(){
+        var dom = document.getElementById("2D_function_container");
+
+        if (myChart_2D != null)
+        {
+            myChart_2D_Zoom_X_range = [myChart_2D.getOption().dataZoom[0].startValue,myChart_2D.getOption().dataZoom[0].endValue];
+            myChart_2D_Zoom_Y_range = [myChart_2D.getOption().dataZoom[1].startValue,myChart_2D.getOption().dataZoom[1].endValue];
+        }
+        myChart_2D = echarts.init(dom);
+        var app = {};
+        function func(x) {
+        <!--1/(1+e(delta_t - tm)/l);-->
+            return 1/(1+ Math.pow(Math.E,(x-K_tm)/K_l))
+<!--            x /= 10;-->
+<!--            return Math.sin(x) * Math.cos(x * 2 + 1) * Math.sin(x * 3 + 2) * 50;-->
+        }
+
+        function generateData() {
+            let data = [];
+            for (let i = 0; i <= 8*24*60; i += 60) {
+                data.push([i, func(i)]);
+            }
+            return data;
+        }
+
+        option = {
+            animation: false,
+            grid: {
+                top: 30,
+                left: 30,
+                right: 30,
+                bottom: 30
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    animation: false,
+                    label: {
+                        backgroundColor: '#ccc',
+                        borderColor: '#aaa',
+                        borderWidth: 1,
+                        shadowBlur: 0,
+                        shadowOffsetX: 0,
+                        shadowOffsetY: 0,
+
+                        color: '#222'
+                    }
+                },
+                formatter: function (params) {
+                    return 'delta_t: '+seconds_to_hm(params[0].data[0]) +'<br />K: ' +params[0].data[1];
+                }
+            },
+            xAxis: {
+                name: '△t',
+                minorTick: {
+                    show: true
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: '#999'
+                    }
+                },
+                minorSplitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#ddd'
+                    }
+                }
+            },
+            yAxis: {
+                name: 'K',
+                min: -0.5,
+                max: 1.5,
+                minorTick: {
+                    show: true
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: '#999'
+                    }
+                },
+                minorSplitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#ddd'
+                    }
+                }
+            },
+            dataZoom: [{
+                show: true,
+                type: 'inside',
+                filterMode: 'none',
+                xAxisIndex: [0],
+                startValue: myChart_2D_Zoom_X_range[0],
+                endValue: myChart_2D_Zoom_X_range[1],
+            }, {
+                show: true,
+                type: 'inside',
+                filterMode: 'none',
+                yAxisIndex: [0],
+                startValue: myChart_2D_Zoom_Y_range[0],
+                endValue: myChart_2D_Zoom_Y_range[1],
+            }],
+            series: [
+                {
+                    type: 'line',
+                    showSymbol: false,
+                    clip: true,
+                    data: generateData()
+                }
+            ]
+        };
+
+        myChart_2D.setOption(option, true);
+
+    }
+    function onQueryData()
+    {
+        $.getJSON(
+            '/LAMProcessData/QueryData/AnalyseLAMProcess_AccumulateData/',
+            {'MissionID_list':'{{ MissionID_list }}'},
+
+            function (_data) {
+                Querydata = _data['data_3D'];
+                AcumData = onAccumulateData(Querydata);
+                onLoadData_3D(AcumData);
+            }
+        )
+    }
+
+    function getKValue(tm, l, delta_t){
+        var key = tm+'_'+l+'_'+delta_t
+        if(key in F_FunDict){
+            return F_FunDict[key]
+        }
+        else{
+            if(delta_t==1){
+                F_FunDict[key] = 1/(1+ Math.pow(Math.E,(1-tm)/l))
+                return F_FunDict[key]
+            }
+            else{
+                var F_pre = getKValue(tm, l, delta_t-1)
+                var _el = Math.pow(Math.E, 1/l)
+                F_FunDict[key] = _el/(_el-1+1/F_pre)
+                return F_FunDict[key]
+            }
+        }
+    }
+    function onAccumulateData(Qdata){
+    // f(i,n+1) = e^(1/l)/ ( e^(1/l)-1 + f(1,n) )
+    // t(n+1)=t(n)+1
+        acum_P_from_START = 0
+        let re_data = [];
+
+        for (var i = 0; i < Qdata.length; i++)
+        {
+            // 分别对每一分钟进行计算，计算此分钟的P以及   此分钟的以前的累加，
+            // [id, product, minute_index, minute_Laser, minute_LaserOff, minute_LaserOn]
+            //  0       1           2           3 ∑P          4 J(i)          5 I(i)
+            _minute_sum_P = Qdata[i][3];     // 此分钟的累加的∑P=I(i)×p
+            acum_P_from_START += _minute_sum_P; // 从第0分钟至此分钟累加的∑P_all
+
+
+            acum_K_from_START = 0           // 从第0分钟至此分钟的J(i)×K
+            for (let j = 0; j < i; j++)
+            {
+                // i : 第n时刻
+                // j : n时刻之前的某时刻
+                _minute_K = getKValue(K_tm, K_l, i-j);
+                acum_K_from_START += Qdata[j][4]*_minute_K;
+
+            }
+            re_data.push([Qdata[i][0], Qdata[i][1], Qdata[i][2], acum_P_from_START, acum_K_from_START,M1*acum_P_from_START+M2*acum_K_from_START ,Qdata[i][3],Qdata[i][4] ])
+        }
+        return re_data;
+
+    }
+
+
+    function onLoadData_3D( data )
+    {
+        var indices = {
+            name: 0,
+            group: 1,
+            id: 7
+        };
+        var schema = [
+            {name: 'MissionID', index: 0},
+            {name: 'Product', index: 1},
+            {name: 'Minute', index: 2},
+            {name: '∑I(i)×P', index: 3},
+            {name: '∑J(i)×K', index: 4},
+            {name: 'F(i)', index: 5},
+            {name: 'SumP_OneMinute', index: 6},
+            {name: 'POff_seconds', index: 7},
+
+        ];
+
+        var fieldIndices = schema.reduce(function (obj, item) {
+            obj[item.name] = item.index;
+            return obj;
+        }, {});
+
+        var groupCategories = [];
+        var groupColors = [];
+        var data;
+        var fieldNames = schema.map(function (item) {
+            return item.name;
+        });
+        fieldNames = fieldNames.slice(2, fieldNames.length - 2);
+
+        function getMaxOnExtent(data) {
+            var colorMax = -Infinity;
+            var symbolSizeMax = -Infinity;
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                var colorVal = item[fieldIndices[config.color]];
+                var symbolSizeVal = item[fieldIndices[config.symbolSize]];
+                colorMax = Math.max(colorVal, colorMax);
+                symbolSizeMax = Math.max(symbolSizeVal, symbolSizeMax);
+            }
+            return {
+                color: colorMax,
+                symbolSize: symbolSizeMax
+            };
+        }
+
+        var config = app.config = {
+            xAxis3D: '∑I(i)×P',
+            yAxis3D: '∑J(i)×K',
+            zAxis3D: 'F(i)',
+            color: 'Minute',
+            symbolSize: 'POff_seconds',
+
+            onChange: function () {
+                var max = getMaxOnExtent(data);
+                if (data) {
+
+                    myChart_3D.setOption({
+                        visualMap: [{
+                            max: max.color,
+<!--                            max: max.color / 2-->
+                        }, {
+                            max: max.symbolSize,
+<!--                            max: max.symbolSize / 2-->
+                        }],
+                        xAxis3D: {
+                            name: config.xAxis3D
+                        },
+                        yAxis3D: {
+                            name: config.yAxis3D
+                        },
+                        zAxis3D: {
+                            name: config.zAxis3D
+                        },
+                        series: {
+                            dimensions: [
+                                config.xAxis3D,
+                                config.yAxis3D,
+                                config.zAxis3D,
+                                config.color,
+                                config.symbolSiz
+                            ],
+                            data: data.map(function (item, idx) {
+                                return [
+                                    item[fieldIndices[config.xAxis3D]],
+                                    item[fieldIndices[config.yAxis3D]],
+                                    item[fieldIndices[config.zAxis3D]],
+                                    item[fieldIndices[config.color]],
+                                    item[fieldIndices[config.symbolSize]]/5,
+                                    idx
+                                ];
+                            })
+                        }
+                    });
+                }
+            }
+        };
+        app.configParameters = {};
+        ['xAxis3D', 'yAxis3D', 'zAxis3D', 'color', 'symbolSize'].forEach(function (fieldName) {
+            app.configParameters[fieldName] = {
+                options: fieldNames
+            };
+        });
+
+
+        //查看示例源码后，加入下面的代码可以实现
+        var gui = new dat.GUI();
+        $(gui.domElement).css({
+            position:"absolute",
+            right:5,
+            top:10,
+            height:180,
+            zIndex:1e3
+            });
+    <!--    $(".right-container").append(gui.domElement);-->
+        guiisColor="#000";
+        $("#3Dcontainer").append(gui.domElement);
+        var configParameters=app.configParameters||{};
+        for(var name in app.config){
+                var value=app.config[name];
+                if("onChange"!==name&&"onFinishChange"!==name){
+                    var isColor=!1,controller;
+                    if(configParameters[name]&&(configParameters[name].options?controller=gui.add(app.config,name,configParameters[name].options):null!=configParameters[name].min&&(controller=gui.add(app.config,name,configParameters[name].min,configParameters[name].max))),"string"==typeof obj)
+                        try{
+                            var colorArr=echarts.color.parse(value);
+                            isColor=!!colorArr,isColor&&(value=echarts.color.stringify(colorArr,"rgba"))
+                        }catch(e){
+                        }
+                        controller||(controller=guiisColor?"addColor":"add"),app.config.onChange&&controller.onChange(app.config.onChange),app.config.onFinishChange&&controller.onFinishChange(app.config.onFinishChange)
+                }
+        }
+        $(".dg .c").css('color','#000');
+
+        myChart_3D.hideLoading();
+        var max = getMaxOnExtent(data);
+        myChart_3D.setOption({
+            tooltip: {},
+            visualMap: [
+                {
+                    top: 10,
+                    calculable: true,
+                    dimension: 5,
+                    max: max.color, //max.color / 2,
+                    inRange: {
+                        color: ['#1710c0', '#0b9df0', '#00fea8', '#00ff0d', '#f5f811', '#f09a09', '#fe0300']
+                    },
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                {
+                    bottom: 10,
+                    calculable: true,
+                    dimension: 4,
+                    max: max.symbolSize,
+<!--                    max: max.symbolSize / 2,-->
+                    inRange: {
+                        symbolSize: [0, 60]
+                    },
+                    textStyle: {
+                        color: '#fff'
+                    }
+                }
+            ],  // end visualMap
+            xAxis3D: {
+                name: config.xAxis3D,
+                type: 'value'
+            },
+            yAxis3D: {
+                name: config.yAxis3D,
+                type: 'value'
+            },
+            zAxis3D: {
+                name: config.zAxis3D,
+                type: 'value'
+            },
+            grid3D: {
+                axisLine: {
+                    lineStyle: {
+                        color: '#fff'
+                    }
+                },
+                axisPointer: {
+                    lineStyle: {
+                        color: '#ffbd67'
+                    }
+                },
+                viewControl: {
+                    // autoRotate: true
+                    projection: 'orthographic',
+                }
+            },
+            series: [{
+                type: 'scatter3D',
+<!--                type: 'line3D',-->
+                dimensions: [
+                    config.xAxis3D,
+                    config.yAxis3D,
+                    config.zAxis3D,
+                    config.color,
+                    config.symbolSiz
+                ],
+                data: data.map(function (item, idx) {
+                    return [
+                        item[fieldIndices[config.xAxis3D]],
+                        item[fieldIndices[config.yAxis3D]],
+                        item[fieldIndices[config.zAxis3D]],
+                        item[fieldIndices[config.color]],
+                        item[fieldIndices[config.symbolSize]]/5,
+                        idx
+                    ];
+                }),
+                symbolSize: 5,
+                // symbol: 'triangle',
+                itemStyle: {
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.8)'
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#fff'
+                    }
+                }
+            }] // end series
+        }); // end myChart_3D.setOption
+
+
+
+
+
+
+
+
+
+<!--        $.getJSON(-->
+<!--            '/LAMProcessData/QueryData/AnalyseLAMProcess_AccumulateData/',-->
+<!--                {'MissionID_list':'{{ MissionID_list }}'},-->
+
+<!--                function (_data) {-->
+<!--                    data = _data['data_3D'];-->
+<!--                    myChart_3D.hideLoading();-->
+<!--                    var max = getMaxOnExtent(data);-->
+<!--                    myChart_3D.setOption({-->
+<!--                        tooltip: {},-->
+<!--                        visualMap: [-->
+<!--                            {-->
+<!--                                top: 10,-->
+<!--                                calculable: true,-->
+<!--                                dimension: 3,-->
+<!--                                max: max.color / 2,-->
+<!--                                inRange: {-->
+<!--                                    color: ['#1710c0', '#0b9df0', '#00fea8', '#00ff0d', '#f5f811', '#f09a09', '#fe0300']-->
+<!--                                },-->
+<!--                                textStyle: {-->
+<!--                                    color: '#fff'-->
+<!--                                }-->
+<!--                            },-->
+<!--                            {-->
+<!--                                bottom: 10,-->
+<!--                                calculable: true,-->
+<!--                                dimension: 4,-->
+<!--                                max: max.symbolSize / 2,-->
+<!--                                inRange: {-->
+<!--                                    symbolSize: [10, 40]-->
+<!--                                },-->
+<!--                                textStyle: {-->
+<!--                                    color: '#fff'-->
+<!--                                }-->
+<!--                            }-->
+<!--                        ],  // end visualMap-->
+<!--                        xAxis3D: {-->
+<!--                            name: config.xAxis3D,-->
+<!--                            type: 'value'-->
+<!--                        },-->
+<!--                        yAxis3D: {-->
+<!--                            name: config.yAxis3D,-->
+<!--                            type: 'value'-->
+<!--                        },-->
+<!--                        zAxis3D: {-->
+<!--                            name: config.zAxis3D,-->
+<!--                            type: 'value'-->
+<!--                        },-->
+<!--                        grid3D: {-->
+<!--                            axisLine: {-->
+<!--                                lineStyle: {-->
+<!--                                    color: '#fff'-->
+<!--                                }-->
+<!--                            },-->
+<!--                            axisPointer: {-->
+<!--                                lineStyle: {-->
+<!--                                    color: '#ffbd67'-->
+<!--                                }-->
+<!--                            },-->
+<!--                            viewControl: {-->
+<!--                                // autoRotate: true-->
+<!--                                // projection: 'orthographic'-->
+<!--                            }-->
+<!--                        },-->
+<!--                        series: [{-->
+<!--                            type: 'scatter3D',-->
+<!--                            dimensions: [-->
+<!--                                config.xAxis3D,-->
+<!--                                config.yAxis3D,-->
+<!--                                config.yAxis3D,-->
+<!--                                config.color,-->
+<!--                                config.symbolSiz-->
+<!--                            ],-->
+<!--                            data: data.map(function (item, idx) {-->
+<!--                                return [-->
+<!--                                    item[fieldIndices[config.xAxis3D]],-->
+<!--                                    item[fieldIndices[config.yAxis3D]],-->
+<!--                                    item[fieldIndices[config.zAxis3D]],-->
+<!--                                    item[fieldIndices[config.color]],-->
+<!--                                    item[fieldIndices[config.symbolSize]],-->
+<!--                                    idx-->
+<!--                                ];-->
+<!--                            }),-->
+<!--                            symbolSize: 12,-->
+<!--                            // symbol: 'triangle',-->
+<!--                            itemStyle: {-->
+<!--                                borderWidth: 1,-->
+<!--                                borderColor: 'rgba(255,255,255,0.8)'-->
+<!--                            },-->
+<!--                            emphasis: {-->
+<!--                                itemStyle: {-->
+<!--                                    color: '#fff'-->
+<!--                                }-->
+<!--                            }-->
+<!--                        }] // end series-->
+<!--                    }); // end myChart_3D.setOption-->
+
+
+<!--                } // end function-->
+
+<!--        ); // end getJSON-->
+<!--        myChart_3D.setOption(option);-->
+    } // end onLoadData_3D
+
+
+    onload();
+
+
+
+</script>
+{% endblock %}

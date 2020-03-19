@@ -2,7 +2,7 @@
 
 import re
 
-filehandle = open('setting.ini', 'r')
+filehandle = open('./ImageRecognition/setting.ini', 'r')
 RecordsList = filehandle.readlines()
 filehandle.close()
 

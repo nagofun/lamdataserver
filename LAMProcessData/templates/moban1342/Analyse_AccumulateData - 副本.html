@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+<!--<script src="/assets/js/dark.js"></script>-->
+    <script src="/assets/js/echarts.js"></script>
+<!--    <script src="/assets/ECharts/incubator-echarts/src/echarts.js"></script>-->
+    <script src="/assets/js/echarts-gl.js"></script>
+<!--    <script src="/assets/js/echarts-gl.min.js"></script>-->
+<!--    <script src="/assets/js/dataTool.min.js"></script>-->
+    <script src="/assets/ECharts/incubator-echarts/dist/extension/dataTool.min.js"></script>
+<!--    <script src="/assets/js/dat.gui.min.js"></script>-->
+    <script src="/assets/ECharts/incubator-echarts/test/lib/dat.gui.min.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/vintage.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/dark.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/macarons.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/infographic.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/shine.js"></script>
+    <script src="/assets/ECharts/incubator-echarts/theme/roma.js"></script>
+
+<script type="text/javascript">
+    function calMax(arr) {
+        let max = 0;
+        arr.forEach((el) => {
+          el.forEach((el1) => {
+            if (!(el1 === undefined || el1 === '')) {
+              if (max < el1) {
+                max = el1;
+              }
+            }
+          })
+        })
+        let maxint = Math.ceil(max / 9.5);//不让最高的值超过最上面的刻度
+        let maxval = maxint * 10;//让显示的刻度是整数
+        return maxval;
+  }
+
+  //计算最小值
+  function calMin(arr) {
+    let min = 0;
+    arr.forEach((el) => {
+      el.forEach((el1) => {
+        if (!(el1 === undefined || el1 === '')) {
+          if (min > el1) {
+            min = el1;
+          }
+        }
+      })
+    })
+    let minint = Math.floor(min / 10);
+    let minval = minint * 10;//让显示的刻度是整数
+    return minval;
+  }
+
+
+
+
+<!--{{ time_dict|safe }}-->
+<!--定义颜色-->
+    var bgcolor_hightlight = "#337ab7"
+    var fontcolor_hightligt = "#fff"
+    var bgcolor_odd = "#f9f9f9"
+    var bgcolor_even = "#ffffff"
+    var fontcolor = "#000"
+
+
+
+    function onload()
+    {
+        this;
+
+    }
+
+
+</script>
+
+<div id="page-inner">
+<!--    <div class="row">-->
+<!--        <div class="col-md-12">-->
+<!--            <h1 class="page-header">-->
+<!--                {{ title }}-->
+<!--                <small>{{ smalltitle|upper }}</small>-->
+<!--            </h1>-->
+<!--        </div>-->
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+<!--            -->
+                <div class="col-md-2">
+                    <div class="panel panel-default">
+
+                        <div class="panel-body">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-10">
+                    <div class="panel panel-default">
+
+                        <div class="panel-body">
+                            <div id="3D_main" style="width: 100%;height:780px;">
+                                <body style="height: 100%; margin: 0">
+                                <div id="3Dcontainer" style="height: 100%"></div>
+
+                                </body>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+<!--        &lt;!&ndash; /.col-lg-12 &ndash;&gt;-->
+<!--    </div>-->
+</div>
+<script type="text/javascript">
+
+
+    function load()
+    {
+        this;
+        $("#page-wrapper").css('min-height','780px');
+        $("#page-inner").css('min-height','780px');
+        onInit_3D_Chart();
+
+        onLoadData_3D();
+    }
+    function onInit_3D_Chart()
+    {
+        var dom = document.getElementById("3Dcontainer");
+        myChart_3D = echarts.init(dom,'dark');          //黑色主题
+        app = {};
+        option = null;
+        myChart_3D.showLoading({
+            text: '数据正在努力加载...',
+            textStyle: {fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+    }
+
+
+    function onLoadData_3D(data)
+    {
+        var indices = {
+            name: 0,
+            group: 1,
+            id: 16
+        };
+        var schema = [
+            {name: 'name', index: 0},
+            {name: 'group', index: 1},
+            {name: 'protein', index: 2},
+            {name: 'calcium', index: 3},
+            {name: 'sodium', index: 4},
+            {name: 'fiber', index: 5},
+            {name: 'vitaminc', index: 6},
+            {name: 'potassium', index: 7},
+            {name: 'carbohydrate', index: 8},
+            {name: 'sugars', index: 9},
+            {name: 'fat', index: 10},
+            {name: 'water', index: 11},
+            {name: 'calories', index: 12},
+            {name: 'saturated', index: 13},
+            {name: 'monounsat', index: 14},
+            {name: 'polyunsat', index: 15},
+            {name: 'id', index: 16}
+        ];
+        var data;
+
+        var fieldIndices = schema.reduce(function (obj, item) {
+            obj[item.name] = item.index;
+            return obj;
+        }, {});
+
+        var groupCategories = [];
+        var groupColors = [];
+        var data;
+        var fieldNames = schema.map(function (item) {
+            return item.name;
+        });
+        fieldNames = fieldNames.slice(2, fieldNames.length - 2);
+
+        function getMaxOnExtent(data) {
+            var colorMax = -Infinity;
+            var symbolSizeMax = -Infinity;
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                var colorVal = item[fieldIndices[config.color]];
+                var symbolSizeVal = item[fieldIndices[config.symbolSize]];
+                colorMax = Math.max(colorVal, colorMax);
+                symbolSizeMax = Math.max(symbolSizeVal, symbolSizeMax);
+            }
+            return {
+                color: colorMax,
+                symbolSize: symbolSizeMax
+            };
+        }
+
+        var config = app.config = {
+            xAxis3D: 'protein',
+            yAxis3D: 'fiber',
+            zAxis3D: 'sodium',
+            color: 'fiber',
+            symbolSize: 'vitaminc',
+
+            onChange: function () {
+                var max = getMaxOnExtent(data);
+                if (data) {
+
+                    myChart_3D.setOption({
+                        visualMap: [{
+                            max: max.color / 2
+                        }, {
+                            max: max.symbolSize / 2
+                        }],
+                        xAxis3D: {
+                            name: config.xAxis3D
+                        },
+                        yAxis3D: {
+                            name: config.yAxis3D
+                        },
+                        zAxis3D: {
+                            name: config.zAxis3D
+                        },
+                        series: {
+                            dimensions: [
+                                config.xAxis3D,
+                                config.yAxis3D,
+                                config.yAxis3D,
+                                config.color,
+                                config.symbolSiz
+                            ],
+                            data: data.map(function (item, idx) {
+                                return [
+                                    item[fieldIndices[config.xAxis3D]],
+                                    item[fieldIndices[config.yAxis3D]],
+                                    item[fieldIndices[config.zAxis3D]],
+                                    item[fieldIndices[config.color]],
+                                    item[fieldIndices[config.symbolSize]],
+                                    idx
+                                ];
+                            })
+                        }
+                    });
+                }
+            }
+        };
+        app.configParameters = {};
+        ['xAxis3D', 'yAxis3D', 'zAxis3D', 'color', 'symbolSize'].forEach(function (fieldName) {
+            app.configParameters[fieldName] = {
+                options: fieldNames
+            };
+        });
+
+
+        //查看示例源码后，加入下面的代码可以实现
+        var gui = new dat.GUI();
+        $(gui.domElement).css({
+            position:"absolute",
+            right:5,
+            top:10,
+            height:180,
+            zIndex:1e3
+            });
+    <!--    $(".right-container").append(gui.domElement);-->
+        guiisColor="#000";
+        $("#3Dcontainer").append(gui.domElement);
+        var configParameters=app.configParameters||{};
+        for(var name in app.config){
+                var value=app.config[name];
+                if("onChange"!==name&&"onFinishChange"!==name){
+                    var isColor=!1,controller;
+                    if(configParameters[name]&&(configParameters[name].options?controller=gui.add(app.config,name,configParameters[name].options):null!=configParameters[name].min&&(controller=gui.add(app.config,name,configParameters[name].min,configParameters[name].max))),"string"==typeof obj)
+                        try{
+                            var colorArr=echarts.color.parse(value);
+                            isColor=!!colorArr,isColor&&(value=echarts.color.stringify(colorArr,"rgba"))
+                        }catch(e){
+                        }
+                        controller||(controller=guiisColor?"addColor":"add"),app.config.onChange&&controller.onChange(app.config.onChange),app.config.onFinishChange&&controller.onFinishChange(app.config.onFinishChange)
+                }
+        }
+    <!--    $(".dg .c").color="#000";-->
+        $(".dg .c").css('color','#000');
+
+
+        $.getJSON('/LAMProcessData/3Dtestdata/', function (_data) {
+            data = _data;
+            myChart_3D.hideLoading();
+            var max = getMaxOnExtent(data);
+            myChart_3D.setOption({
+                tooltip: {},
+
+        <!--        tooltip: {-->
+        <!--            trigger: 'axis',-->
+        <!--            axisPointer: {-->
+        <!--                animation: false-->
+        <!--            }-->
+        <!--        },-->
+        <!--        tooltip: {-->
+        <!--            trigger: 'axis',-->
+        <!--&lt;!&ndash;            formatter: function (params) {&ndash;&gt;-->
+        <!--&lt;!&ndash;                return params;&ndash;&gt;-->
+        <!--&lt;!&ndash;            }&ndash;&gt;-->
+        <!--        },-->
+                visualMap: [{
+                    top: 10,
+                    calculable: true,
+                    dimension: 3,
+                    max: max.color / 2,
+                    inRange: {
+                        color: ['#1710c0', '#0b9df0', '#00fea8', '#00ff0d', '#f5f811', '#f09a09', '#fe0300']
+                    },
+                    textStyle: {
+                        color: '#fff'
+                    }
+                }, {
+                    bottom: 10,
+                    calculable: true,
+                    dimension: 4,
+                    max: max.symbolSize / 2,
+                    inRange: {
+                        symbolSize: [10, 40]
+                    },
+                    textStyle: {
+                        color: '#fff'
+                    }
+                }],
+                xAxis3D: {
+                    name: config.xAxis3D,
+                    type: 'value'
+                },
+                yAxis3D: {
+                    name: config.yAxis3D,
+                    type: 'value'
+                },
+                zAxis3D: {
+                    name: config.zAxis3D,
+                    type: 'value'
+                },
+                grid3D: {
+                    axisLine: {
+                        lineStyle: {
+                            color: '#fff'
+                        }
+                    },
+                    axisPointer: {
+                        lineStyle: {
+                            color: '#ffbd67'
+                        }
+                    },
+                    viewControl: {
+                        // autoRotate: true
+                        // projection: 'orthographic'
+                    }
+                },
+                series: [{
+                    type: 'scatter3D',
+                    dimensions: [
+                        config.xAxis3D,
+                        config.yAxis3D,
+                        config.yAxis3D,
+                        config.color,
+                        config.symbolSiz
+                    ],
+                    data: data.map(function (item, idx) {
+                        return [
+                            item[fieldIndices[config.xAxis3D]],
+                            item[fieldIndices[config.yAxis3D]],
+                            item[fieldIndices[config.zAxis3D]],
+                            item[fieldIndices[config.color]],
+                            item[fieldIndices[config.symbolSize]],
+                            idx
+                        ];
+                    }),
+                    symbolSize: 12,
+                    // symbol: 'triangle',
+                    itemStyle: {
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.8)'
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            color: '#fff'
+                        }
+                    }
+                }]
+            });
+        });
+<!--        myChart_3D.setOption(option);-->
+    }
+
+
+</script>
+{% endblock %}
