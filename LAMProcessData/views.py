@@ -35,7 +35,7 @@ from LAMProcessData.forms import *
 # from forms import *
 # from LAMProcessData.permission import check_permission
 from ImageRecognition import ImageRecognition
-from PracticalTools import SShapeBreak
+from PracticalTools import SShapeBreak, ReadPDF
 from django.views.generic import View
 import os
 from tempfile import TemporaryFile, NamedTemporaryFile
@@ -89,6 +89,7 @@ def CacheOperator(operateType, ifget, ParamSet,data=None):
 		'ProgressBarValue_CompleteInspect_MissionId'    由process_realtime_finedata中的CacheOperator进行赋值
 		'ProgressBarValue_PracticalTools_SShapeBreak_By_GUID'    由SShapeBreak中的CacheOperator进行赋值
 		'ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID'    由views.PracticalTools_BreakBlockResumption进行赋值
+		'ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID'    由views.***进行赋值
 	:param ifget:
 	:param ParamSet:    (worksectionid,datatype)
 		datatype:laser, oxygen, cncstatus
@@ -138,10 +139,15 @@ def CacheOperator(operateType, ifget, ParamSet,data=None):
 		key = 'PBR_Tools_BrkBlkRUM_GUID%s' % (GUID)
 		if not ifget:
 			cache.set(key, data)
-			# print('set',key, data)
 		else:
 			revalue = cache.get(key)
-			# print('get',key, data)
+	elif operateType == 'ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID':
+		TechInstID = ParamSet
+		key = 'PBR_NewTechInstByPDF_TechInstID%s' % (TechInstID)
+		if not ifget:
+			cache.set(key, data)
+		else:
+			revalue = cache.get(key)
 	return revalue
 
 # 差值感知算法 adarray数组
@@ -351,6 +357,9 @@ Common_URL['Back_URL_lamtechniqueinstruction'] = Common_URL['EditBasicInfomation
 Common_URL['Back_URL_lamprocessparameters'] = Common_URL['EditBasicInfomation'] + 'LAMProcessParameters/'
 
 Common_URL['Back_URL_lamtechinstserial'] = Common_URL['EditBasicInfomation'] + 'LAMTechInstSerial/'
+Common_URL['Back_URL_lamtechinstserial_pdf'] = Common_URL['EditBasicInfomation'] + 'New_LAMTechInstSerial_By_PDF/'
+Common_URL['Back_URL_lamtechinstserial_uploadpdf'] = Common_URL['Back_URL_lamtechinstserial_pdf'] + 'UploadFile/'
+Common_URL['Back_URL_lamtechinstserial_savepdf'] = Common_URL['Back_URL_lamtechinstserial_pdf'] + 'SavePDF/'
 # Common_URL['Back_URL_lamprodcate_techinst'] = Common_URL['EditBasicInfomation'] + 'LAMProdCate_TechInst/'
 Common_URL['Back_URL_samplingposition'] = Common_URL['EditBasicInfomation'] + 'SamplingPosition/'
 Common_URL['Back_URL_samplingdirection'] = Common_URL['EditBasicInfomation'] + 'SamplingDirection/'
@@ -452,6 +461,7 @@ Common_URL['Back_URL_SShapeBreak'] = Common_URL['PracticalTools'] + 'SShapeBreak
 
 # 查询
 Common_URL['Query_LAMTechInst_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/LAMTechniqueInstruction/'
+Common_URL['Query_LAMTechInstSerialDetails_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/LAMTechniqueInstruction_SerialDetails/'
 Common_URL['Query_LAMProductMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/LAMProductMission/'
 Common_URL['Query_ProductPhyChemTestMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/ProductPhyChemTestMission/'
 Common_URL['Query_RawStockPhyChemTestMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/RawStockPhyChemTestMission/'
@@ -486,6 +496,7 @@ Common_URL['Query_ProgressBarValue'] = Common_URL['ProcessPath'] +'QueryData/Pro
 Common_URL['Query_ProgressBarValue_InspectionLAMRecords_By_MissionID'] = Common_URL['Query_ProgressBarValue'] + 'InspectionLAMRecords_By_MissionID/'
 Common_URL['Query_ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID'] = Common_URL['Query_ProgressBarValue'] + 'PracticalTools_BreakBlockResumption_By_GUID/'
 Common_URL['Query_ProgressBarValue_PracticalTools_SShapeBreak_By_GUID'] = Common_URL['Query_ProgressBarValue'] + 'PracticalTools_SShapeBreak_By_GUID/'
+Common_URL['Query_ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID'] = Common_URL['Query_ProgressBarValue'] + 'New_LAMTechInstSerial_UploadPDFFile_By_TechInstID/'
 Common_URL['Query_InspectLAMProcessRecords_By_MissionID'] = Common_URL['ProcessPath'] + 'QueryData/InspectLAMProcessRecords/Complete/'
 
 
@@ -1081,6 +1092,375 @@ def edit_lamtechinstserial(request):
 @permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
 def del_lamtechinstserial(request):
 	return BasicInformation_Delete(request, Model=LAM_TechInst_Serial, modelname='lamtechinstserial')
+
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+# @cache_page(60 * 30)
+def new_lamtechinstserial_by_pdf(request):
+	# 上传PDF实例化工序
+	'''主函数开始'''
+	qset = (Q(available=True))
+	all_techinst = LAMTechniqueInstruction.objects.filter(qset)
+	worktype_list = LAMProductionWorkType.objects.filter(qset)
+	# step = ('ready', 'uploadPDF', 'save')
+	if request.method != 'POST':
+		_form_inst = LAMTechInstSerial_PDF_Form()
+		
+		
+		step = 'ready'
+		return render(request, "OperateForm_LAMTechInstSerial_ByPDF.html",
+		              {
+			              'form': _form_inst,
+			              'all_techinst': all_techinst,
+						  'worktype_list':worktype_list,
+			              'Common_URL': Common_URL,
+			              'step': step,
+		              })
+	else:
+		# 选中的工艺文件ID
+		tech_inst_id = request.POST['Technique_Instruction_ID']
+		# 选中的工艺文件名称
+		tech_inst_name = request.POST['Technique_Instruction']
+		# 选中的工艺文件实例
+		tech_inst = LAMTechniqueInstruction.objects.get(id=int(tech_inst_id))
+		# 选中的工艺文件 数据库中现有工序
+		tech_inst_serial_list = LAM_TechInst_Serial.objects.filter(Q(technique_instruction=tech_inst_id))
+		if 'jqery_post' in request.POST:
+			'''模拟post提交，保存'''
+			success = True
+			errors = []
+			infomations = []
+			
+			# GUID = request.POST['GUID']
+			# select_tech_inst_id = request.POST['Technique_Instruction_ID']
+			# select_tech_inst_name = request.POST['Technique_Instruction']
+			tableInfo_list = eval(request.POST['tableInfo'])
+			with open(request.POST['TempfileName']) as _tempfile:
+				PDF_dict_str = _tempfile.read()
+				PDF_dict = json.loads(PDF_dict_str)
+				
+				'''将上传修正的数据以工序为单位汇总，稍后与之前自主识别的信息拼合到tableInfo_list_Merge中'''
+				_struct = {'number': -1, 'name': '', 'note': [], 'DD_CanSee': False, 'JGCX_CanSee': False,
+				           'RCL_CanSee': False, 'JY_CanSee': False, 'KF_CanSee': False, 'CZ_CanSee': False}
+				tableInfo_list_Merge = []
+				for _info in tableInfo_list:
+					if _info[1] != '':
+						if _struct['number'] != -1:
+							tableInfo_list_Merge.append(_struct)
+							_struct = {'number': -1, 'name': '', 'note': [], 'DD_CanSee': False, 'JGCX_CanSee': False,
+							           'RCL_CanSee': False, 'JY_CanSee': False, 'KF_CanSee': False, 'CZ_CanSee': False}
+						_struct['number'] = int(_info[1])
+						_struct['name'] = _info[2]
+						_struct['DD_CanSee'] = eval(_info[4])
+						_struct['JGCX_CanSee'] = eval(_info[5])
+						_struct['RCL_CanSee'] = eval(_info[6])
+						_struct['JY_CanSee'] = eval(_info[7])
+						_struct['KF_CanSee'] = eval(_info[8])
+						_struct['CZ_CanSee'] = eval(_info[9])
+					else:
+						_struct['note'].append(_info[3])
+				tableInfo_list_Merge.append(_struct)
+				
+				def getMergeInfoItem(number):
+					return list(filter(lambda i: i['number'] == number, tableInfo_list_Merge))[0]
+				
+				for item in PDF_dict['Serial_Item_List']:
+					# _Merge_info = getMergeInfoItem(int(item['number']))
+					# _Merge_info['imgcodelist'] = item['imgcodelist']
+					# _Merge_info['originalimg'] = np.array(PDF_dict['NameImgList'][PDF_dict['NumberStrList'].index(item['number'])])
+					# getMergeInfoItem(int(item['number']))['imgcodelist'] = item['imgcodelist']
+					try:
+						_Merge_info = getMergeInfoItem(int(item['number']))
+					except:
+						pass
+					_Merge_info['imgcodelist'] = item['imgcodelist']
+					_Merge_info['originalimg'] = np.array(PDF_dict['NameImgList'][item['name_lineid']])
+					_Merge_info['noteimglist']=[]
+					for note_lineid in item['note_lineid_list']:
+						_Merge_info['noteimglist'].append(np.array(PDF_dict['NameImgList'][note_lineid]))
+					
+					
+				
+				'''保存数据库'''
+				'''|--保存/更新 PDFImageCode'''
+				for item in tableInfo_list_Merge:
+					try:
+						ReadPDF.Save_ImgCode(item['name'], item['imgcodelist'][0][0], item['imgcodelist'][0][1], item['originalimg'])
+						for _id, notename in enumerate(item['note']):
+							ReadPDF.Save_ImgCode(notename, item['imgcodelist'][_id + 1][0], item['imgcodelist'][_id + 1][1],item['noteimglist'][_id])
+					except:
+						errors.append('保存工序%s的图像识别码失败。\n'%(item['name']))
+						success = False
+				'''|--保存/更新 LAM_TechInst_Serial'''
+				'''|    |--先检查是否有与数据库中已有内容冲突的工序号（不生效）'''
+				'''|    |--先检查提交的工序号列表中有无重复'''
+				# qset = (
+				# 		Q(technique_instruction=tech_inst_id)
+				# )
+				# existing_TechInst_Serial_list = LAM_TechInst_Serial.objects.filter(qset)
+				existing_serial_num_dict = {serial.serial_number:serial.id for serial in tech_inst_serial_list}
+				updateing_serial_num_list = [int(serial['number']) for serial in tableInfo_list_Merge]
+				
+				# 对数据库进行更新、新增，若不存在则新增，若存在则修改，若新增的工序有重号，则报错
+				
+				# if len(set(existing_serial_num_list+updateing_serial_num_list)) < len(existing_serial_num_list) + len(updateing_serial_num_list):
+				# 	errors.append('技术文件（%s）中已有工序%s与新增工序%s有重叠，请重新检查。\n'%(tech_inst_name,str(existing_serial_num_list),str(updateing_serial_num_list)))
+				# 	success = False
+				if len(set(updateing_serial_num_list)) < len(updateing_serial_num_list):
+					errors.append('新增工序%s中工序号有重复，请检查后重新保存。\n'%(str(updateing_serial_num_list)))
+					success = False
+				else:
+					'''|    |--再进行保存'''
+					'''可以进行保存操作'''
+					for item in tableInfo_list_Merge:
+						try:
+							_worktype = LAMProductionWorkType.objects.get(worktype_name=item['name'])
+							if int(item['number']) in existing_serial_num_dict.keys():
+								# 	已存在，则更新
+								existing_serial = LAM_TechInst_Serial.objects.get(
+									id=existing_serial_num_dict[int(item['number'])])
+								_successText = '工序%d-%s成功更新。'%(int(item['number']), item['name']) if (
+										existing_serial.serial_worktype != _worktype or
+										existing_serial.serial_note != ','.join(item['note']) or
+										existing_serial.selectable_Scheduling != item['DD_CanSee'] or
+										existing_serial.selectable_LAM != item['JGCX_CanSee'] or
+										existing_serial.selectable_HeatTreatment != item['RCL_CanSee'] or
+										existing_serial.selectable_PhyChemTest != item['JY_CanSee'] or
+										existing_serial.selectable_RawStockSendRetrieve != item['KF_CanSee'] or
+										existing_serial.selectable_Weighing != item['CZ_CanSee']) else None
+								
+								existing_serial.serial_worktype = _worktype
+								existing_serial.serial_note = ','.join(item['note'])
+								existing_serial.selectable_Scheduling = item['DD_CanSee']
+								existing_serial.selectable_LAM = item['JGCX_CanSee']
+								existing_serial.selectable_HeatTreatment = item['RCL_CanSee']
+								existing_serial.selectable_PhyChemTest = item['JY_CanSee']
+								existing_serial.selectable_RawStockSendRetrieve = item['KF_CanSee']
+								existing_serial.selectable_Weighing = item['CZ_CanSee']
+								existing_serial.save()
+								if _successText:
+									infomations.append(_successText)
+								pass
+							else:
+								
+								new_serial = LAM_TechInst_Serial.objects.create(
+									technique_instruction= LAMTechniqueInstruction.objects.get(id=tech_inst_id),
+									serial_number= int(item['number']),
+									serial_worktype = _worktype,
+									serial_note = ','.join(item['note']),
+									serial_content = '',
+									available = True,
+									process_parameter = None,
+									selectable_Scheduling=item['DD_CanSee'],
+									selectable_LAM=item['JGCX_CanSee'],
+									selectable_HeatTreatment=item['RCL_CanSee'],
+									selectable_PhyChemTest=item['JY_CanSee'],
+									selectable_RawStockSendRetrieve =item['KF_CanSee'],
+									selectable_Weighing = item['CZ_CanSee'],
+								)
+								new_serial.save()
+								infomations.append('工序%d-%s成功新增。' % (int(item['number']), item['name']))
+						except:
+							errors.append('工序%d-%s保存失败。\n'%(int(item['number']), item['name']))
+							success = False
+						# edit at 20200326 23:58
+							# 选中的工艺文件 数据库中现有工序
+				tech_inst_serial_list = LAM_TechInst_Serial.objects.filter(Q(technique_instruction=tech_inst_id))
+			
+			html = json.dumps(
+				{
+					'success': success,
+					'errors': errors,
+			        'infomations':infomations,
+			        'Existing_TechInst_Serials': [[
+				         _serial.id,
+							_serial.serial_number,
+					     str(_serial.serial_worktype),
+					     _serial.serial_note,
+					     _serial.serial_content,
+					     _serial.selectable_Scheduling,
+					     _serial.selectable_LAM,
+					     _serial.selectable_HeatTreatment,
+					     _serial.selectable_PhyChemTest,
+					     _serial.selectable_RawStockSendRetrieve,
+					     _serial.selectable_Weighing] for _serial in tech_inst_serial_list if _serial.available],
+			    }, ensure_ascii=False)
+			
+			return HttpResponse(html, content_type='application/json')
+			
+		else:
+			# 20200325：此处应传回GUID
+			'''form表单提交，分析pdf'''
+			step = 'uploadPDF'
+			# GUID = request.POST['GUID']
+			# tech_inst_id = request.POST['Technique_Instruction_ID']
+			# tech_inst_name = request.POST['Technique_Instruction']
+			# tech_inst = LAMTechniqueInstruction.objects.get(id = int(tech_inst_id))
+			# tech_inst_serial_list = LAM_TechInst_Serial.objects.filter(Q(technique_instruction=tech_inst_id))
+			
+			file = request.FILES.get('File', None)
+			if file:
+				if file.size != 0:
+					# _tempfile = os.path.join (tempfile.mkdtemp()+'.pdf')
+					# with open(_tempfile, 'wb') as fp:
+					# 	for part in file.chunks():
+					# 		fp.write(part)
+					# pdfInfo_dict = ReadPDF.pyMuPDF_fitz(pdfPath = _tempfile)
+					# os.remove(_tempfile)
+					file.open()
+					contents = file.read()
+					file.close()
+					pdfInfo_dict = ReadPDF.pyMuPDF_fitz(stream=contents, filetype='stream', ifTemporaryFile=tech_inst.temporary, TechInstID=tech_inst_id)
+					'''
+					data = {"embeddings": knownEmbeddings.tolist(), "names": knownNames} ,
+					you can retrieve the data to ndarray using np.asarray(data["embeddings"])
+					– Shijith Jul 30 '19 at 10:50
+					
+					从str到bytes:调用方法encode().
+					从bytes到str:调用方法decode().
+					'''
+					SerialItemList_for_JSON = {
+						'Technique_Instruction_ID': tech_inst_id,
+						'Serial_Item_List': pdfInfo_dict['Serial_Item_List'],
+						'NameStrList': pdfInfo_dict['NameStrList'],
+						'NumberStrList': pdfInfo_dict['NumberStrList'],
+						'NameCodeIMGList': pdfInfo_dict['NameCodeIMGList'],
+						'NameImgList': [img_array.tolist() for img_array in pdfInfo_dict['NameImgList']],
+					}
+					_tempfile = tempfile.NamedTemporaryFile(prefix='LAMServer', delete=False)
+					_tempfile.write(json.dumps(SerialItemList_for_JSON, ensure_ascii=True).encode(encoding="utf8",errors="strict"))
+					_tempfile.close()
+					tempfile_name = _tempfile.name
+					print(tempfile_name)
+					'''start 合并单元格'''
+					# 工序号、工种、概述
+					pdfInfo_list = []
+					# 哪些单元格合并
+					pdfInfo_Merge_list = []
+					_currentNumber = 0
+					_current_rowNumber = 0
+					_current_merge = [0, 0, 0]
+					for i in range(len(pdfInfo_dict['NumberStrList'])):
+						if len(str(pdfInfo_dict['NumberStrList'][i]))==0 and len(str(pdfInfo_dict['NameStrList'][i]))==0:
+							continue
+						_current_rowNumber += 1
+						if len(str(pdfInfo_dict['NumberStrList'][i]))>0:
+							# 结束上一次的merge，存入列表
+							if _current_merge[0] != 0 and _current_merge[1] ==0:
+								_current_merge[1] = _current_rowNumber
+								if _current_merge[0] != _current_merge[1]-1:
+									_current_merge[2] = _current_merge[1] - _current_merge[0]
+									pdfInfo_Merge_list.append(_current_merge)
+								_current_merge = [0, 0, 0]
+							# 开始新的merge
+							_current_merge[0] = _current_rowNumber
+							_currentNumber = pdfInfo_dict['NumberStrList'][i]
+							
+						pdfInfo_list.append(
+							[
+								# pdfInfo_dict['NumberStrList'][i] if len(str(pdfInfo_dict['NumberStrList'][i]))>0 else _currentNumber,
+								pdfInfo_dict['NumberStrList'][i],
+								pdfInfo_dict['NameStrList'][i] if len(str(pdfInfo_dict['NumberStrList'][i])) != 0 else '',
+								'' if len(str(pdfInfo_dict['NumberStrList'][i])) != 0 else pdfInfo_dict['NameStrList'][i],
+							]
+						)
+					# 最后一行
+					_current_merge[1] = _current_rowNumber
+					if _current_merge[0] != _current_merge[1]:
+						_current_merge[2] = _current_merge[1] - _current_merge[0]+1
+						pdfInfo_Merge_list.append(_current_merge)
+					'''end 合并单元格'''
+					
+					
+					# 增加只读单元格的Y坐标，X=1时与X=2时
+					pdfInfo_readonly_Y_list = [ id for (id, i) in enumerate(pdfInfo_list) if len(i[0])>0]
+					print(pdfInfo_list)
+					print(pdfInfo_Merge_list)
+					print(pdfInfo_readonly_Y_list)
+					# pdfInfo_list = [
+					# 	[
+					# 		pdfInfo_dict['NumberStrList'][i],
+					# 		pdfInfo_dict['NameStrList'][i] if len(str(pdfInfo_dict['NumberStrList'][i])) != 0 else '',
+					# 		'' if len(str(pdfInfo_dict['NumberStrList'][i])) != 0 else pdfInfo_dict['NameStrList'][i],
+					#     ] for i in range(len(pdfInfo_dict['NumberStrList'])) if len(str(pdfInfo_dict['NumberStrList'][i]))>0 or len(str(pdfInfo_dict['NameStrList'][i]))>0  ]
+					return render(request, "OperateForm_LAMTechInstSerial_ByPDF.html",
+						{
+							'Common_URL': Common_URL,
+							'step': step,
+							# 'GUID': GUID,
+							'Technique_Instruction': tech_inst_name,
+							'Technique_Instruction_ID': tech_inst_id,
+							'Existing_TechInst_Serials': [[_serial.id,
+							                               _serial.serial_number,
+							                               str(_serial.serial_worktype),
+							                               _serial.serial_note,
+							                               _serial.serial_content,
+							                               _serial.selectable_Scheduling,
+							                               _serial.selectable_LAM,
+							                               _serial.selectable_HeatTreatment,
+							                               _serial.selectable_PhyChemTest,
+							                               _serial.selectable_RawStockSendRetrieve,
+							                               _serial.selectable_Weighing] for _serial in tech_inst_serial_list if _serial.available],
+							'select_product_code': list(map(lambda p: p.product_code, tech_inst.product.all())),
+							'tech_inst_name': tech_inst_name,
+							'pdfInfo_list': pdfInfo_list,
+							'pdfInfo_Merge_list': pdfInfo_Merge_list,
+							'pdfInfo_readonly_Y_list':pdfInfo_readonly_Y_list,
+							'worktype_list':worktype_list,
+				            'all_techinst': all_techinst,
+							'tempfile_name': tempfile_name.replace('\\','\\\\'),
+					    })
+			else:
+				save_success = 'False'
+			
+		
+	
+	
+	
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def new_lamtechinstserial_upload_pdf(request):
+	
+	tech_inst = request.POST['tech_inst_id']
+	file = request.FILES.get('File', None)
+
+	
+	print(request.POST)
+	if file:
+		if file.size != 0:
+			# args = [
+			# 	file.name,
+			# 	file,
+			# 	# PowderOnOrder,
+			# 	# PowderOffOrder,
+			# 	TurningFunction,
+			# 	SwitchBlockFunction,
+			# 	IfPrintTurningFunction,
+			# 	IfPrintSwitchBlockFunction,
+			# 	GUID,
+			# ]
+			# # newText = SShapeBreak.MakeSShapeBreakGCode(file.name, file)
+			# # ProgressBarValue_PracticalTools_SShapeBreak_By_GUID
+			# newText = SShapeBreak.MakeSShapeBreakGCode(*args)
+			# _tempfile = tempfile.NamedTemporaryFile(prefix='LAMServer', delete=False)
+			# _tempfile.writelines(newText)
+			# _tempfile.close()
+			# tempfile_name = _tempfile.name
+			# # tempfile_name = NCFileInsert(file, [ParamCurrentPPOSX, ParamCurrentPPOSY, ParamCurrentPPOSZ, ParamCounter])
+			save_success = 'True'
+	else:
+		save_success = 'False'
+	
+	# _dict = RealtimeRecord.Realtime_Records.getRecords(WorksectionID)
+	# # print(reDict['2019-11-19 11:35:00'])
+	# html = json.dumps(_dict, ensure_ascii=False)
+	# # print(html)
+	# return HttpResponse(html, content_type='application/json')
+	pass
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def new_lamtechinstserial_save_pdf():
+	pass
 
 '''============================================================================'''
 
@@ -2254,7 +2634,7 @@ def PracticalTools_BreakBlockResumption(request):
 		else:
 			save_success = 'False'
 
-	return render(request, "PracticalTools_BreakBlockResumption.html",
+	return render(request, "PracticalTools.html",
 				  {'form': _form_inst,
 				   'Common_URL': Common_URL,
 				   'tempfile_name':tempfile_name,
@@ -2312,11 +2692,11 @@ def PracticalTools_SShapeBreak(request):
 		else:
 			save_success = 'False'
 
-	return render(request, "PracticalTools_BreakBlockResumption.html",
+	return render(request, "PracticalTools.html",
 				  {'form': _form_inst,
 				   'Common_URL': Common_URL,
 				   'tempfile_name':tempfile_name,
-				   'save_success':save_success,
+				   'save_success': save_success,
 				   })
 '''============================================================================'''
 

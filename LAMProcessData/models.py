@@ -31,6 +31,8 @@ class ModulePermission(models.Model):
             ("Operator_INSP", u"检验者"),
         )
 
+
+
 # 厂房
 class Workshop(models.Model):
     # 名称
@@ -287,6 +289,36 @@ class LAMProductionWorkType(models.Model):
     def __str__(self):
         return "%s"%(self.worktype_name)
 
+# 图片识别码
+class PDFImageCode(models.Model):
+    # _choice = (
+    #     ('form_code', '表式号'),
+    #     ('work_type', '工序'),
+    #     ('product_code', '零件编号'),
+    #     # ('drawing_code', '产品图号'),
+    #     # ('instruction_code', '工艺文件编号'),
+    #     # ('Nonconforming_code', '不合格品审理单编号'),
+    # )
+    # # 该图片的所属类别
+    # img_type = models.CharField(verbose_name='图片所属类别', max_length=30, choices=_choice)
+    # 图片尺寸
+    image_width = models.PositiveIntegerField()
+    image_height = models.PositiveIntegerField()
+    # 图形哈希码
+    # imagecode = models.TextField(null=True, max_length=500)
+    imagecode = models.TextField(null=True)
+    # 所属的工序类别
+    # serial_worktype = models.ForeignKey(LAMProductionWorkType, related_name='WorkType_ImageCode', blank=True, null=True, on_delete=models.CASCADE)
+    # 识别出的
+    text = models.CharField(max_length=50)
+    # 可现实的图片
+    OriginalImage = models.ImageField(upload_to='PDFCode/OriginalImage/', null=True, blank=True)
+    
+    class Meta:
+        index_together = ['image_width', 'image_height', 'text']
+       
+    
+
 # 激光成形工序实例
 class LAM_TechInst_Serial(models.Model):
     # 工艺文件
@@ -316,7 +348,8 @@ class LAM_TechInst_Serial(models.Model):
     # 是否可被称重模块选择
     selectable_Weighing = models.BooleanField(default=False)
 
-
+    class Meta:
+        unique_together = ['technique_instruction', 'serial_number']
     def __str__(self):
         return "%s [%d-%s-%s]"%(self.technique_instruction,self.serial_number, self.serial_worktype, self.serial_note)
 

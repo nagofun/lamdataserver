@@ -464,12 +464,14 @@ class LAMTechInstSerialForm(ModelForm):
 
 		self.fields['filter_techinst'] = forms.CharField(max_length=50, required=False)
 		self.fields['filter_techinst'].widget.attrs.update(
-			{'list': 'techinst_list', 'onchange': 'check_FilterTechinstField(this.value)'})
+			# {'list': 'techinst_list', 'onchange': 'check_FilterTechinstField(this.value)'})
+			{'list': 'techinst_list', 'onchange': 'check_FilterTechinstField(getValue_from_datalist(this.id, "techinst_list"))'})
 		self.fields['filter_techinst'].label = '辅助筛选工艺文件'
 
 		self.fields['filter_worktype'] = forms.CharField(max_length=50, required=False)
 		self.fields['filter_worktype'].widget.attrs.update(
-			{'list': 'worktype_list', 'onchange': 'check_FilterWorktypeField(this.value)'})
+			# {'list': 'worktype_list', 'onchange': 'check_FilterWorktypeField(this.value)'})
+			{'list': 'worktype_list', 'onchange': 'check_FilterWorktypeField(getValue_from_datalist(this.id, "worktype_list"))'})
 		self.fields['filter_worktype'].label = '辅助筛选工序'
 
 		self.fields['technique_instruction'].widget.attrs.update(
@@ -2412,5 +2414,65 @@ class SShapeBreakForm(forms.Form):
 		# self.fields['available'].disabled = True
 		# self.defaultParams = ['M12', 'M13', '1400', '1401', 'true', 'true']
 		self.defaultParams = ['1400', '1401', 'true', 'true']
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+
+class LAMTechInstSerial_PDF_Form(forms.Form):
+	title = '工序实例 by PDF'
+	# GUID = forms.CharField(max_length=50, label=None, widget=forms.HiddenInput())
+	# GUID = forms.CharField(max_length=50, label='GUID')
+	File = forms.FileField(required=True, label='待识别的PDF文件(*.pdf)')
+	Technique_Instruction = forms.CharField(label='技术文件')
+	# upload = forms.CharField(label='上传识别')
+	# save = forms.CharField(label='保存')
+	Technique_Instruction_ID = forms.CharField(max_length=50, label='', widget=forms.HiddenInput())
+	
+	
+	# technique_instruction = forms.
+	# class Meta:
+	# 	model = LAM_TechInst_Serial
+	# 	# fields = ['technique_instruction','serial_number','serial_worktype','serial_note','serial_content']
+	# 	fields = "__all__"
+	# 	labels = {
+	# 		# 'filter_techinst': _('辅助筛选工艺文件'),
+	# 		'technique_instruction': _('工艺文件'),
+	# 		'serial_number': _('工序号'),
+	# 		'serial_worktype': _('工序名称'),
+	# 		'serial_note': _('工序概述'),
+	# 		'serial_content': _('工序内容'),
+	# 		'available': _('是否激活'),
+	# 		'process_parameter': _('参数包'),
+	# 		'selectable_Scheduling': _('是否可被调度模块选择'),
+	# 		'selectable_LAM': _('是否可被激光成形模块选择'),
+	# 		'selectable_HeatTreatment': _('是否可被热处理模块选择'),
+	# 		'selectable_PhyChemTest': _('是否可被检验模块选择'),
+	# 		'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
+	# 		'selectable_Weighing': _('是否可被称重模块选择'),
+	# 	}
+	# 	error_messages = ''
+	class Meta:
+		# fields = ['GUID',
+		#           'technique_instruction',
+		#           ]
+
+		fields = "__all__"
+		# widgets = {
+		#     # 'technique_instruction': widgets.TextInput(attrs={'class': 'form-control', 'list':"techinst_list"}),
+		# }
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.technique_instruction_datalist = LAMTechniqueInstruction.objects.filter(
+			Q(available=True) & Q(filed=False)).order_by(
+			'instruction_code', '-version_code', '-version_number')
+		# self.fields['technique_instruction'] = forms.ModelChoiceField(label='技术文件',
+		#                                                   queryset=LAMTechniqueInstruction.objects.filter(available=True),
+		#                                                   required=False)
+		
+		# self.fields['technique_instruction'].queryset = LAMTechniqueInstruction.objects.filter(available=True)
+		# # self.fields['serial_worktype'].queryset = LAMProductionWorkType.objects.filter(available=True)
+		self.fields['Technique_Instruction'].widget.attrs.update({'type': 'text', 'list': 'techinst_list', 'onchange': 'checkForm();'})
+		# self.fields['step'].widget.attrs.update({'type': 'hidden'})
+		# self.fields['available'].disabled = True
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})

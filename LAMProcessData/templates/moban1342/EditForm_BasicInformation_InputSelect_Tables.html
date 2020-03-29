@@ -156,7 +156,8 @@ function load()
                                 <!--辅助筛选工艺文件-->
                                 <datalist id="techinst_list" style="display:none;">
                                     {% for data in form.techinst_datalist %}
-                                    <option value={{ data.id }} label='{{ data|safe }}'></option>
+<!--                                    <option value={{ data.id }} label='{{ data|safe }}'></option>-->
+                                    <option data-value='{{ data.id|safe }}' value="{{ data|safe }}"></option>
                                     <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
                                     {% endfor %}
                                 </datalist>
@@ -165,7 +166,8 @@ function load()
                                 <!--辅助筛选工序-->
                                 <datalist id="worktype_list" style="display:none;">
                                     {% for data in form.worktype_datalist %}
-                                    <option value={{ data.id }} label='{{ data|safe }}'></option>
+<!--                                    <option value={{ data.id }} label='{{ data|safe }}'></option>-->
+                                    <option data-value='{{ data.id|safe }}' value="{{ data|safe }}"></option>
                                     <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
                                     {% endfor %}
                                 </datalist>
@@ -174,7 +176,8 @@ function load()
                                 <!--辅助筛选产品实例编号  LAMProcessMissionForm_Edit-->
                                 <datalist id="product_code_list" style="display:none;">
                                     {% for data in form.productcode_datalist %}
-                                    <option value={{ data|safe }} label='{{ data|safe }}'></option>
+<!--                                    <option value={{ data.id|safe }} label='{{ data|safe }}'></option>-->
+                                    <option data-value='{{ data.product_code|safe }}' value="{{ data|safe }}"></option>
                                     <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
                                     {% endfor %}
                                 </datalist>
@@ -183,7 +186,7 @@ function load()
                                 <!--辅助筛选原材料实例编号  RawStockPhyChemTestForm_New-->
                                 <datalist id="RawStock_BatchNumber_list" style="display:none;">
                                     {% for data in form.RawStockBatchNumber_datalist %}
-                                    <option value={{ data.batch_number|safe }} label='{{ data|safe }}'></option>
+                                    <option value='{{ data.batch_number|safe }}' label='{{ data|safe }}'></option>
                                     <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
                                     {% endfor %}
                                 </datalist>
@@ -345,7 +348,7 @@ function load()
                         }
                         <!--根据辅助选择中零件编号条目刷新form中“零件编号”条目-->
                         $.get(
-                            '{{ Common_URL.Query_ProductID_By_ProductCode }}'+document.getElementById('id_product_code').value+'/',
+                            '{{ Common_URL.Query_ProductID_By_ProductCode }}'+getValue_from_datalist('id_product_code', 'product_code_list')+'/',
                             {'ProductCode':document.getElementById('id_product_code').value},
                             function(data, textStatus)
                             {
@@ -491,7 +494,7 @@ function load()
                         }
                         <!--根据辅助选择中零件编号条目刷新form中“零件编号”条目-->
                         $.get(
-                            '{{ Common_URL.Query_ProductID_By_ProductCode }}'+document.getElementById('id_product_code').value+'/',
+                            '{{ Common_URL.Query_ProductID_By_ProductCode }}'+getValue_from_datalist('id_product_code', 'product_code_list')+'/',
                             {'ProductCode':document.getElementById('id_product_code').value},
                             function(data, textStatus)
                             {

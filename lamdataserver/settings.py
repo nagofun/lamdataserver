@@ -104,6 +104,9 @@ ANALYSE_DATA_URL = os.path.join(MEDIA_URL, 'analyse/')
 ANALYSE_CNCDATA_URL = '/analyse/CNCData/'
 ANALYSE_ACCUMULATEDATA_URL = '/analyse/ACCUMULATEDATA/'
 
+# PDFCode_OriginalImage_URL = '/media/PDFCode/OriginalImage/'
+PDFCode_OriginalImage_URL = os.path.join(MEDIA_URL, 'PDFCode/OriginalImage/')
+
 WSGI_APPLICATION = 'lamdataserver.wsgi.application'
 
 

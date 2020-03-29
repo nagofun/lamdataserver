@@ -123,6 +123,16 @@ urlpatterns = [
     path('EditBasicInfomation/LAMTechInstSerial/add/', views.new_lamtechinstserial),
     path('EditBasicInfomation/LAMTechInstSerial/edit/', views.edit_lamtechinstserial),
     path('EditBasicInfomation/LAMTechInstSerial/delete/', views.del_lamtechinstserial),
+    # 工序实例 PDF生成
+    path('EditBasicInfomation/New_LAMTechInstSerial_By_PDF/', views.new_lamtechinstserial_by_pdf),
+    # 上传文件，分析后返回结果
+    path('EditBasicInfomation/New_LAMTechInstSerial_By_PDF/UploadFile/', views.new_lamtechinstserial_upload_pdf),
+    # 保存pdf中的工序信息
+    path('EditBasicInfomation/New_LAMTechInstSerial_By_PDF/SavePDF/', views.new_lamtechinstserial_save_pdf),
+    # 查询PDF识别进度
+    re_path('QueryData/ProgressBarValue/New_LAMTechInstSerial_UploadPDFFile_By_TechInstID/(?P<TechInstID>(.+))/$',
+            query_views.queryData_ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID),
+    
 
     # 工艺参数包
     path('EditBasicInfomation/LAMProcessParameters/', views.OperateData_lamprocessparameters),
@@ -281,6 +291,8 @@ urlpatterns = [
     # axjx查询URL
     re_path('QueryData/PreviewTable/LAMTechniqueInstruction/(?P<TechInstID>(.+))/$',
             query_views.queryData_LAMTechInst_Preview),
+    re_path('QueryData/PreviewTable/LAMTechniqueInstruction_SerialDetails/(?P<TechInstID>(.+))/$',
+            query_views.queryData_LAMTechInst_SerialDetails),
     re_path('QueryData/PreviewTable/LAMProductMission/(?P<ProductID>(.+))/$',
             query_views.queryData_LAMProductMission_Preview),
 

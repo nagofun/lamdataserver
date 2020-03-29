@@ -104,6 +104,27 @@ def queryData_LAMTechInst_Preview(request, TechInstID):
 	# return HttpResponse(TechInst_dict, content_type='application/json')
 	return HttpResponse(html, content_type='application/json')
 
+
+@login_required
+@csrf_exempt
+def queryData_LAMTechInst_SerialDetails(request, TechInstID):
+	all_data = LAM_TechInst_Serial.objects.filter(available=True, technique_instruction=TechInstID).order_by(
+		'serial_number')
+	TechInst_Serial_list = [[
+				        _serial.id,
+						_serial.serial_number,
+					    str(_serial.serial_worktype),
+					    _serial.serial_note,
+					    _serial.serial_content,
+					    _serial.selectable_Scheduling,
+					    _serial.selectable_LAM,
+					    _serial.selectable_HeatTreatment,
+					    _serial.selectable_PhyChemTest,
+					    _serial.selectable_RawStockSendRetrieve,
+					    _serial.selectable_Weighing] for _serial in all_data if _serial.available]
+	html = json.dumps(TechInst_Serial_list, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+	
 @login_required
 @csrf_exempt
 def queryData_LAMProcessParameterConditionalCell(request, ProcessParameterID):
@@ -1132,6 +1153,12 @@ def queryData_ProgressBarValue(Type,ID):
 
 @login_required
 @csrf_exempt
+def queryData_ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID(request, TechInstID):
+	html = queryData_ProgressBarValue('ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID', TechInstID)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
 def queryData_ProgressBarValue_InspectionLAMRecords_By_MissionID(request, MissionID):
 	# cache_value = CacheOperator('ProgressBarValue_CompleteInspect_MissionId', True, MissionID, None)
 	# if cache_value == None:
@@ -1154,7 +1181,7 @@ def queryData_ProgressBarValue_PracticalTools_SShapeBreak_By_GUID(request, GUID)
 	# _dict = {
 	# 	'progress_rate':'%.5f%%'%(100*cache_value),
 	# }
-	html = html = queryData_ProgressBarValue('ProgressBarValue_PracticalTools_SShapeBreak_By_GUID', GUID)
+	html = queryData_ProgressBarValue('ProgressBarValue_PracticalTools_SShapeBreak_By_GUID', GUID)
 	return HttpResponse(html, content_type='application/json')
 
 @login_required
