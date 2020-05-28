@@ -17,10 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls import url
-
 admin.autodiscover()
+# print(include(LAMProcessData.urls))
 urlpatterns = [
     path('LAMProcessData/', include('LAMProcessData.urls')),
-    # path('admin/', admin.site.urls),
-    url(r'^admin/', admin.site.urls),
+    # url(r'^LAMProcessData/', include('LAMProcessData.urls')),
+    path('admin/', admin.site.urls),
+    # url(r'^LAMProcessData/', include(LAMProcessData.urls.urlpatterns)),
+    # url(r'^admin/', admin.site.urls),
 ]

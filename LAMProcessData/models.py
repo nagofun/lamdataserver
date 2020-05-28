@@ -2,7 +2,8 @@
 
 from django.contrib.auth.models import User
 from django.db import models
-from lamdataserver.settings import ANALYSE_CNCDATA_URL,ANALYSE_ACCUMULATEDATA_URL
+from lamdataserver.settings import ANALYSE_CNCDATA_URL, ANALYSE_ACCUMULATEDATA_URL, MEDIA_DefectPicture_URL, MEDIA_ReviewSheet_URL
+from django.db.models import Aggregate, CharField
 # from django.db.models.signals import pre_delete
 # from django.dispatch.dispatcher import receiver
 
@@ -16,7 +17,19 @@ from lamdataserver.settings import ANALYSE_CNCDATA_URL,ANALYSE_ACCUMULATEDATA_UR
 '''框架表'''
 # print('start models.py')
 
+class GroupConcat(Aggregate):
+    function = 'GROUP_CONCAT'
+    template = '%(function)s(%(distinct)s%(expressions)s%(ordering)s%(separator)s)'
 
+    def __init__(self, expression, distinct=False, ordering=None, separator=',', **extra):
+        super(GroupConcat, self).__init__(
+            expression,
+            distinct='DISTINCT ' if distinct else '',
+            ordering=' ORDER BY %s' % ordering if ordering is not None else '',
+            separator=' SEPARATOR "%s"' % separator,
+            output_field=CharField(),
+            **extra
+        )
 
 class ModulePermission(models.Model):
     class Meta:
@@ -108,7 +121,7 @@ class LAMMaterial(models.Model):
 # 原材料类别
 class RawStockCategory(models.Model):
     # 原材料类别名称
-    Category_name = models.CharField(max_length=10, unique=True)
+    Category_name = models.CharField(max_length=20, unique=True)
     # 是否有效
     available = models.BooleanField(default=True)
     def __str__(self):
@@ -124,6 +137,8 @@ class RawStock(models.Model):
     rawstock_category = models.ForeignKey(RawStockCategory, on_delete=models.CASCADE)
     # 供应商
     rawstock_supplier = models.CharField(max_length=30, null=True, blank=True)
+    # 是否已用尽
+    # use_up = models.BooleanField(default=False)
     # 是否有效
     available = models.BooleanField(default=True)
     # 入厂复验情况-化学成分 存于检测流水表内
@@ -155,7 +170,8 @@ class LAMProduct(models.Model):
     # 是否有效
     available = models.BooleanField(default=True)
     def __str__(self):
-        return "%s [%s]"%(self.product_code, self.product_category)
+        # return "%s [%s]"%(self.product_code, self.product_category)
+        return "%s"%(self.product_code)
 
 
 # 激光成形参数条件单元
@@ -263,6 +279,8 @@ class LAMTechniqueInstruction(models.Model):
     # LAMProcess_serial_note = models.CharField(max_length=100)
     # 是否有效
     available = models.BooleanField(default=True)
+    class Meta:
+        unique_together = ['instruction_code', 'version_code', 'version_number']
     def __str__(self):
         return "%s %s/%d %s"%(self.instruction_code, self.version_code, self.version_number, self.instruction_name)
 
@@ -342,7 +360,7 @@ class LAM_TechInst_Serial(models.Model):
     # 是否可被热处理模块选择
     selectable_HeatTreatment = models.BooleanField(default=False)
     # 是否可被检验模块选择
-    selectable_PhyChemTest = models.BooleanField(default=False)
+    selectable_PhyChemNonDestructiveTest = models.BooleanField(default=False)
     # 是否可被库房模块选择
     selectable_RawStockSendRetrieve = models.BooleanField(default=False)
     # 是否可被称重模块选择
@@ -357,7 +375,8 @@ class LAM_TechInst_Serial(models.Model):
 # 激光成形生产任务
 class LAMProcessMission(models.Model):
     # 产品实例
-    LAM_product = models.ForeignKey(LAMProduct, on_delete=models.CASCADE)
+    # LAM_product = models.ForeignKey(LAMProduct, on_delete=models.CASCADE)
+    LAM_product = models.ManyToManyField(LAMProduct, related_name='Product_LAMProcessMission')
     # 激光成形工序实例
     LAM_techinst_serial = models.ForeignKey(LAM_TechInst_Serial, on_delete=models.CASCADE)
     # 成形工段
@@ -369,7 +388,7 @@ class LAMProcessMission(models.Model):
     # 是否有效
     available = models.BooleanField(default=True)
     def __str__(self):
-        return "%s [%s - %s] %s"%(self.LAM_product.product_code,self.work_section, self.LAM_techinst_serial, self.arrangement_date)
+        return "%s [%s - %s] %s"%(', '.join(list(map(lambda p:str(p), self.LAM_product.all()))),self.work_section, self.LAM_techinst_serial, self.arrangement_date)
 
 
 
@@ -415,9 +434,28 @@ class HeatTreatmentState(models.Model):
     available = models.BooleanField(default=True)
     def __str__(self):
         return self.heattreatmentstate_name
-
+# 机械加工状态
+class MachiningState(models.Model):
+    # 机械加工状态-名称
+    machiningstate_name = models.CharField(max_length=30, unique=True)
+    # 是否有效
+    available = models.BooleanField(default=True)
+    def __str__(self):
+        return self.machiningstate_name
 
 '''流水表'''
+
+# 追加发放
+class RawStockSendAddition(models.Model):
+    # 补发日期
+    send_time = models.DateField(null = True)
+    # 原材料实例
+    raw_stock = models.ForeignKey(RawStock, on_delete=models.CASCADE)
+    # 发放原材料数量 仅对粉末有效
+    raw_stock_sent_amount = models.FloatField(null=True, blank=True)
+    def __str__(self):
+        return '%s(%.3f kg)'%(self.raw_stock, self.raw_stock_sent_amount)
+    
 # 发-回料流水
 class RawStockSendRetrieve(models.Model):
     # 发料日期
@@ -428,18 +466,57 @@ class RawStockSendRetrieve(models.Model):
     raw_stock = models.ForeignKey(RawStock, on_delete=models.CASCADE)
     # 发放原材料数量 仅对粉末有效
     raw_stock_sent_amount = models.FloatField(null=True, blank=True)
+    # 追加发放
+    send_addition = models.ManyToManyField(RawStockSendAddition, related_name='RawStockSendAddition_Send', blank=True)
     # 回料日期
     retrieve_time = models.DateField(null=True, blank=True)
     # 未用原材料数量 仅对粉末有效
     raw_stock_unused_amount = models.FloatField(null=True, blank=True)
+    # # 一级回收粉实例
+    # raw_stock_primaryretrieve = models.ForeignKey(RawStock, related_name='RawStock_RetrieveAsPrimaryFrom',
+    #                                               on_delete=models.CASCADE, null=True, blank=True)
     # 回收一级粉末数量 仅对粉末有效
     raw_stock_primaryretrieve_amount = models.FloatField(null=True, blank=True)
+    # # 二级回收粉实例
+    # raw_stock_secondaryretrieve = models.ForeignKey(RawStock, related_name='RawStock_RetrieveAssecondaryFrom',
+    #                                                 on_delete=models.CASCADE, null=True, blank=True)
     # 回收二级粉末数量 仅对粉末有效
     raw_stock_secondaryretrieve_amount = models.FloatField(null=True, blank=True)
     # 是否有效
     available = models.BooleanField(default=True)
 
+    def __str__(self):
+        return '首次发粉日期:\t%s\n零件编号:\t%s\n成形设备:\t%s\n工艺文件\t%s\n工序:\t\t%s\n'%(self.send_time,
+                                                ','.join(map(lambda product:product.product_code,self.LAM_mission.LAM_product.all())),
+                                                self.LAM_mission.work_section,
+                                                self.LAM_mission.LAM_techinst_serial.technique_instruction.instruction_code,
+                                                self.LAM_mission.LAM_techinst_serial.serial_number
+                                                     )
 
+
+    
+    
+    
+# # 粉末组批组成
+# class RawStock_Powder_GroupPart(models.Model):
+#     # 原材料实例
+#     raw_stock = models.ForeignKey(RawStock, related_name='RawStock_GroupPart' , on_delete=models.CASCADE)
+#     # 数量
+#     amount = models.FloatField()
+#
+# # 粉末组批
+# class RawStock_Powder_GroupBatch(models.Model):
+#     # 原批次
+#     parents_RawStock_GroupPart = models.ManyToManyField(RawStock_Powder_GroupPart, related_name='RawStockGroupPart_AsParentsBatch')
+#     # 新批次
+#     New_RawStock_GroupPart = models.ForeignKey(RawStock_Powder_GroupPart, related_name='RawStockGroupPart_AsNewBatch', on_delete=models.CASCADE)
+#     # 组批日期
+#     grouped_time = models.DateField()
+#     pass
+
+
+
+    
 
 # 拉伸测试
 class MechanicalTest_Tensile(models.Model):
@@ -549,8 +626,9 @@ class ChemicalTest(models.Model):
 
 # 零件理化测试任务
 class PhysicochemicalTest_Mission(models.Model):
-    # 产品实例
-    LAM_product = models.ForeignKey(LAMProduct, on_delete=models.CASCADE, null=True)
+    # 产品实例 应改为多选
+    # LAM_product = models.ForeignKey(LAMProduct, on_delete=models.CASCADE, null=True)
+    LAM_product = models.ManyToManyField(LAMProduct, blank=True)
     # 原材料实例
     RawStock = models.ForeignKey(RawStock, on_delete=models.CASCADE, null=True)
     # 激光成形工序实例
@@ -571,6 +649,172 @@ class PhysicochemicalTest_Mission(models.Model):
 
     # 是否有效
     available = models.BooleanField(default=True)
+
+
+# 不合格品审理
+class QualityReviewSheet(models.Model):
+    # 产品实例
+    LAM_product = models.ManyToManyField(LAMProduct, related_name='Product_QualityReviewSheet')
+    # 工序实例
+    LAM_techinst_serial = models.ForeignKey(LAM_TechInst_Serial, on_delete=models.CASCADE)
+    # 开具日期
+    detection_date = models.DateField(null=True)
+    # 审理单文件  待更改
+    file = models.FileField(upload_to='.' + MEDIA_ReviewSheet_URL, null=True)
+
+# 零件分区
+class LAMProductSubarea(models.Model):
+    product_category = models.ForeignKey(LAMProductCategory, on_delete=models.CASCADE, verbose_name='产品类别')
+    subarea_name = models.CharField(max_length = 20, verbose_name='分区名称')# 是否有效
+    available = models.BooleanField(default=True, verbose_name='是否有效')
+    def __str__(self):
+        return '%s-%s'%(self.product_category.product_symbol, self.subarea_name)
+
+class DefectPicture(models.Model):
+    picture = models.ImageField(verbose_name='缺陷照片', upload_to='.'+MEDIA_DefectPicture_URL)
+
+# 一个超声缺陷
+class UTDefectInformation(models.Model):
+    # 缺陷编号
+    defect_number = models.CharField(max_length = 10, blank=True, null=True, verbose_name = u'编号')
+    # 缺陷类型
+    defect_type = models.CharField(max_length = 10,
+                                choices = (('Single','单个不连续性指示'),('Multiple','多个不连续性指示'),('Strip','长条不连续性指示'),('Noise','噪声')),
+                                verbose_name = u'超声缺陷类别')
+    # 当量
+    equivalent_hole_diameter = models.FloatField(blank=True, null=True, verbose_name = u'当量平底孔直径(mm)')
+    # 辐射当量  增益调节的单位
+    radiation_equivalent = models.IntegerField(blank=True, null=True, verbose_name = u'辐射当量(db)')
+    # 所在分区
+    product_subarea = models.ForeignKey(LAMProductSubarea, on_delete=models.CASCADE, blank=True, null=True,verbose_name = u'缺陷所在分区')
+    # 半精加工状态统一坐标位置 - x
+    X_coordinate = models.FloatField(blank=True, null=True, verbose_name = u'加工数模内坐标X')
+    # 半精加工状态统一坐标位置 - y
+    Y_coordinate = models.FloatField(blank=True, null=True, verbose_name = u'加工数模内坐标Y')
+    # 半精加工状态统一坐标位置 - z
+    Z_coordinate = models.FloatField(blank=True, null=True, verbose_name = u'加工数模内坐标Z')
+    # 多个缺陷照片
+    photos = models.ManyToManyField(DefectPicture, related_name='DefectPicture_UTDefectInfo')
+    def __str__(self):
+        return '%s-%s (%.1f%+ddb)'%(self.defect_number,
+                                self.get_defect_type_display(),
+                                self.equivalent_hole_diameter,
+                                self.radiation_equivalent)
+    
+
+# 一个X射线缺陷
+class RTDefectInformation(models.Model):
+    # 缺陷编号
+    defect_number =  models.CharField(max_length = 10, blank=True, null=True, verbose_name = u'编号')
+    # 缺陷类型
+    defect_type = models.CharField(max_length=10,
+                                   choices=(('Single', '单个缺陷'), ('Group', '成组缺陷')),
+                                   verbose_name=u'X射线缺陷类别')
+    # 缺陷大小
+    size = models.FloatField(verbose_name=u'缺陷大小(mm)')
+    # 所在分区
+    product_subarea = models.ForeignKey(LAMProductSubarea, on_delete=models.CASCADE, blank=True, null=True,
+                                        verbose_name=u'缺陷所在分区')
+    # 加工状态统一坐标位置 - x
+    X_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标X')
+    # 加工状态统一坐标位置 - y
+    Y_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标Y')
+    # 加工状态统一坐标位置 - z
+    Z_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标Z')
+    # 多个缺陷照片
+    photos = models.ManyToManyField(DefectPicture, related_name='DefectPicture_RTDefectInfo')
+    def __str__(self):
+        return '%s-%s'%(self.defect_number, self.get_defect_type_display())
+
+# 一个荧光缺陷
+class PTDefectInformation(models.Model):
+    # 缺陷编号
+    defect_number =  models.CharField(max_length = 10, blank=True, null=True, verbose_name = u'编号')
+    # 缺陷类型
+    defect_type = models.CharField(max_length=10,
+                                   choices=(('Single', '单个缺陷'), ('Group', '成组缺陷')),
+                                   verbose_name=u'荧光缺陷类别')
+    # 所在分区
+    product_subarea = models.ForeignKey(LAMProductSubarea, on_delete=models.CASCADE, blank=True, null=True,
+                                        verbose_name=u'缺陷所在分区')
+    # 加工状态统一坐标位置 - x
+    X_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标X')
+    # 加工状态统一坐标位置 - y
+    Y_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标Y')
+    # 加工状态统一坐标位置 - z
+    Z_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标Z')
+    # 多个缺陷照片
+    photos = models.ManyToManyField(DefectPicture, related_name='DefectPicture_PTDefectInfo')
+    def __str__(self):
+        return '%s-%s'%(self.defect_number, self.get_defect_type_display())
+
+# 一个磁粉缺陷
+class MTDefectInformation(models.Model):
+    # 缺陷编号
+    defect_number =  models.CharField(max_length = 10, blank=True, null=True, verbose_name = u'编号')
+    # 缺陷类型
+    defect_type = models.CharField(max_length=10,
+                                   choices=(('Single', '单个缺陷'), ('Group', '成组缺陷')),
+                                   verbose_name=u'磁粉缺陷类别')
+    # 所在分区
+    product_subarea = models.ForeignKey(LAMProductSubarea, on_delete=models.CASCADE, blank=True, null=True,
+                                        verbose_name=u'缺陷所在分区')
+    # 加工状态统一坐标位置 - x
+    X_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标X')
+    # 加工状态统一坐标位置 - y
+    Y_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标Y')
+    # 加工状态统一坐标位置 - z
+    Z_coordinate = models.FloatField(blank=True, null=True, verbose_name=u'加工数模内坐标Z')
+    # 多个缺陷照片
+    photos = models.ManyToManyField(DefectPicture, related_name='DefectPicture_MTDefectInfo')
+    def __str__(self):
+        return '%s-%s'%(self.defect_number, self.get_defect_type_display())
+# 无损检测
+class NonDestructiveTest_Mission(models.Model):
+    # 产品实例
+    LAM_product = models.ForeignKey(LAMProduct, on_delete=models.CASCADE, null=True, verbose_name = u'产品编号')
+    # 原材料实例
+    RawStock = models.ForeignKey(RawStock, on_delete=models.CASCADE, null=True, verbose_name = u'原材料批号')
+    # 激光成形工序实例
+    LAM_techinst_serial = models.ForeignKey(LAM_TechInst_Serial, on_delete=models.CASCADE, verbose_name = u'检测工序')
+    # 产品加工状态
+    machining_state = models.ForeignKey(MachiningState, on_delete=models.CASCADE, verbose_name = u'加工状态')
+    # 产品热处理状态
+    heat_treatment_state = models.ForeignKey(HeatTreatmentState, on_delete=models.CASCADE, verbose_name = u'热处理状态')
+    # 无损检测任务下达时间
+    arrangement_date = models.DateField(null=True, blank=True, verbose_name = u'任务开始时间')
+    # 完成任务日期
+    completion_date = models.DateField(null=True, blank=True,  verbose_name = u'任务完成时间')
+    # 是否有效
+    available = models.BooleanField(default=True,  verbose_name = u'是否有效')
+    # # 无损检测类别  超声、射线、荧光、磁粉
+    # NDT_type = models.CharField(max_length = 8,
+    #                             choices = (('UT','超声波检测'),('RT','X射线检测'),('PT','渗透检测'),('MT','磁粉检测')),
+    #                             verbose_name = u'无损检测类别')
+    
+    # 超声检测缺陷信息
+    UT_defect = models.ManyToManyField(UTDefectInformation, related_name='UTDefect_NDTMission', verbose_name = u'超声缺陷')
+
+    # X射线检测缺陷信息
+    RT_defect = models.ManyToManyField(RTDefectInformation, related_name='RTDefect_NDTMission', verbose_name = u'X射线缺陷')
+
+    # 荧光渗透缺陷信息
+    PT_defect = models.ManyToManyField(PTDefectInformation, related_name='PTDefect_NDTMission', verbose_name = u'荧光缺陷')
+
+    # 磁粉检测缺陷信息
+    MT_defect = models.ManyToManyField(MTDefectInformation, related_name='MTDefect_NDTMission', verbose_name = u'磁粉缺陷')
+    
+
+    # 超声缺陷信息 多对多 缺陷编号，所属区域，坐标位置，大小，缺陷类型，照片
+    # 射线缺陷信息 多对多 缺陷编号，所属区域，坐标位置，大小，缺陷类型，照片
+    # 荧光缺陷信息 多对多 缺陷编号，所属区域，坐标位置，大小，缺陷类型，照片
+    # 返修次数
+    rewelding_number = models.PositiveIntegerField(null=True, blank=True, verbose_name = u'返修次数')
+    # 审理单 外键
+    quality_reviewsheet = models.ForeignKey(QualityReviewSheet, on_delete=models.CASCADE,null=True, blank=True, verbose_name = u'不合格品审理单')
+    
+
+
 
 class Oxygendata(models.Model):
     work_section = models.ForeignKey(Worksection, on_delete=models.DO_NOTHING)
@@ -679,11 +923,14 @@ class TemporaryParameter_ID(models.Model):
 # 根据成形过程起止时间划分激光、氧含量、CNC等参数的id信息
 class Process_Mission_timecut(models.Model):
     # 任务号
-    process_mission = models.OneToOneField(LAMProcessMission,related_name='Mission_Timecut', on_delete=models.DO_NOTHING, null=True)
+    process_mission = models.OneToOneField(LAMProcessMission, related_name='Mission_Timecut', on_delete=models.DO_NOTHING, null=True)
     # 开始时间
     process_start_time = models.DateTimeField(null=True, blank=True)
     # 结束时间
     process_finish_time = models.DateTimeField(null=True, blank=True)
+    # 按工序精细表id
+    finedata_start_recordid = models.PositiveIntegerField(null=True, blank=True)
+    finedata_finish_recordid = models.PositiveIntegerField(null=True, blank=True)
     # 激光起始元素
     # laserdata_start_item = models.ForeignKey(Laserdata, related_name='laserdata_start_item', on_delete=models.DO_NOTHING, null=True, blank=True)
     laserdata_start_recordid = models.PositiveIntegerField(null=True, blank=True)

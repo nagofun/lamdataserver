@@ -21,7 +21,7 @@ import time
 # from .LAMProcessData.process_realtime_finedata import *
 import json
 
-
+# print('START settings.py')
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # print(BASE_DIR)
@@ -36,10 +36,15 @@ SECRET_KEY = 'vkt*pd7y$+c9k#*j-)u_35lraqffr_eb^(wg9smv^^06qk(ear'
 DEBUG = True
 
 # ALLOWED_HOSTS = ['192.168.1.129','127.0.0.1']
-# ALLOWED_HOSTS = ['127.0.0.1']
+# ALLOWED_HOSTS = ['192.168.31.224','127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # ALLOWED_HOSTS = []
 
+# for Apache
+# DEBUG = False
+# TEMPLATE_DEBUG = False
+# ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -95,6 +100,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 MEDIA_BACKUP_URL = '/media/backup/'
 MEDIA_LOGFLE_URL = '/media/LogFile/'
+MEDIA_DefectPicture_URL = '/DefectPicture/'
+MEDIA_ReviewSheet_URL = '/media/ReviewSheet/'
 MEDIA_LASER_LOG_URL = os.path.join(MEDIA_URL, 'laserlog')
 REAL_TIME_SCREEN_URL = os.path.join(MEDIA_URL, 'realtime')
 ANALYSE_DATA_URL = os.path.join(MEDIA_URL, 'analyse/')
@@ -103,6 +110,8 @@ ANALYSE_DATA_URL = os.path.join(MEDIA_URL, 'analyse/')
 
 ANALYSE_CNCDATA_URL = '/analyse/CNCData/'
 ANALYSE_ACCUMULATEDATA_URL = '/analyse/ACCUMULATEDATA/'
+
+
 
 # PDFCode_OriginalImage_URL = '/media/PDFCode/OriginalImage/'
 PDFCode_OriginalImage_URL = os.path.join(MEDIA_URL, 'PDFCode/OriginalImage/')
@@ -131,13 +140,13 @@ DATABASES = {
 }
 
 # localhost
-CACHES = {
-    'default':
-        {
-            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': ['127.0.0.1:11211',]
-        }
-}
+# CACHES = {
+#     'default':
+#         {
+#             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#             'LOCATION': ['127.0.0.1:11211',]
+#         }
+# }
 # ————————————————
 # 版权声明：本文为CSDN博主「大江狗」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
 # 原文链接：https://blog.csdn.net/weixin_42134789/article/details/81283167
@@ -214,7 +223,7 @@ GLOBAL_CNCProcessStatus_NotRecoge_Min_ID=0
 
 
 
-
+# print('END settings.py')
 
 
 '''日志开启'''
@@ -253,7 +262,9 @@ GLOBAL_CNCProcessStatus_NotRecoge_Min_ID=0
 
 ImageSectionInfo_dict={}
 '''图像初步筛分用数据字典'''
-with open("./ImageSectionInfo_code.json", 'r') as load_f:
+# with open("./ImageSectionInfo_code.json", 'r') as load_f:
+with open(os.path.join(APP_PATH,'ImageSectionInfo_code.json').replace('\\','/'), 'r') as load_f:
     ImageSectionInfo_dict = json.load(load_f)
     pass
 
+# print(ImageSectionInfo_dict)

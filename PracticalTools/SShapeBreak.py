@@ -4,7 +4,9 @@ import numpy as np
 import re
 import time
 from django.core.cache import cache
+from lamdataserver.settings import APP_PATH
 import sys
+import os
 from math import *
 SettingDict = {}
 CNCSystemSyntax={
@@ -144,9 +146,10 @@ def CacheOperator(operateType, ifget, ParamSet,data=None):
 
 def readInitFile():
 	global SettingDict
-	filehandle = open('./PracticalTools/setting1.ini', 'r', encoding='utf-8')
-	RecordsList = filehandle.readlines()
-	filehandle.close()
+	with open(os.path.join(APP_PATH, './PracticalTools/setting1.ini').replace('\\', '/'), 'r', encoding='utf-8') as filehandle:
+		# filehandle = open('./PracticalTools/setting1.ini', 'r', encoding='utf-8')
+		RecordsList = filehandle.readlines()
+		# filehandle.close()
 
 	for line in RecordsList:
 		matchObj = re.match(r'(\[.+\])(.+)', str(line), re.M | re.I)
@@ -638,8 +641,10 @@ class GCodeFile:
 			self.CNCSystemType = '8055'
 
 		if file is None:
-			with open(filename, 'r') as file:
-				self.lines = file.readlines()
+			with open(os.path.join(APP_PATH, '%s'%filename).replace('\\', '/'), 'r', encoding='gbk') as filehandle:
+				self.lines = filehandle.readlines()
+			# with open(filename, 'r') as file:
+			# 	self.lines = file.readlines()
 		else:
 			self.lines = file.readlines()
 			try:

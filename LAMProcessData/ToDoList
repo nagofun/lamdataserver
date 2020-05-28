@@ -36,12 +36,118 @@ Process_CNCData_Date_Mission
 8. 增加功能：识别出非运行界面的出光情况，记录位置，出光功率，必要时以图形显示，此功能需要识别手动界面各处位置
 
 [已完成]   9. 增加弹性模量测试
-10. 增加识别PDF功能
+[已完成]   10. 增加识别PDF功能
 [已完成]   11. 增加小工具
 12. 库房模块增加筛选功能
 13. 定时清理temp文件夹中LAMServer********文件
-14. 新建工艺文件时，零件列表应可筛选
-15. 工艺规程坐标识别
+[已完成]    14. 新建工艺文件时，零件列表应可筛选
+[已完成]    15. 工艺规程坐标识别
 16. 工艺参数包 只筛选激光成形工序
-17. 选中RO HLJ23A.05.099 1_1.5.pdf上传，识别无结果？？？
+[已完成]    17. 选中RO HLJ23A.05.099 1_1.5.pdf上传，识别无结果？？？
+[已完成]    18.  PDF文字识别 基础信息编辑
+19. 修改laser数据重复上传问题，是否取消laserData?
+20. 更改lamprocess_worksection_operate，起止id改填finadata
+[已完成]    21. 按时间划分的界面图形仿照班组操作界面图形，散点图
+22. lamprocessmission_CutRecords_by_Time  更改逻辑，去除三个表 line 3417，替换为finedata
+[已完成]    23. 其他页面更新下拉菜单 选用chosen
+    23.1    “生产任务新建”中，涉及更改产品任务预览功能
+24. 工序实例界面，以工艺文件为单位整体显示
+25. 将任务模型中零件改为多对多，涉及一系列功能调整，着重检查分析功能
+26. 分发任务界面调整
+27. 写入finedata，显示进度
+28. 分析功能，显示进度
 
+    chosen功能模板
+    form.py:
+    产品实例
+        # 产品类别列表
+		product_category_list = LAMProductCategory.objects.filter(available=True)
+		# 产品按类别分类
+		product_choice = [[_category.product_name, [(_product.id, _product.product_code) for _product in
+		                                            LAMProduct.objects.filter(
+			                                            (Q(product_category=_category) & Q(available=True)))]] for
+		                  _category in product_category_list]
+		self.fields['LAM_product'].choices = product_choice
+		self.fields['LAM_product'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品..."})
+
+	产品类别实例
+    	self.fields['product_category'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品类别..."})
+	技术文件
+	    self.fields['technique_instruction'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择技术文件..."})
+    工序
+        self.fields['serial_worktype'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择工序..."})
+	工艺参数包
+    	self.fields['process_parameter'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择工艺参数包..."})
+	生产任务
+	    # 找出所有任务中产品类型的组合
+		mission_product_category_typedict = {}
+		with connection.cursor() as cursor:
+			# cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
+			cursor.execute(
+				"SELECT lamdataserver.lamprocessdata_lamprocessmission_lam_product.lamprocessmission_id, group_concat(distinct lamdataserver.lamprocessdata_lamproduct.product_category_id) as categorylist FROM lamdataserver.lamprocessdata_lamprocessmission_lam_product inner join lamdataserver.lamprocessdata_lamproduct on lamdataserver.lamprocessdata_lamproduct.id=lamdataserver.lamprocessdata_lamprocessmission_lam_product.lamproduct_id group by  lamdataserver.lamprocessdata_lamprocessmission_lam_product.lamprocessmission_id ;")
+			row = cursor.fetchall()
+			for _record in row:
+				_mission_id = _record[0]
+				# _product_list = _record[1]
+				_category_list = _record[1]
+				if _category_list not in mission_product_category_typedict:
+					mission_product_category_typedict[_category_list] = [_mission_id]
+				else:
+					mission_product_category_typedict[_category_list].append(_mission_id)
+		mission_data = []
+		for _category_list_str, _mission_list in mission_product_category_typedict.items():
+			_category_list = _category_list_str.split(',')
+			mission_data.append([
+				','.join([ str(LAMProductCategory.objects.get(id = category_id)) for category_id in _category_list]),
+				[
+					(mission_id,str(LAMProcessMission.objects.get(id = mission_id))) for mission_id in _mission_list
+				]
+			])
+
+		self.fields['process_mission'].choices = mission_data
+
+		====================
+		库房
+		'''找出所有任务中产品类型的组合'''
+		mission_product_category_typedict = {}
+		with connection.cursor() as cursor:
+			# cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
+			cursor.execute(
+				"SELECT lamdataserver.lamprocessdata_lamprocessmission_lam_product.lamprocessmission_id, group_concat(distinct lamdataserver.lamprocessdata_lamproduct.product_category_id) as categorylist FROM lamdataserver.lamprocessdata_lamprocessmission_lam_product inner join lamdataserver.lamprocessdata_lamproduct on lamdataserver.lamprocessdata_lamproduct.id=lamdataserver.lamprocessdata_lamprocessmission_lam_product.lamproduct_id group by  lamdataserver.lamprocessdata_lamprocessmission_lam_product.lamprocessmission_id ;")
+			row = cursor.fetchall()
+			for _record in row:
+				_mission_id = _record[0]
+				# _product_list = _record[1]
+				_category_list = _record[1]
+				if _category_list not in mission_product_category_typedict:
+					mission_product_category_typedict[_category_list] = [_mission_id]
+				else:
+					mission_product_category_typedict[_category_list].append(_mission_id)
+		mission_data = []
+		for _category_list_str, _mission_list in mission_product_category_typedict.items():
+			_category_list = _category_list_str.split(',')
+			mission_data.append([
+				','.join([str(LAMProductCategory.objects.get(id=category_id)) for category_id in _category_list]),
+				[
+					(mission_id, str(LAMProcessMission.objects.get(id=mission_id))) for mission_id in _mission_list if LAMProcessMission.objects.get(id=mission_id).LAM_techinst_serial.selectable_RawStockSendRetrieve
+				]
+			])
+		self.fields['LAM_mission'].choices = mission_data
+	原材料
+	    '''原材料按类型分组显示'''
+		# rawstock_category_set = set(['%s-%s'%(str(i.material), str(i.rawstock_category)) for i in RawStock.objects.filter(available=True)])
+		rawstock_list = RawStock.objects.filter(available=True)
+		rawstock_display_dict = {}
+		for stock in rawstock_list:
+			key = '%s-%s'%(str(stock.material), str(stock.rawstock_category))
+			if key not in rawstock_display_dict:
+				rawstock_display_dict[key] = [(stock.id, stock)]
+			else:
+				rawstock_display_dict[key].append((stock.id,stock))
+		rawstock_data = [[key,values] for key,values in rawstock_display_dict.items()]
+		self.fields['raw_stock'].choices = rawstock_data

@@ -9,12 +9,14 @@ from . import query_views
 # import LAMProcessData.process_realtime_finedata as RT_FineData
 # from apscheduler.schedulers.blocking import BlockingScheduler
 
-
 urlpatterns = [
     path('login/',views.loginview),
     path('logout/', views.logoutview),
     path('userProfile/', views.userprofile),
     path('resetPassword/', views.resetpassword),
+    path('SystemOperation/', views.SystemOperation),
+    re_path('QueryData/ProgressBarValue/Update_ExistingData_to_FineData/(?P<dataType>(.+))/$',
+            query_views.queryData_ProgressBarValue_Update_ExistingData_to_FineData),
     # path('resetPassword/', 'django.contrib.auth.views.password_reset', kwargs={'template_name': 'password_reset_form.html'}, name='password-reset'),
 
     path('403/', views.errorview_403),
@@ -33,6 +35,8 @@ urlpatterns = [
     re_path(
         r'Laser/(?P<MACAddress>.{12})/(?P<LaserTime>.+)/(?P<LaserPowerValue>.+)/(?P<LaserLightpathTemperatureValue>.+)/(?P<LaserLaserTemperatureValue>.+)/(?P<md5Key>.+)$',
         views.GetLAMProcessData_Laser),
+    
+    
 
     # 上传激光成形过程参数截图
     # path('LAMProcessData/CNCData/UpdateScreen/', views.LAMProcessData_UpdateCNCData),
@@ -58,7 +62,7 @@ urlpatterns = [
     # 更新数据库Process_CNCStatusdata_Date_Worksection_indexing
     path('LAMProcessData/UpdateRecordCNCStatusdataIndexing/', views.UpdateCNCStatusdata_Date_Worksection_indexing),
     # 更新数据库Process_Realtime_FineData_By_WorkSectionID
-    path('LAMProcessData/UpdateRecordToFineData/', views.Update_ExistingData_to_FineData),
+    re_path('LAMProcessData/UpdateRecordToFineData/(?P<datatype>(.+))/', views.Update_ExistingData_to_FineData),
     # 更新数据库Process_Realtime_FineData_By_WorkSectionID中的时间戳
     path('LAMProcessData/UpdateFineDataDatetime/', views.Update_ExistingFineData_datetime),
     # 更新数据库Process_Realtime_FineData_By_WorkSectionID中的不连续数据
@@ -102,6 +106,17 @@ urlpatterns = [
 	path('EditBasicInfomation/ProductCategory/add/', views.new_lamproductcategory),
     path('EditBasicInfomation/ProductCategory/edit/', views.edit_lamproductcategory),
     path('EditBasicInfomation/ProductCategory/delete/', views.del_lamproductcategory),
+    # 零件分区
+    path('EditBasicInfomation/LAMProductSubarea/', views.OperateData_lamproductsubarea),
+	path('EditBasicInfomation/LAMProductSubarea/add/', views.new_lamproductsubarea),
+    path('EditBasicInfomation/LAMProductSubarea/edit/', views.edit_lamproductsubarea),
+    path('EditBasicInfomation/LAMProductSubarea/delete/', views.del_lamproductsubarea),
+    # 汉字识别
+    path('EditBasicInfomation/Chi_Characters/', views.OperateData_chicharacters),
+    re_path('EditBasicInfomation/Chi_Characters/media/PDFCode/OriginalImage/(?P<ImageFileName>(.+))', query_views.queryData_GetChicharactersImg),
+	# path('EditBasicInfomation/Chi_Characters/add/', views.new_chicharacters),
+    path('EditBasicInfomation/Chi_Characters/edit/', views.edit_chicharacters),
+    # path('EditBasicInfomation/Chi_Characters/delete/', views.del_chicharacters),
     # 激光成形工艺文件
     path('EditBasicInfomation/LAMTechniqueInstruction/', views.OperateData_lamtechniqueinstruction),
 	path('EditBasicInfomation/LAMTechniqueInstruction/add/', views.new_lamtechniqueinstruction),
@@ -178,6 +193,12 @@ urlpatterns = [
 	path('EditBasicInfomation/HeatTreatmentState/add/', views.new_heattreatmentstate),
     path('EditBasicInfomation/HeatTreatmentState/edit/', views.edit_heattreatmentstate),
     path('EditBasicInfomation/HeatTreatmentState/delete/', views.del_heattreatmentstate),
+    
+    # 机械加工状态
+    path('EditBasicInfomation/MachiningState/', views.OperateData_machiningstate),
+	path('EditBasicInfomation/MachiningState/add/', views.new_machiningstate),
+    path('EditBasicInfomation/MachiningState/edit/', views.edit_machiningstate),
+    path('EditBasicInfomation/MachiningState/delete/', views.del_machiningstate),
 
     # 产品实例
     path('ProcessRecords/LAMProduct/', views.OperateData_lamproduct),
@@ -207,9 +228,16 @@ urlpatterns = [
     # 原材料发放回收
     path('ProcessRecords/RawStockFlow/', views.rawstockflow),
     path('ProcessRecords/RawStockFlow/send/', views.send_rawstockflow),
+    # path('ProcessRecords/RawStockFlow/AddSendAddition/(?P<RawStockFlowItemID>(.+))/$', views.new_sendaddition_rawstockflow),
+    re_path('ProcessRecords/RawStockFlow/AddSendAddition/(?P<RawStockFlowItemID>(.+))/$', views.new_sendaddition_rawstockflow),
+    re_path('ProcessRecords/RawStockFlow/EditSendAddition/(?P<RawStockSendAdditionItemID>(.+))/$', views.edit_sendaddition_rawstockflow),
     path('ProcessRecords/RawStockFlow/retrieve/', views.retrieve_rawstockflow),
     path('ProcessRecords/RawStockFlow/edit/', views.edit_rawstockflow),
     path('ProcessRecords/RawStockFlow/delete/', views.del_rawstockflow),
+    
+    # 原材料发放回收统计
+    path('ProcessRecords/RawStockFlowStatistic/', views.rawstockflow_statistic),
+    re_path('QueryData/Statistic/RawStockFlow/$', query_views.queryData_Statistic_RawStockFlow),
 
 
     # 激光成形现场
@@ -221,16 +249,25 @@ urlpatterns = [
     # 绘制曲线
     re_path('InspectionRecords/ProcessMissionInspection/LAMProcess/ByMissionID/(?P<MissionItemID>(.+))/$',views.Inspect_MissionLAMProcessInspection),
 
-
+    # 产品理化检测
     path('InspectionRecords/PhysicochemicalTest/Product/', views.OperateData_ProductPhyChemTest),
     path('InspectionRecords/PhysicochemicalTest/Product/add/', views.new_ProductPhyChemTest),
     path('InspectionRecords/PhysicochemicalTest/Product/edit/', views.edit_ProductPhyChemTest),
 
+    # 原材料理化检测
     path('InspectionRecords/PhysicochemicalTest/RawStock/', views.OperateData_RawStockPhyChemTest),
     path('InspectionRecords/PhysicochemicalTest/RawStock/add/', views.new_RawStockPhyChemTest),
     path('InspectionRecords/PhysicochemicalTest/RawStock/edit/', views.edit_RawStockPhyChemTest),
+    
+    # 产品无损检测
+    path('InspectionRecords/NonDestructiveTest/Product/', views.OperateData_ProductNonDestructiveTest),
+    path('InspectionRecords/NonDestructiveTest/Product/add/', views.new_ProductNonDestructiveTest),
+    path('InspectionRecords/NonDestructiveTest/Product/edit/', views.edit_ProductNonDestructiveTest),
 
-
+    # 原材料无损检测
+    path('InspectionRecords/NonDestructiveTest/RawStock/', views.OperateData_RawStockNonDestructiveTest),
+    # path('InspectionRecords/NonDestructiveTest/RawStock/add/', views.new_RawStockNonDestructiveTest),
+    # path('InspectionRecords/NonDestructiveTest/RawStock/edit/', views.edit_RawStockNonDestructiveTest),
 
 
 
@@ -244,6 +281,7 @@ urlpatterns = [
     # 分析成形制造过程-成形高度
     re_path('AnalyseLAMProcess/ZValue/$', views.AnalyseLAMProcess_ZValue),
     re_path('QueryData/AnalyseLAMProcess_ZValue/$', query_views.queryData_Analysedata_Zvalue_By_MissionIDList),
+    re_path('QueryData/ProgressBarValue/Analyse_ZValue_By_MissionIDList/$', query_views.queryData_ProgressBarValue_Analyse_ZValue_By_MissionIDList),
     # 分析成形制造过程-累加数据
     re_path('AnalyseLAMProcess/AccumulateData/$', views.AnalyseLAMProcess_AccumulateData),
     re_path('QueryData/AnalyseLAMProcess_AccumulateData/$', query_views.queryData_Analysedata_AccumulateData_By_MissionIDList),
@@ -273,7 +311,43 @@ urlpatterns = [
             views.PhyChemTest_AddChemicalElement),
     re_path('InspectionRecords/PhysicochemicalTest/EditChemicalElement/(?P<MissionItemID>(.+))/(?P<ChemicalItemID>(.+))/(?P<IfProductTest>(.+))/$',
             views.PhyChemTest_EditChemicalElement),
-
+    
+    re_path('InspectionRecords/NonDestructiveTest/AddUTDefect/(?P<MissionItemID>(.+))/$',
+            views.NonDestructiveTest_AddUTDefect),
+    re_path('InspectionRecords/NonDestructiveTest/EditUTDefect/(?P<UTDefectID>(.+))/$',
+            views.NonDestructiveTest_EditUTDefect),
+    re_path('InspectionRecords/NonDestructiveTest/AddRTDefect/(?P<MissionItemID>(.+))/$',
+            views.NonDestructiveTest_AddRTDefect),
+    re_path('InspectionRecords/NonDestructiveTest/EditRTDefect/(?P<RTDefectID>(.+))/$',
+            views.NonDestructiveTest_EditRTDefect),
+    re_path('InspectionRecords/NonDestructiveTest/AddPTDefect/(?P<MissionItemID>(.+))/$',
+            views.NonDestructiveTest_AddPTDefect),
+    re_path('InspectionRecords/NonDestructiveTest/EditPTDefect/(?P<PTDefectID>(.+))/$',
+            views.NonDestructiveTest_EditPTDefect),
+    re_path('InspectionRecords/NonDestructiveTest/AddMTDefect/(?P<MissionItemID>(.+))/$',
+            views.NonDestructiveTest_AddMTDefect),
+    re_path('InspectionRecords/NonDestructiveTest/EditMTDefect/(?P<MTDefectID>(.+))/$',
+            views.NonDestructiveTest_EditMTDefect),
+    re_path('QueryData/NonDestructiveTest/DefectPicture_by_Defect/(?P<DefectPictureID>(.+))/$',
+            query_views.queryData_GetDefectPicture),
+    
+    re_path('PicturesViewer/NonDestructiveTest/UTDefect/(?P<UTDefectID>(.+))/$',
+            views.ViewUTDefectPictures),
+    re_path('PicturesViewer/NonDestructiveTest/RTDefect/(?P<RTDefectID>(.+))/$',
+            views.ViewRTDefectPictures),
+    re_path('PicturesViewer/NonDestructiveTest/PTDefect/(?P<PTDefectID>(.+))/$',
+            views.ViewPTDefectPictures),
+    re_path('PicturesViewer/NonDestructiveTest/MTDefect/(?P<MTDefectID>(.+))/$',
+            views.ViewMTDefectPictures),
+    re_path('PicturesViewer/NonDestructiveTest/AllUTDefect/(?P<MissionItemID>(.+))/$',
+            views.ViewAllUTDefectPictures),
+    re_path('PicturesViewer/NonDestructiveTest/AllRTDefect/(?P<MissionItemID>(.+))/$',
+            views.ViewAllRTDefectPictures),
+    re_path('PicturesViewer/NonDestructiveTest/AllPTDefect/(?P<MissionItemID>(.+))/$',
+            views.ViewAllPTDefectPictures),
+    re_path('PicturesViewer/NonDestructiveTest/AllMTDefect/(?P<MissionItemID>(.+))/$',
+            views.ViewAllMTDefectPictures),
+    
     # 编程小工具
     # 复位后自上次已成形的分块继续成形
     path('PracticalTools/BreakBlockResumption/', views.PracticalTools_BreakBlockResumption),
@@ -300,7 +374,11 @@ urlpatterns = [
             query_views.queryData_ProductPhyChemTestMission_Preview),
     re_path('QueryData/PreviewTable/RawStockPhyChemTestMission/(?P<RawStockID>(.+))/$',
             query_views.queryData_RawStockPhyChemTestMission_Preview),
-
+    
+    re_path('QueryData/PreviewTable/ProductNonDestructiveTestMission/(?P<ProductID>(.+))/$',
+            query_views.queryData_ProductNonDestructiveTestMission_Preview),
+    # re_path('QueryData/PreviewTable/RawStockNonDestructiveTestMission/(?P<RawStockID>(.+))/$',
+    #         query_views.queryData_RawStockNonDestructiveTestMission_Preview),
 
     # re_path('QueryData/LAMTechniqueInstruction_By_ProductCategory/(?P<ProductCategoryID>(.+))/$',
     #         query_views.queryData_LAMTechInst_By_ProdCate),
@@ -322,7 +400,8 @@ urlpatterns = [
             query_views.queryData_LAMProcessParameterTechInstSerial_Refresh),
 
 
-
+    
+    
     # 根据零件编号查询可用的工艺文件
     re_path('QueryData/LAMTechniqueInstruction_By_ProductCode/(?P<ProductCode>(.+))/$',
             query_views.queryData_LAMTechInst_By_ProductCode),
@@ -358,6 +437,14 @@ urlpatterns = [
     re_path('QueryData/WorksectionId_By_MissionID/(?P<MissionID>(.+))/$',
             query_views.queryData_WorksectionId_By_MissionID),
 
+    # 以任务id查询是否存在起止时间
+    re_path('QueryData/StartFinishTime_IfExists_By_MissionID/(?P<MissionID>(.+))/$',
+            query_views.queryData_StartFinishTime_IfExists_By_MissionID),
+    
+    # 以任务id List查询是否存在起止时间
+    re_path('QueryData/StartFinishTime_IfExists_By_MissionIDList/(?P<MissionIDList>(.+))/$',
+            query_views.queryData_StartFinishTime_IfExists_By_MissionIDList),
+    
     # 以任务id查询已存在的起止时间（如有）
     re_path('QueryData/StartFinishTime_By_MissionID/(?P<MissionID>(.+))/$',
             query_views.queryData_StartFinishTime_By_MissionID),
@@ -435,4 +522,4 @@ urlpatterns = [
 #     # url(r'^static/(?P<path>.*)$','django.views.static.serve',{'document.root':settings.STATICFILES_DIRS}),
 # )
 
-# print('urls.py end')
+

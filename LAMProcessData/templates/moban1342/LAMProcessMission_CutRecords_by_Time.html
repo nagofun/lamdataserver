@@ -2,8 +2,8 @@
 
 {% block content %}
 <!--<script src="jquery.min.js"></script>-->
-<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>
-<script type="text/javascript" src="/assets/js/jquery.min.js"></script>
+<!--<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>-->
+<!--<script type="text/javascript" src="/assets/js/jquery.min.js"></script>-->
 <script type="text/javascript" src="/assets/js/matching.js"></script>
 
 
@@ -98,6 +98,38 @@
 
 <!--</style>-->
 <script>
+function calMax(arr) {
+    let max = 0;
+    arr.forEach((el) => {
+        el.forEach((el1) => {
+            if (!(el1 === undefined || el1 === '')) {
+                if (max < el1) {
+                    max = el1;
+                }
+            }
+        })
+    })
+    let maxint = Math.ceil(max / 9.5);//不让最高的值超过最上面的刻度
+    let maxval = maxint * 10;//让显示的刻度是整数
+    return maxval;
+}
+
+  //计算最小值
+function calMin(arr) {
+    let min = 0;
+    arr.forEach((el) => {
+      el.forEach((el1) => {
+        if (!(el1 === undefined || el1 === '')) {
+          if (min > el1) {
+            min = el1;
+          }
+        }
+      })
+    })
+    let minint = Math.floor(min / 10);
+    let minval = minint * 10;//让显示的刻度是整数
+    return minval;
+}
 function load()
 {
     {% ifequal form.modelname 'LAM_TechInst_Serial'%}
@@ -130,53 +162,53 @@ var SelectFinishDateTime=null;
             <div class="col-md-12">
                 <div class="col-lg-4">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            辅助选择
-                        </div>
-                        <div class="panel-body">
+<!--                        <div class="panel-heading">-->
+<!--                            辅助选择-->
+<!--                        </div>-->
+<!--                        <div class="panel-body">-->
 
-                            <!--辅助选择下拉菜单-->
-                            <div class="form-group">
-                                {% for row in form.AuxiliarySelectionField_with_row %}
-                                <div class="form-group">
-                                    <div class="row">
-                                        {% for auxfield in row %}
-                                        <div class="col-lg-6">
-                                            <label>{{ auxfield.label }}</label>
-                                            {% for field in form %}
-                                            {% ifequal field.name auxfield.name %}
-                                            {{ field|safe }}
-                                            {% endifequal %}
-                                            {% endfor %}
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                {% endfor %}
-                                <!--<div class="form-group">-->
-                                    <!--<div class="row">-->
-                                        <!--<div class="col-lg-6">-->
-                                            <!--<button type="button" class="btn btn-success"-->
-                                                    <!--onclick="refreshProcessGraph();">刷新-->
-                                            <!--</button>-->
-                                            <!--<button type="reset" class="btn btn-primary">重置</button>-->
-                                        <!--</div>-->
-                                    <!--</div>-->
-                                <!--</div>-->
-                            </div>
-                            {% if form.productcode_datalist %}
-                            <!--辅助筛选产品实例编号  LAMProcessMissionForm_Edit-->
-                            <div id='datalistDiv'>
-                                <datalist id="product_code_list" style="display:none;">
-                                    {% for data in form.productcode_datalist %}
-                                    <option value={{ data|safe }} label='{{ data|safe }}'></option>
-                                    <!--<option value='{{ data|safe }}' label={{ data.id }}></option>-->
-                                    {% endfor %}
-                                </datalist>
-                            </div>
-                            {% endif %}
+<!--                            &lt;!&ndash;辅助选择下拉菜单&ndash;&gt;-->
+<!--                            <div class="form-group">-->
+<!--                                {% for row in form.AuxiliarySelectionField_with_row %}-->
+<!--                                <div class="form-group">-->
+<!--                                    <div class="row">-->
+<!--                                        {% for auxfield in row %}-->
+<!--                                        <div class="col-lg-6">-->
+<!--                                            <label>{{ auxfield.label }}</label>-->
+<!--                                            {% for field in form %}-->
+<!--                                            {% ifequal field.name auxfield.name %}-->
+<!--                                            {{ field|safe }}-->
+<!--                                            {% endifequal %}-->
+<!--                                            {% endfor %}-->
+<!--                                        </div>-->
+<!--                                        {% endfor %}-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                {% endfor %}-->
+<!--                                &lt;!&ndash;<div class="form-group">&ndash;&gt;-->
+<!--                                    &lt;!&ndash;<div class="row">&ndash;&gt;-->
+<!--                                        &lt;!&ndash;<div class="col-lg-6">&ndash;&gt;-->
+<!--                                            &lt;!&ndash;<button type="button" class="btn btn-success"&ndash;&gt;-->
+<!--                                                    &lt;!&ndash;onclick="refreshProcessGraph();">刷新&ndash;&gt;-->
+<!--                                            &lt;!&ndash;</button>&ndash;&gt;-->
+<!--                                            &lt;!&ndash;<button type="reset" class="btn btn-primary">重置</button>&ndash;&gt;-->
+<!--                                        &lt;!&ndash;</div>&ndash;&gt;-->
+<!--                                    &lt;!&ndash;</div>&ndash;&gt;-->
+<!--                                &lt;!&ndash;</div>&ndash;&gt;-->
+<!--                            </div>-->
+<!--                            {% if form.productcode_datalist %}-->
+<!--                            &lt;!&ndash;辅助筛选产品实例编号  LAMProcessMissionForm_Edit&ndash;&gt;-->
+<!--                            <div id='datalistDiv'>-->
+<!--                                <datalist id="product_code_list" style="display:none;">-->
+<!--                                    {% for data in form.productcode_datalist %}-->
+<!--                                    <option value={{ data|safe }} label='{{ data|safe }}'></option>-->
+<!--                                    &lt;!&ndash;<option value='{{ data|safe }}' label={{ data.id }}></option>&ndash;&gt;-->
+<!--                                    {% endfor %}-->
+<!--                                </datalist>-->
+<!--                            </div>-->
+<!--                            {% endif %}-->
 
-                        </div>
+<!--                        </div>-->
                         <div class="panel-heading">
                             {{ operate|upper }}
                         </div>
@@ -189,7 +221,13 @@ var SelectFinishDateTime=null;
                                     <input class="form-control" id="disabledInput" type="text"
                                            placeholder="{{ form.itemid }}" disabled="">
                                 </div>
-
+<!--                                {% for field in form %}-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label>{{ field.label }}</label>-->
+<!--                                        {{ field |safe }}-->
+<!--                                               -->
+<!--                                    </div>-->
+<!--                                {% endfor %}-->
                                 {% for field in form %}
                                         {% for label in form.OriginalFields%}
                                             {% ifequal field.name label %}
@@ -241,6 +279,9 @@ var SelectFinishDateTime=null;
                                             {
                                                 this;
                                                 myChart.hideLoading();
+                                                var MaxLaser = calMax([res['laserdata']]), MinLaser = calMin([res['laserdata']]),
+                                                    MaxZvalue = calMax([res['cnczdata']]), MinZvalue = calMin([res['cnczdata']]),
+                                                    MaxOxygen = calMax([res['oxydata']]), MinOxygen = calMin([res['oxydata']]);
 
                                                 myChart.setOption({
                                                     xAxis:{
@@ -248,6 +289,24 @@ var SelectFinishDateTime=null;
                                                             return str.replace(' ', '\n')
                                                         })
                                                     },
+                                                    yAxis:[{
+                                                       min: Math.floor(MinOxygen),
+                                                       max: Math.ceil((MaxOxygen - Math.floor(MinOxygen)) / 60)*60+Math.floor(MinOxygen),
+                                                       splitNumber: 6,
+                                                       interval: Math.ceil((MaxOxygen - Math.floor(MinOxygen)) / 60)*10
+                                                    },
+                                                    {
+                                                       min: Math.floor(MinLaser),
+                                                       max: Math.ceil((MaxLaser - Math.floor(MinLaser)) / 60)*60+Math.floor(MinLaser),
+                                                       splitNumber: 6,
+                                                       interval: Math.ceil((MaxLaser - Math.floor(MinLaser)) / 60)*10
+                                                    },
+                                                    {
+                                                       min: Math.floor(MinZvalue),
+                                                       max: Math.ceil((MaxZvalue - Math.floor(MinZvalue)) / 60)*60+Math.floor(MinZvalue),
+                                                       splitNumber: 6,
+                                                       interval: Math.ceil((MaxZvalue - Math.floor(MinZvalue)) / 60)*10
+                                                    }],
                                                     series:[
                                                         {
                                                             data:res['oxydata']
@@ -266,73 +325,73 @@ var SelectFinishDateTime=null;
                                     }
 
                                     <!--零件类别选择变化，刷新零件编号列表-->
-                                    function refresh_productlist()
-                                    {
-                                        if(document.getElementById('id_product_category').value=='')
-                                        {
-                                            return;
-                                        }
-                                        <!--根据辅助选择中产品类别条目刷新“零件编号”条目-->
-                                        $.get(
-                                            '{{ Common_URL.Query_Product_By_ProductCategory }}'+document.getElementById('id_product_category').value+'/',
-                                            <!--{'ProductCode':document.getElementById('id_product_code').value},-->
-                                            function(data, textStatus)
-                                            {
-                                                this;
-                                                var cut_slted_productcode = document.getElementById('id_product_code').value;
-                                                var contain = false
-                                                <!--零件编号列表-->
-                                                var htmlData = '<datalist id="product_code_list" style="display:none;">';
+<!--                                    function refresh_productlist()-->
+<!--                                    {-->
+<!--                                        if(document.getElementById('id_product_category').value=='')-->
+<!--                                        {-->
+<!--                                            return;-->
+<!--                                        }-->
+<!--                                        &lt;!&ndash;根据辅助选择中产品类别条目刷新“零件编号”条目&ndash;&gt;-->
+<!--                                        $.get(-->
+<!--                                            '{{ Common_URL.Query_Product_By_ProductCategory }}'+document.getElementById('id_product_category').value+'/',-->
+<!--                                            &lt;!&ndash;{'ProductCode':document.getElementById('id_product_code').value},&ndash;&gt;-->
+<!--                                            function(data, textStatus)-->
+<!--                                            {-->
+<!--                                                this;-->
+<!--                                                var cut_slted_productcode = document.getElementById('id_product_code').value;-->
+<!--                                                var contain = false-->
+<!--                                                &lt;!&ndash;零件编号列表&ndash;&gt;-->
+<!--                                                var htmlData = '<datalist id="product_code_list" style="display:none;">';-->
 
-                                                for(var ever in data) {
-                                                    htmlData=htmlData+'<option value='+data[ever]['product_code']+' label='+    data[ever]['id']    +'></option>';
-                                                    if(data[ever]['product_code']==cut_slted_productcode)
-                                                    {
-                                                        contain = true
-                                                    }
-                                                }
-                                                htmlData = htmlData+'</datalist>'
-                                                document.getElementById('datalistDiv').innerHTML=htmlData;
-                                                <!--若当前选择的零件编号不在最新列表里，则选择置空-->
-                                                if(contain==false)
-                                                {
-                                                    document.getElementById('id_product_code').value='';
-                                                    NoticeInput('id_product_code', 'blue');
-                                                }
+<!--                                                for(var ever in data) {-->
+<!--                                                    htmlData=htmlData+'<option value='+data[ever]['product_code']+' label='+    data[ever]['id']    +'></option>';-->
+<!--                                                    if(data[ever]['product_code']==cut_slted_productcode)-->
+<!--                                                    {-->
+<!--                                                        contain = true-->
+<!--                                                    }-->
+<!--                                                }-->
+<!--                                                htmlData = htmlData+'</datalist>'-->
+<!--                                                document.getElementById('datalistDiv').innerHTML=htmlData;-->
+<!--                                                &lt;!&ndash;若当前选择的零件编号不在最新列表里，则选择置空&ndash;&gt;-->
+<!--                                                if(contain==false)-->
+<!--                                                {-->
+<!--                                                    document.getElementById('id_product_code').value='';-->
+<!--                                                    NoticeInput('id_product_code', 'blue');-->
+<!--                                                }-->
 
-                                            }
-                                        );
-                                    }
+<!--                                            }-->
+<!--                                        );-->
+<!--                                    }-->
                                     <!--零件编号选择变化，刷新form中任务列表-->
-                                    function refresh_missionlist()
-                                    {
-                                        if(document.getElementById('id_product_code').value=='')
-                                        {
-                                            return;
-                                        }
-                                        <!--根据辅助选择中零件编号code刷新form，将该零件所具备的任务置顶-->
-                                        $.get(
-                                            '{{ Common_URL.Query_Mission_By_ProductCode }}'+document.getElementById('id_product_code').value+'/',
-                                            function(data, textStatus)
-                                            {
-                                                this;
-                                                <!--任务列表-->
-                                                htmlData = '<select name="process_mission" class="form-control" onchange="refresh_worksection_selection(this.value);refresh_start_finsh_datetime(this.value);" required="" id="id_process_mission">'
+<!--                                    function refresh_missionlist()-->
+<!--                                    {-->
+<!--                                        if(document.getElementById('id_product_code').value=='')-->
+<!--                                        {-->
+<!--                                            return;-->
+<!--                                        }-->
+<!--                                        &lt;!&ndash;根据辅助选择中零件编号code刷新form，将该零件所具备的任务置顶&ndash;&gt;-->
+<!--                                        $.get(-->
+<!--                                            '{{ Common_URL.Query_Mission_By_ProductCode }}'+document.getElementById('id_product_code').value+'/',-->
+<!--                                            function(data, textStatus)-->
+<!--                                            {-->
+<!--                                                this;-->
+<!--                                                &lt;!&ndash;任务列表&ndash;&gt;-->
+<!--                                                htmlData = '<select name="process_mission" class="form-control" onchange="refresh_worksection_selection(this.value);refresh_start_finsh_datetime(this.value);" required="" id="id_process_mission">'-->
 
-                                                for(var ever in data) {
-                                                    htmlData=htmlData+'<option value="'   +data[ever]['id']+   '">'   +data[ever]['mission']+   '</option>';
-                                                }
+<!--                                                for(var ever in data) {-->
+<!--                                                    htmlData=htmlData+'<option value="'   +data[ever]['id']+   '">'   +data[ever]['mission']+   '</option>';-->
+<!--                                                }-->
 
-                                                htmlData = htmlData + '</select>'
-                                                document.getElementById('ChangeableDiv').innerHTML=htmlData;
-                                                NoticeInput('id_process_mission', 'blue');
-                                                refresh_worksection_selection(document.getElementById('id_process_mission').value);
-                                                refresh_start_finsh_datetime(document.getElementById('id_process_mission').value);
-                                            }
-                                        );
+<!--                                                htmlData = htmlData + '</select>'-->
+<!--                                                document.getElementById('ChangeableDiv').innerHTML=htmlData;-->
+<!--                                                NoticeInput('id_process_mission', 'blue');-->
+<!--                                                refresh_worksection_selection(document.getElementById('id_process_mission').value);-->
+<!--                                                refresh_start_finsh_datetime(document.getElementById('id_process_mission').value);-->
+<!--                                            }-->
+<!--                                        );-->
 
-                                    }
-                                    <!--form中任务选择变化，更新图形区域的工段选择、日期范围-->
+<!--                                    }-->
+                                    <!--form中任务选择变化，更新图形区域的工段选择、日期范围  右侧-->
                                     function refresh_worksection_selection(mission_id)
                                     {
                                         if(mission_id=='')
@@ -388,7 +447,7 @@ var SelectFinishDateTime=null;
 
                                     }
 
-                                    <!--form中任务选择变化，更新图形区域的工段选择、日期范围-->
+                                    <!--form中任务选择变化，更新操作区开始时间、结束时间  左侧-->
                                     function refresh_start_finsh_datetime(mission_id)
                                     {
                                         if(mission_id=='')
@@ -584,10 +643,10 @@ var SelectFinishDateTime=null;
                                         <!--</button>-->
                                         <div class="btn-group">
 										  <button class="btn btn-primary" onclick="refreshProcessGraph(0);">刷新</button>
-										  <button data-toggle="dropdown" class="btn btn-primary dropdown-toggle" aria-expanded="false"><span class="caret"></span></button>
-										  <ul class="dropdown-menu">
-											<li><a href="#" onclick="refreshProcessGraph(1);">强制刷新</a></li>
-										  </ul>
+<!--										  <button data-toggle="dropdown" class="btn btn-primary dropdown-toggle" aria-expanded="false"><span class="caret"></span></button>-->
+<!--										  <ul class="dropdown-menu">-->
+<!--											<li><a href="#" onclick="refreshProcessGraph(1);">强制刷新</a></li>-->
+<!--										  </ul>-->
 										</div>
                                         <!--<button type="button" class="btn btn-primary btn-lg"-->
                                         <!--onclick="refreshProcessGraph();">刷新-->
@@ -700,7 +759,8 @@ var SelectFinishDateTime=null;
                                 series: [
                                     {
                                         name:'氧含量',
-                                        type:'line',
+                                        type:'scatter',
+                                        symbolSize: 3,
                                         animation: false,
                                         areaStyle: {
                                         },
@@ -733,7 +793,8 @@ var SelectFinishDateTime=null;
                                     },
                                     {
                                         name:'激光功率',
-                                        type:'line',
+                                        type:'scatter',
+                                        symbolSize: 3,
                                         yAxisIndex:1,
                                         animation: false,
                                         areaStyle: {
@@ -767,7 +828,8 @@ var SelectFinishDateTime=null;
                                     },
                                     {
                                         name:'激光成形高度',
-                                        type:'line',
+                                        type:'scatter',
+                                        symbolSize: 3,
                                         yAxisIndex:2,
                                         animation: false,
                                         areaStyle: {
@@ -869,6 +931,12 @@ var SelectFinishDateTime=null;
         </div>
     </div>
 </div>
-
+<script>
+    $(".chosen-select").chosen({
+        no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+        search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+        allow_single_deselect:true, //是否允许取消选择
+    })
+</script>
 
 {% endblock %}

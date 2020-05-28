@@ -13,6 +13,8 @@
 <!--<script src="https://bossanova.uk/jsuites/v2/jsuites.js"></script>-->
 <!--<link rel="stylesheet" href="https://bossanova.uk/jexcel/v3/jexcel.css" type="text/css" />-->
 <!--<link rel="stylesheet" href="https://bossanova.uk/jsuites/v2/jsuites.css" type="text/css" />-->
+
+
 <script src="/assets/jquery_jExcel/dist/js/bossanova.uk.jexcel.v3.jexcel.js"></script>
 <script src="/assets/jquery_jExcel/dist/js/bossanova.uk.jsuites.v2.jsuites.js"></script>
 <link rel="stylesheet" href="/assets/jquery_jExcel/dist/css/bossanova.uk.jexcel.v3.jexcel.css" type="text/css"/>
@@ -206,10 +208,15 @@
 
 
 </div>
-'{{ Common_URL.Query_LAMTechInstSerialDetails_Preview }}'
-<script type="text/javascript">
 
+<script type="text/javascript">
+        $(".chosen-select").chosen({
+            no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+            search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+            allow_single_deselect:true, //是否允许取消选择
+        })
     function load(){
+
         {% ifequal step 'ready' %}
 <!--        document.getElementById('id_GUID').value=guid();-->
 <!--        document.getElementById("id_GUID").readOnly=true;-->

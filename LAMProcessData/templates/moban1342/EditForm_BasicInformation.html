@@ -54,8 +54,6 @@
                                     {{ field }}
                                 </div>
                                 {% endfor %}
-
-
                                 {% ifequal save_success|upper 'TRUE' %}
                                 <div class="alert alert-success">
                                     <strong>保存成功！</strong>
@@ -101,9 +99,14 @@
     </div>
 </div>
     <script type="text/javascript">
+    $(".chosen-select").chosen({
+        no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+        search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+        allow_single_deselect:true, //是否允许取消选择
+    })
     {% ifequal form.modelname 'LAMTechniqueInstruction'%}
         document.getElementById("WarningMsg").style.display="none";
-        String.prototype.myReplace=function(f,e){//吧f替换成e
+        String.prototype.myReplace=function(f,e){//把f替换成e
             var reg=new RegExp(f,"g"); //创建正则RegExp对象
             return this.replace(reg,e);
         }
@@ -168,6 +171,10 @@
             }
 
         }
+        $(function(){
+<!--            document.getElementById("product_select").chosen();-->
+<!--            $('.form-control product_select').chosen();-->
+        });
 
     {% endifequal %}
 

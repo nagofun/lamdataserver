@@ -30,16 +30,16 @@
 
                                 <label></label>
                                 <div class="form-group">
-                                    <label>条目ID </label>
+                                    <label>条目</label>
                                     <!--<input type="text" name="item_id" class="form-control" placeholder="请输入待编辑的条目ID"-->
                                     <!--required="" id="id_id">-->
                                     <!--<select class="form-control" name="item_id" onclick="RefreshValue()">-->
-                                    <select class="form-control" name="item_id" id="item_id">
+                                    <select class="form-control chosen-select" name="item_id" id="item_id" >
                                         <!--{{ item_id_list }}-->
                                         {% for record in all_entries %}
                                         <tr>
                                             <!--<td><input type="radio" name=" {{ wksp.id }}" value=" {{ wksp.id }}" /> {{ wksp.id }}</td>-->
-                                            <option>{{ record.id }}</option>
+                                            <option value="{{ record.id }}">{{ record.displayname }}</option>
                                         </tr>
                                         {% endfor %}
                                     </select>
@@ -100,10 +100,10 @@
                                     <!--{{ all_entries }}-->
                                     {% for record in all_entries %}
                                     <tr>
-                                        <!--<td><input type="radio" name=" {{ wksp.id }}" value=" {{ wksp.id }}" /> {{ wksp.id }}</td>-->
-
-                                        {% for field in record.values %}
+                                        {% for label, field in record.items %}
+                                        {% ifnotequal label 'displayname' %}
                                         <td>{{ field }}</td>
+                                        {% endifnotequal %}
                                         {% endfor %}
                                     </tr>
                                     {% endfor %}
@@ -127,6 +127,12 @@
     </div>
 
     <script type="text/javascript">
+        $(".chosen-select").chosen({
+            no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+            search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+            allow_single_deselect:true, //是否允许取消选择
+        })
+
         var selectItemID
         var selectItemName=''
         var ItemList_id=new Array(

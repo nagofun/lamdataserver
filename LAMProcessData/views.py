@@ -3,12 +3,10 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
-
 from django.db.models import Q
 from django.db.models import F
 from django.db import connection
 from django.shortcuts import render, render_to_response
-
 from django.contrib import messages
 # from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -46,7 +44,7 @@ import re
 # from lamdataserver.settings import logger
 import logging
 from logging.handlers import TimedRotatingFileHandler
-from lamdataserver.settings import ImageSectionInfo_dict, MEDIA_LOGFLE_URL
+from lamdataserver.settings import ImageSectionInfo_dict, MEDIA_LOGFLE_URL, APP_PATH
 # from ImageRecognition.ImageRecognition import cleanup, MakeStandardizedLineImage
 import tempfile
 import pytesseract
@@ -66,7 +64,7 @@ import json
 
 
 
-
+# print('START views.py')
 
 '''cache MAP'''
 '''     datatype: 'oxygen', 'laser'， 'cncstatus'        '''
@@ -90,6 +88,8 @@ def CacheOperator(operateType, ifget, ParamSet,data=None):
 		'ProgressBarValue_PracticalTools_SShapeBreak_By_GUID'    由SShapeBreak中的CacheOperator进行赋值
 		'ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID'    由views.PracticalTools_BreakBlockResumption进行赋值
 		'ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID'    由views.***进行赋值
+		'ProgressBarValue_Update_ExistingData_to_FineData'                      由view.Update_ExistingData_to_FineData进行赋值
+		'ProgressBarValue_Update_ExistingData_to_FineData_text'                      由view.Update_ExistingData_to_FineData进行赋值
 	:param ifget:
 	:param ParamSet:    (worksectionid,datatype)
 		datatype:laser, oxygen, cncstatus
@@ -144,6 +144,20 @@ def CacheOperator(operateType, ifget, ParamSet,data=None):
 	elif operateType == 'ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID':
 		TechInstID = ParamSet
 		key = 'PBR_NewTechInstByPDF_TechInstID%s' % (TechInstID)
+		if not ifget:
+			cache.set(key, data)
+		else:
+			revalue = cache.get(key)
+	elif operateType == 'ProgressBarValue_Update_ExistingData_to_FineData':
+		datatype = ParamSet
+		key = 'PBR_UpDate_FineData_%s' % (datatype)
+		if not ifget:
+			cache.set(key, data)
+		else:
+			revalue = cache.get(key)
+	elif operateType == 'ProgressBarValue_Update_ExistingData_to_FineData_text':
+		datatype = ParamSet
+		key = 'PBR_UpDate_FineData_Text_%s' % (datatype)
 		if not ifget:
 			cache.set(key, data)
 		else:
@@ -332,8 +346,15 @@ Common_URL['UserProfile'] = Common_URL['ProcessPath'] + 'userProfile/'
 Common_URL['ResetPassword'] = Common_URL['ProcessPath'] + 'resetPassword/'
 Common_URL['403'] = Common_URL['ProcessPath'] + '403/'
 
+# 系统操作
+Common_URL['UpdateRecordToFineData'] = Common_URL['ProcessPath'] + 'LAMProcessData/UpdateRecordToFineData/'
+# Common_URL['UpdateRecordToFineData'] = Common_URL['ProcessPath'] + 'QueryData/ProgressBarValue/Update_ExistingData_to_FineData'
+Common_URL['Query_UpdateRecordToFineData'] = Common_URL['ProcessPath'] +  'QueryData/ProgressBarValue/Update_ExistingData_to_FineData/'
+Common_URL['Query_DefectPicture'] = Common_URL['ProcessPath'] +  'QueryData/NonDestructiveTest/DefectPicture_by_Defect/'
+
 # 基本信息
 Common_URL['EditBasicInfomation'] = Common_URL['ProcessPath'] + 'EditBasicInfomation/'
+
 # 生产记录
 Common_URL['ProcessRecords'] = Common_URL['ProcessPath'] + 'ProcessRecords/'
 # 检验记录
@@ -342,6 +363,15 @@ Common_URL['InspectionRecords'] = Common_URL['ProcessPath'] + 'InspectionRecords
 Common_URL['AnalyseLAMProcess'] = Common_URL['ProcessPath'] + 'AnalyseLAMProcess/'
 # 编程小工具
 Common_URL['PracticalTools'] = Common_URL['ProcessPath'] + 'PracticalTools/'
+# 新窗口浏览图片
+Common_URL['NewWindow_URL_UTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/UTDefect/'
+Common_URL['NewWindow_URL_RTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/RTDefect/'
+Common_URL['NewWindow_URL_PTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/PTDefect/'
+Common_URL['NewWindow_URL_MTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/MTDefect/'
+Common_URL['NewWindow_URL_AllUTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/AllUTDefect/'
+Common_URL['NewWindow_URL_AllRTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/AllRTDefect/'
+Common_URL['NewWindow_URL_AllPTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/AllPTDefect/'
+Common_URL['NewWindow_URL_AllMTDefectPicturesViewer'] = Common_URL['ProcessPath'] + 'PicturesViewer/NonDestructiveTest/AllMTDefect/'
 
 # 基本信息--分支
 Common_URL['Back_URL_workshop'] = Common_URL['EditBasicInfomation'] + 'Workshop/'
@@ -350,6 +380,7 @@ Common_URL['Back_URL_computer'] = Common_URL['EditBasicInfomation'] + 'Computer/
 Common_URL['Back_URL_cncstatuscategory'] = Common_URL['EditBasicInfomation'] + 'CNCStatusCategory/'
 
 Common_URL['Back_URL_productcategory'] = Common_URL['EditBasicInfomation'] + 'ProductCategory/'
+Common_URL['Back_URL_lamproductsubarea'] = Common_URL['EditBasicInfomation'] + 'LAMProductSubarea/'
 Common_URL['Back_URL_lammaterial'] = Common_URL['EditBasicInfomation'] + 'LAMMaterial/'
 Common_URL['Back_URL_rawstockcategory'] = Common_URL['EditBasicInfomation'] + 'RawStockCategory/'
 Common_URL['Back_URL_lamproductionworktype'] = Common_URL['EditBasicInfomation'] + 'LAMProductionWorkType/'
@@ -360,12 +391,15 @@ Common_URL['Back_URL_lamtechinstserial'] = Common_URL['EditBasicInfomation'] + '
 Common_URL['Back_URL_lamtechinstserial_pdf'] = Common_URL['EditBasicInfomation'] + 'New_LAMTechInstSerial_By_PDF/'
 Common_URL['Back_URL_lamtechinstserial_uploadpdf'] = Common_URL['Back_URL_lamtechinstserial_pdf'] + 'UploadFile/'
 Common_URL['Back_URL_lamtechinstserial_savepdf'] = Common_URL['Back_URL_lamtechinstserial_pdf'] + 'SavePDF/'
+Common_URL['Back_URL_chicharacters'] = Common_URL['EditBasicInfomation'] + 'Chi_Characters/'
 # Common_URL['Back_URL_lamprodcate_techinst'] = Common_URL['EditBasicInfomation'] + 'LAMProdCate_TechInst/'
 Common_URL['Back_URL_samplingposition'] = Common_URL['EditBasicInfomation'] + 'SamplingPosition/'
 Common_URL['Back_URL_samplingdirection'] = Common_URL['EditBasicInfomation'] + 'SamplingDirection/'
 Common_URL['Back_URL_heattreatmentstate'] = Common_URL['EditBasicInfomation'] + 'HeatTreatmentState/'
+Common_URL['Back_URL_machiningstate'] = Common_URL['EditBasicInfomation'] + 'MachiningState/'
 Common_URL['Back_URL_physicochemicaltest_mission_Product'] = Common_URL['InspectionRecords'] + 'PhysicochemicalTest/Product/'
 Common_URL['Back_URL_physicochemicaltest_mission_RawStock'] = Common_URL['InspectionRecords'] + 'PhysicochemicalTest/RawStock/'
+Common_URL['Back_URL_nondestructivetest_mission_Product'] = Common_URL['InspectionRecords'] + 'NonDestructiveTest/Product/'
 
 # 子窗
 Common_URL['SubWindow_URL_LAMProcessParameters_Add'] = Common_URL['Back_URL_lamprocessparameters'] + 'AddLAMParameter/'
@@ -381,20 +415,28 @@ Common_URL['Update_URL_LAMProcessParametersTechInstSerial_Save'] = Common_URL['B
 
 
 
-
 # 过程记录--分支
 Common_URL['Back_URL_lamproduct'] = Common_URL['ProcessRecords'] + 'LAMProduct/'
 Common_URL['Back_URL_rawstock'] = Common_URL['ProcessRecords'] + 'RawStock/'
 Common_URL['Back_URL_rawstockflow'] = Common_URL['ProcessRecords'] + 'RawStockFlow/'
+Common_URL['Back_URL_rawstockflow_statistic'] = Common_URL['ProcessRecords'] + 'RawStockFlowStatistic/'
 Common_URL['Back_URL_lamprocessmission'] = Common_URL['ProcessRecords'] + 'LAMProcessMission/'
 
+Common_URL['SubWindow_URL_RawStockFlow_SendAddition_Add'] = Common_URL[
+																	'ProcessRecords'] + 'RawStockFlow/AddSendAddition/'
+Common_URL['SubWindow_URL_RawStockFlow_SendAddition_Edit'] = Common_URL[
+																	 'ProcessRecords'] + 'RawStockFlow/EditSendAddition/'
 
 # 检验记录--分支
 Common_URL['Back_URL_InspectionRecords_ProductPhyChemTest'] = Common_URL[
 																  'InspectionRecords'] + 'PhysicochemicalTest/Product/'
 Common_URL['Back_URL_InspectionRecords_RawStockPhyChemTest'] = Common_URL[
 																   'InspectionRecords'] + 'PhysicochemicalTest/RawStock/'
-
+Common_URL['Back_URL_InspectionRecords_ProductNonDestructiveTest'] = Common_URL[
+																  'InspectionRecords'] + 'NonDestructiveTest/Product/'
+Common_URL['Back_URL_InspectionRecords_RawStockNonDestructiveTest'] = Common_URL[
+																  'InspectionRecords'] + 'NonDestructiveTest/RawStock/'
+# 理化检测
 Common_URL['SubWindow_URL_InspectionRecords_TensileTest_Add'] = Common_URL[
 																	'InspectionRecords'] + 'PhysicochemicalTest/AddTensile/'
 Common_URL['SubWindow_URL_InspectionRecords_TensileTest_Edit'] = Common_URL[
@@ -411,6 +453,27 @@ Common_URL['SubWindow_URL_InspectionRecords_ChemicalElement_Add'] = Common_URL[
 																		'InspectionRecords'] + 'PhysicochemicalTest/AddChemicalElement/'
 Common_URL['SubWindow_URL_InspectionRecords_ChemicalElement_Edit'] = Common_URL[
 																		 'InspectionRecords'] + 'PhysicochemicalTest/EditChemicalElement/'
+
+# 无损检测
+Common_URL['SubWindow_URL_InspectionRecords_UTdefect_Add'] = Common_URL[
+																	'InspectionRecords'] + 'NonDestructiveTest/AddUTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_UTdefect_Edit'] = Common_URL[
+																	 'InspectionRecords'] + 'NonDestructiveTest/EditUTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_RTdefect_Add'] = Common_URL[
+																	'InspectionRecords'] + 'NonDestructiveTest/AddRTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_RTdefect_Edit'] = Common_URL[
+																	 'InspectionRecords'] + 'NonDestructiveTest/EditRTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_PTdefect_Add'] = Common_URL[
+																	'InspectionRecords'] + 'NonDestructiveTest/AddPTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_PTdefect_Edit'] = Common_URL[
+																	 'InspectionRecords'] + 'NonDestructiveTest/EditPTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_MTdefect_Add'] = Common_URL[
+																	'InspectionRecords'] + 'NonDestructiveTest/AddMTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_MTdefect_Edit'] = Common_URL[
+																	 'InspectionRecords'] + 'NonDestructiveTest/EditMTDefect/'
+Common_URL['SubWindow_URL_InspectionRecords_UTdefect_Add'] = Common_URL[
+																	'InspectionRecords'] + 'NonDestructiveTest/AddUTDefect/'
+
 
 # 过程记录过检
 # 激光成形过程
@@ -465,6 +528,8 @@ Common_URL['Query_LAMTechInstSerialDetails_Preview'] = Common_URL['ProcessPath']
 Common_URL['Query_LAMProductMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/LAMProductMission/'
 Common_URL['Query_ProductPhyChemTestMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/ProductPhyChemTestMission/'
 Common_URL['Query_RawStockPhyChemTestMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/RawStockPhyChemTestMission/'
+Common_URL['Query_ProductNonDestructiveTestMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/ProductNonDestructiveTestMission/'
+Common_URL['Query_RawStockNonDestructiveTestMission_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/RawStockNonDestructiveTestMission/'
 
 # Common_URL['Query_LAMTechInst_By_ProductCategory'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechniqueInstruction_By_ProductCategory/'
 
@@ -478,6 +543,8 @@ Common_URL['Query_ProductID_By_ProductCode'] = Common_URL['ProcessPath'] + 'Quer
 Common_URL['Query_RawStockID_By_RawStockBatchNumber'] = Common_URL['ProcessPath'] + 'QueryData/RawStockID_By_RawStockBatchNumber/'
 Common_URL['Query_WorksectionId_By_MissionID'] = Common_URL['ProcessPath'] + 'QueryData/WorksectionId_By_MissionID/'
 Common_URL['Query_StartFinishTime_By_MissionID'] = Common_URL['ProcessPath'] + 'QueryData/StartFinishTime_By_MissionID/'
+Common_URL['Query_StartFinishTime_IfExists_By_MissionID'] = Common_URL['ProcessPath'] + 'QueryData/StartFinishTime_IfExists_By_MissionID/'
+Common_URL['Query_StartFinishTime_IfExists_By_MissionIDList'] = Common_URL['ProcessPath'] + 'QueryData/StartFinishTime_IfExists_By_MissionIDList/'
 Common_URL['Query_ArrangementDate_By_MissionID'] = Common_URL['ProcessPath'] + 'QueryData/ArrangementDate_By_MissionID/'
 Common_URL['Query_Oxydata_By_WorkSectionDatetime'] = Common_URL['ProcessPath'] + 'QueryData/Oxydata_By_WorkSectionDatetime/'
 Common_URL['Query_Oxydata_By_MissionDatetime'] = Common_URL['ProcessPath'] + 'QueryData/Oxydata_By_MissionDatetime/'
@@ -497,6 +564,7 @@ Common_URL['Query_ProgressBarValue_InspectionLAMRecords_By_MissionID'] = Common_
 Common_URL['Query_ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID'] = Common_URL['Query_ProgressBarValue'] + 'PracticalTools_BreakBlockResumption_By_GUID/'
 Common_URL['Query_ProgressBarValue_PracticalTools_SShapeBreak_By_GUID'] = Common_URL['Query_ProgressBarValue'] + 'PracticalTools_SShapeBreak_By_GUID/'
 Common_URL['Query_ProgressBarValue_New_LAMTechInstSerial_UploadPDFFile_By_TechInstID'] = Common_URL['Query_ProgressBarValue'] + 'New_LAMTechInstSerial_UploadPDFFile_By_TechInstID/'
+Common_URL['Query_ProgressBarValue_Analyse_ZValue_By_MissionIDList'] = Common_URL['Query_ProgressBarValue'] + 'Analyse_ZValue_By_MissionIDList/'
 Common_URL['Query_InspectLAMProcessRecords_By_MissionID'] = Common_URL['ProcessPath'] + 'QueryData/InspectLAMProcessRecords/Complete/'
 
 
@@ -607,6 +675,15 @@ def getWorksectionByDesktopMacAddress(mac_address):
 		worksection = Worksection.objects.get(desktop_computer=computer)
 		GLOBAL_Worksection_Dict[mac_address] = worksection
 	return GLOBAL_Worksection_Dict[mac_address]
+
+@permission_required('LAMProcessData.SystemInformation', login_url=Common_URL['403'])
+def SystemOperation(request):
+	return render(request, 'SystemOperation.html', {'Common_URL': Common_URL,
+	                                                'moveDataToFinedataTypeList':{'oxygen':r'将已有的氧含量数据导入finedata表中',
+	                                                                              'laser':r'将已有的激光功率数据导入finedata表中',
+	                                                                              'cncstatus':r'将已有的运动数据导入finedata表中'}})
+	
+
 
 @login_required
 def userprofile(request):
@@ -784,11 +861,14 @@ def BasicInformation_Delete(request, Model, modelname):
 
 
 @login_required
-def BasicInformation_OperateData(request, Model, ModelForm, TableType='common', attlist=None, qset=(Q(available=True))):
+def BasicInformation_OperateData(request, Model, ModelForm, TableType='common', ImageField=None, attlist=None, qset=(Q(available=True))):
 	# Check_Is_authenticated(request)
 	# all_entries = Model.objects.all()
 	try:
-		all_entries = Model.objects.filter(qset)
+		if qset is None:
+			all_entries = Model.objects.all()
+		else:
+			all_entries = Model.objects.filter(qset)
 		_modelfilednames = [f.attname for f in Model._meta.fields]
 		if not attlist:
 			attlist = [f.attname for f in Model._meta.fields]
@@ -801,15 +881,18 @@ def BasicInformation_OperateData(request, Model, ModelForm, TableType='common', 
 	# all_entries_dict = [{att: str(i.__getattribute__(att.replace('_id', ''))) if att in Model._meta.fields else str(i.__getattribute__(att).all()) for att in attlist} for i in all_entries]
 
 	all_entries_dict = []
-	for i in all_entries:
-		_dict = {}
-		for att in attlist:
-			if att in _modelfilednames:
-				# 替换_id, 从而获得外键实例的名称
-				_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
-			else:
-				_dict[att] = list(map(str, list(i.__getattribute__(att).all())))
-		all_entries_dict.append(_dict)
+	if all_entries is not None:
+		for i in all_entries:
+			_dict = {}
+			for att in attlist:
+				if att in _modelfilednames:
+					# 替换_id, 从而获得外键实例的名称
+					_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
+				else:
+					_dict[att] = list(map(str, list(i.__getattribute__(att).all())))
+			if TableType=='common':
+				_dict['displayname'] = str(i)
+			all_entries_dict.append(_dict)
 
 	# print([{att: str(i.chemicalelements.all()) for att in attlist} for i in all_entries])
 	if request.method == 'POST':
@@ -836,7 +919,9 @@ def BasicInformation_OperateData(request, Model, ModelForm, TableType='common', 
 	elif TableType == 'test':
 		templateFileName = 'OperateForm_BasicInfomation_AdvancedTables1.html'
 	return render(request, templateFileName, {'form': _form_inst,
+	                                          'ImageField':ImageField,
 											  'all_entries': all_entries_dict,
+	                                          # 'BASE_DIR':BASE_URL,
 											  'Common_URL': Common_URL})
 
 @permission_required('LAMProcessData.SystemInformation', login_url=Common_URL['403'])
@@ -1049,6 +1134,30 @@ def del_heattreatmentstate(request):
 	return BasicInformation_Delete(request, Model=HeatTreatmentState, modelname='heattreatmentstate')
 
 
+'''============================================================================'''
+
+
+# 机械加工状态
+@permission_required('LAMProcessData.SystemInformation', login_url=Common_URL['403'])
+def OperateData_machiningstate(request):
+	return BasicInformation_OperateData(request, Model=MachiningState, ModelForm=MachiningStateForm)
+
+
+@permission_required('LAMProcessData.SystemInformation', login_url=Common_URL['403'])
+def new_machiningstate(request):
+	return BasicInformation_New(request, ModelForm=MachiningStateForm, modelname='machiningstate')
+
+
+@permission_required('LAMProcessData.SystemInformation', login_url=Common_URL['403'])
+def edit_machiningstate(request):
+	return BasicInformation_Edit(request, Model=MachiningState, ModelForm=MachiningStateForm,
+								 modelname='machiningstate')
+
+
+@permission_required('LAMProcessData.SystemInformation', login_url=Common_URL['403'])
+def del_machiningstate(request):
+	return BasicInformation_Delete(request, Model=MachiningState, modelname='machiningstate')
+
 
 '''============================================================================'''
 
@@ -1225,7 +1334,7 @@ def new_lamtechinstserial_by_pdf(request):
 										existing_serial.selectable_Scheduling != item['DD_CanSee'] or
 										existing_serial.selectable_LAM != item['JGCX_CanSee'] or
 										existing_serial.selectable_HeatTreatment != item['RCL_CanSee'] or
-										existing_serial.selectable_PhyChemTest != item['JY_CanSee'] or
+										existing_serial.selectable_PhyChemNonDestructiveTest != item['JY_CanSee'] or
 										existing_serial.selectable_RawStockSendRetrieve != item['KF_CanSee'] or
 										existing_serial.selectable_Weighing != item['CZ_CanSee']) else None
 								
@@ -1234,7 +1343,7 @@ def new_lamtechinstserial_by_pdf(request):
 								existing_serial.selectable_Scheduling = item['DD_CanSee']
 								existing_serial.selectable_LAM = item['JGCX_CanSee']
 								existing_serial.selectable_HeatTreatment = item['RCL_CanSee']
-								existing_serial.selectable_PhyChemTest = item['JY_CanSee']
+								existing_serial.selectable_PhyChemNonDestructiveTest = item['JY_CanSee']
 								existing_serial.selectable_RawStockSendRetrieve = item['KF_CanSee']
 								existing_serial.selectable_Weighing = item['CZ_CanSee']
 								existing_serial.save()
@@ -1254,7 +1363,7 @@ def new_lamtechinstserial_by_pdf(request):
 									selectable_Scheduling=item['DD_CanSee'],
 									selectable_LAM=item['JGCX_CanSee'],
 									selectable_HeatTreatment=item['RCL_CanSee'],
-									selectable_PhyChemTest=item['JY_CanSee'],
+									selectable_PhyChemNonDestructiveTest=item['JY_CanSee'],
 									selectable_RawStockSendRetrieve =item['KF_CanSee'],
 									selectable_Weighing = item['CZ_CanSee'],
 								)
@@ -1281,7 +1390,7 @@ def new_lamtechinstserial_by_pdf(request):
 					     _serial.selectable_Scheduling,
 					     _serial.selectable_LAM,
 					     _serial.selectable_HeatTreatment,
-					     _serial.selectable_PhyChemTest,
+					     _serial.selectable_PhyChemNonDestructiveTest,
 					     _serial.selectable_RawStockSendRetrieve,
 					     _serial.selectable_Weighing] for _serial in tech_inst_serial_list if _serial.available],
 			    }, ensure_ascii=False)
@@ -1398,7 +1507,7 @@ def new_lamtechinstserial_by_pdf(request):
 							                               _serial.selectable_Scheduling,
 							                               _serial.selectable_LAM,
 							                               _serial.selectable_HeatTreatment,
-							                               _serial.selectable_PhyChemTest,
+							                               _serial.selectable_PhyChemNonDestructiveTest,
 							                               _serial.selectable_RawStockSendRetrieve,
 							                               _serial.selectable_Weighing] for _serial in tech_inst_serial_list if _serial.available],
 							'select_product_code': list(map(lambda p: p.product_code, tech_inst.product.all())),
@@ -1532,9 +1641,42 @@ def edit_lamproductcategory(request):
 def del_lamproductcategory(request):
 	return BasicInformation_Delete(request, Model=LAMProductCategory, modelname='productcategory')
 
-
 '''============================================================================'''
 
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def OperateData_lamproductsubarea(request):
+	return BasicInformation_OperateData(request, Model=LAMProductSubarea, ModelForm=LAMProductSubareaForm)
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def new_lamproductsubarea(request):
+	return BasicInformation_New(request, ModelForm=LAMProductSubareaForm, modelname='lamproductsubarea')
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def edit_lamproductsubarea(request):
+	return BasicInformation_Edit(request, Model=LAMProductSubarea, ModelForm=LAMProductSubareaForm,
+								 modelname='lamproductsubarea')
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def del_lamproductsubarea(request):
+	return BasicInformation_Delete(request, Model=LAMProductSubarea, modelname='lamproductsubarea')
+
+
+'''============================================================================'''
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def OperateData_chicharacters(request):
+	attlist = [
+		'id',
+		'text',
+		'OriginalImage',
+	]
+	ImageField = 'OriginalImage'
+	return BasicInformation_OperateData(request, Model=PDFImageCode, ModelForm=PDFImageCodeForm,
+	                                    TableType='advanced', ImageField=ImageField, attlist=attlist,  qset=None)
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def edit_chicharacters(request):
+	return BasicInformation_Edit(request, Model=PDFImageCode, ModelForm=PDFImageCodeForm,
+								 modelname='chicharacters')
 
 def test1(request):
 	return BasicInformation_OperateData(request, Model=LAMTechniqueInstruction, ModelForm=LAMTechniqueInstructionForm,
@@ -1635,7 +1777,24 @@ def edit_rawstock(request):
 
 @permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
 def rawstockflow(request):
-	return BasicInformation_OperateData(request, Model=RawStockSendRetrieve, ModelForm=RawStockSendForm,
+	# 注意'id'项，注意外键增加'_id'
+	attlist = [
+		'id',
+		'send_time',
+		'LAM_mission_id',
+		'raw_stock_id',
+		'raw_stock_sent_amount',
+		'send_addition',
+		'retrieve_time',
+		'raw_stock_unused_amount',
+		'raw_stock_primaryretrieve_amount',
+		'raw_stock_secondaryretrieve_amount',
+		'available',
+	]
+	return BasicInformation_OperateData(request,
+	                                    Model=RawStockSendRetrieve,
+	                                    ModelForm=RawStockSendRetrieveForm,
+	                                    attlist=attlist,
 										TableType='advanced')
 
 @permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
@@ -1643,8 +1802,113 @@ def del_rawstock(request):
 	return BasicInformation_Delete(request, Model=RawStock, modelname='rawstockflow')
 
 @permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
+def rawstockflow_statistic(request):
+	_form_inst = RawStockFlow_Statistic_Form()
+	return render(request, 'Statisitic_RawStockFlow.html', {'form': _form_inst,
+	                                          'operate': '编辑',
+	                                          'Common_URL': Common_URL,
+	                                          'Back_URL': Common_URL['Back_URL_rawstockflow_statistic']})
+
+@permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
 def send_rawstockflow(request):
 	return BasicInformation_New(request, ModelForm=RawStockSendForm, modelname='rawstockflow')
+
+@permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
+def edit_sendaddition_rawstockflow(request, RawStockSendAdditionItemID):
+	return PhyChemTest_EditSingleTestData(request, RawStockSendAdditionItemID, RawStockSendAdditionForm, RawStockSendAddition)
+
+@permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
+def new_sendaddition_rawstockflow(request, RawStockFlowItemID):
+	def func(_form_inst, RawStockFlowItemID):
+		send_addition = RawStockSendAddition.objects.create(
+			send_time=_form_inst.cleaned_data['send_time'],
+			raw_stock=_form_inst.cleaned_data['raw_stock'],
+			raw_stock_sent_amount=_form_inst.cleaned_data['raw_stock_sent_amount'],
+		)
+		rawstockflow = RawStockSendRetrieve.objects.get(id=RawStockFlowItemID)
+		rawstockflow.send_addition.add(send_addition.id)
+		rawstockflow.save()
+
+	return PhyChemTest_AddSingleTestData(request, RawStockFlowItemID, RawStockSendAdditionForm, func)
+	# # Check_Is_authenticated(request)
+	# item_id = request.GET.get('item_id')
+	# save_success = None
+	# # 查询到指定的数据
+	# try:
+	# 	_model_inst = RawStockSendRetrieve.objects.get(id=item_id)
+	# 	RawStockSendRetrieve_String = str(_model_inst)
+	# except:
+	# 	messages.success(request, "未找到此条记录！")
+	# 	return redirect(Common_URL['Back_URL_rawstockflow'])
+	#
+	# # 如果不是POST方法访问
+	# save_success = None
+	# if request.method != 'POST':
+	# 	# 创建一个空表单在页面显示
+	# 	# _form_inst = RawStockSendAdditionForm(item_id)
+	# 	_form_inst = RawStockSendAdditionForm()
+	# 	# _form_inst = RawStockSendAdditionForm({'RawStockSendRetrieve':item_id})
+	# else:
+	# 	# 否则为POST方式
+	# 	# request.POST方法，将会获取到表单中我们输入的数据
+	# 	_form_inst = RawStockSendAdditionForm(request.POST)
+	# 	# 验证其合法性，使用is_valid()方法
+	# 	_isValid = True
+	# 	_isValid = _form_inst.is_valid()
+	#
+	# 	if _isValid:
+	# 		# 验证通过，使用save()方法保存数据
+	# 		_form_inst.save()
+	# 		# 若有自定义函数，则执行
+	# 		# if customfunction:
+	# 		# 	customfunction(_form_inst)
+	# 		# _temp = int(_form_inst.data['technique_instruction'])
+	# 		# print(_temp)
+	# 		save_success = 'True'
+	# 		_form_inst = RawStockSendAdditionForm(request.POST)
+	# 	else:
+	# 		save_success = 'False'
+	# # 保存成功，使用redirect()跳转到指定页面
+	# # return redirect('/LAMProcessData/EditBasicInfomation/Workshop/')
+	# # return HttpResponseRedirect(reverse('/LAMProcessData/EditBasicInfomation/Workshop/', args=[111, 222]))
+	# # return HttpResponseRedirect(reverse('/LAMProcessData/EditBasicInfomation/Workshop/', kwargs={'success': 'True'}))
+	# # return render(request, 'EditForm_Workshop.html', {'form': form})
+	# # print(save_success)
+	#
+	# templateFileName = 'EditForm_BasicInformation.html'
+	# # _form_inst.title = '原材料追加发放记录:%s'%RawStockSendRetrieve_String
+	# # _form_inst.fields['RawStockSendRetrieve']=item_id
+	# # _form_inst.data['RawStockSendRetrieve'].value = item_id
+	# _form_inst.fields['RawStockSendRetrieve'].widget.attrs.update(
+	# 	{'value': '%s'%item_id, 'title':RawStockSendRetrieve_String})
+	# return render(request, templateFileName,
+	#               {'form': _form_inst,
+	#                'operate': '新建',
+	#                # 'operate': RawStockSendRetrieve_String,
+	#                'RawStockSendRetrieve_String':RawStockSendRetrieve_String,
+	#                'save_success': save_success,
+	#                'Common_URL': Common_URL,
+	#                'Back_URL': Common_URL['Back_URL_rawstockflow']})
+	
+	# if request.method != 'POST':
+	# 	# 创建一个空表单在页面显示
+	# 	_form_inst = RawStockSendAdditionForm(item_id)
+	# 	templateFileName = 'EditForm_BasicInformation.html'
+	# 	return render(request, templateFileName,
+	# 	              {'form': _form_inst,
+	# 	               'operate': '新建',
+	# 	               'save_success': save_success,
+	# 	               'Common_URL': Common_URL,
+	# 	               # 'Back_URL': Common_URL['Back_URL_rawstockflow'],
+	# 	               })
+	# else:
+	#
+	# 	def insertaddition_of_RawStockSendRetrieve(_form_inst):
+	# 		# _worksection_crtmission_obj = RawStockSendRetrieve(work_section = _form_inst.instance)
+	# 		# _worksection_crtmission_obj.save()
+	# 		pass
+	#
+	# 	return BasicInformation_New(request, ModelForm=RawStockSendAdditionForm, modelname='rawstockflow',customfunction = insertaddition_of_RawStockSendRetrieve)
 
 
 # # Check_Is_authenticated(request)
@@ -1690,8 +1954,53 @@ def retrieve_rawstockflow(request):
 
 @permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
 def edit_rawstockflow(request):
-	return BasicInformation_Edit(request, Model=RawStockSendRetrieve, ModelForm=RawStockSendForm,
-								 modelname='rawstockflow')
+	item_id = request.GET.get('item_id')
+	save_success = None
+	# 查询到指定的数据
+	try:
+		_model_inst = RawStockSendRetrieve.objects.get(id=item_id)
+	except:
+		messages.success(request, "未找到此条记录！")
+		return redirect(Common_URL['Back_URL_rawstockflow'])
+
+	# 该发放记录中内的追加发放数据
+	all_entries = _model_inst.send_addition.order_by('send_time')
+	sendaddition_datalist = getTestDataList(all_entries, RawStockSendAddition, [])
+	
+
+	if request.method != 'POST':
+		# 如果不是post,创建一个表单，并用instance=article当前数据填充表单
+		_form_inst = RawStockSendForm(instance=_model_inst)
+		# _form_Tensile = MechanicalTest_TensileForm()
+		_form_inst.itemid = item_id
+	else:
+		# 如果是post,instance=article当前数据填充表单，并用data=request.POST获取到表单里的内容
+		_form_inst = RawStockSendForm(instance=_model_inst, data=request.POST)
+
+		# _form_Tensile = MechanicalTest_TensileForm()
+		try:
+			_form_inst.save()  # 保存
+			_form_inst.itemid = item_id
+			_isValid = _form_inst.is_valid()
+			if _isValid:  # 验证
+				save_success = 'True'
+			else:
+				_form_inst.error_messages = _form_inst.errors.get_json_data()
+				save_success = 'False'
+		except:
+			save_success = 'False'
+			_form_inst.error_messages = _form_inst.errors.get_json_data()
+	
+	BackURL = Common_URL['Back_URL_rawstockflow']
+	return render(request, "EditForm_RawStockFlow.html",
+				  {'form': _form_inst,
+				   'sendaddition_datalist': sendaddition_datalist,
+				   'operate': 'edit',
+				   'save_success': save_success,
+				   'Common_URL': Common_URL,
+				   'Back_URL': BackURL})
+	# return BasicInformation_Edit(request, Model=RawStockSendRetrieve, ModelForm=RawStockSendForm,
+	# 							 modelname='rawstockflow')
 
 @permission_required('LAMProcessData.Operator_STOREROOM', login_url=Common_URL['403'])
 def del_rawstockflow(request):
@@ -1704,7 +2013,16 @@ def del_rawstockflow(request):
 # 生产任务
 @permission_required('LAMProcessData.Manufacture', login_url=Common_URL['403'])
 def OperateData_lamprocessmission(request):
-	return BasicInformation_OperateData(request, Model=LAMProcessMission, ModelForm=LAMProcessMissionForm_Browse,
+	attlist = [
+		'id',
+		'LAM_product', #多对多不加_id后缀
+		'LAM_techinst_serial_id', # 外键加_id 后缀
+		'work_section_id',
+		'arrangement_date',
+		'completion_date',
+		'available',
+	]
+	return BasicInformation_OperateData(request, Model=LAMProcessMission, ModelForm=LAMProcessMissionForm_Browse,attlist=attlist,
 										TableType='advanced')
 
 @permission_required('LAMProcessData.Manufacture', login_url=Common_URL['403'])
@@ -1743,7 +2061,7 @@ def OperateData_ProductPhyChemTest(request):
 	# 注意'id'项，注意外键增加'_id'
 	attlist = [
 		'id',
-		'LAM_product_id',
+		'LAM_product',
 		'LAM_techinst_serial_id',
 		'commission_date',
 		'heat_treatment_state_id',
@@ -1775,14 +2093,71 @@ def OperateData_RawStockPhyChemTest(request):
 										ModelForm=RawStockPhyChemTestForm_Browse,
 										TableType='advanced',
 										attlist=attlist,
+										qset=(Q(available=True) & ~Q(RawStock_id=None))
+										)
+
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def OperateData_ProductNonDestructiveTest(request):
+	# 注意'id'项，注意外键增加'_id'
+	attlist = [
+		'id',
+		'LAM_product_id',
+		'LAM_techinst_serial_id',
+		'machining_state_id',
+		'heat_treatment_state_id',
+		'arrangement_date',
+		'completion_date',
+		# 'NDT_type',
+		'UT_defect',
+		'RT_defect',
+		'PT_defect',
+		'MT_defect',
+		'rewelding_number',
+		'quality_reviewsheet_id',
+	]
+	return BasicInformation_OperateData(request, Model=NonDestructiveTest_Mission,
+										ModelForm=ProductNonDestructiveTestForm_Browse,
+										TableType='advanced',
+										attlist=attlist,
+										qset=(Q(available=True) & ~Q(LAM_product_id=None))
+										)
+
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def OperateData_RawStockNonDestructiveTest(request):
+	# 注意'id'项，注意外键增加'_id'
+	attlist = [
+		'id',
+		'RawStock_id',
+		'LAM_techinst_serial_id',
+		'machining_state_id',
+		'heat_treatment_state_id',
+		'arrangement_date',
+		'completion_date',
+		# 'NDT_type',
+		'UT_defect',
+		'RT_defect',
+		'PT_defect',
+		'MT_defect',
+		'rewelding_number',
+		'quality_reviewsheet_id',
+	]
+	return BasicInformation_OperateData(request, Model=NonDestructiveTest_Mission,
+										ModelForm=RawStockNonDestructiveTestForm_Browse,
+										TableType='advanced',
+										attlist=attlist,
 										qset=(Q(available=True) & Q(LAM_product_id=None))
 										)
+
 
 @permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
 def BrowseData_MissionLAMProcessInspection(request):
 	# return BasicInformation_OperateData(request, Model=LAMProcessMission, ModelForm=LAMProcessMissionForm_Browse,
 	#                                     TableType='advanced')
-
+	all_mission = LAMProcessMission.objects.filter((Q(available=True)))
+	# for i in list(all_mission):
+	# 	print(i)
+	
+	
 	attlist = None
 	qset = (Q(available=True))
 	Model = LAMProcessMission
@@ -1790,10 +2165,12 @@ def BrowseData_MissionLAMProcessInspection(request):
 	try:
 		all_entries = Model.objects.filter(qset)
 		_modelfilednames = [f.attname for f in Model._meta.fields]
-		if not attlist:
-			attlist = [f.attname for f in Model._meta.fields]
+		# if not attlist:
+		# 	attlist = [f.attname for f in Model._meta.fields]
+		# 	attlist.append('LAM_product')
 	except:
 		pass
+	attlist = ['id', 'LAM_product', 'LAM_techinst_serial_id', 'work_section_id', 'arrangement_date', 'completion_date', 'available']
 	# if 'available' in attlist:
 	# 	attlist.remove('available')
 	# all_entries_dict = [{att: str(i.__getattribute__(att.replace('_id', ''))) for att in attlist} for i in all_entries]
@@ -1844,7 +2221,7 @@ def Inspect_MissionLAMProcessInspection(request, MissionItemID):
 					  # 'all_entries': all_entries_dict,
 					  'missionID':MissionItemID,
 					  'title': '激光成形过程记录',
-					  'smalltitle': '%s/%s/%s[%s-%s]'%(_mission.LAM_product.product_code,
+					  'smalltitle': '%s/%s/%s[%s-%s]'%(','.join(map(lambda p:p.product_code, _mission.LAM_product.all())),
 												_mission.work_section,
 												_mission.LAM_techinst_serial.technique_instruction.instruction_code,
 												_mission.LAM_techinst_serial.serial_number,
@@ -1878,6 +2255,9 @@ def AnalyseLAMProcess_MissionFilter(request, AnalyseType):
 		_modelfilednames = [f.attname for f in LAMProcessMission._meta.fields]
 		if not attlist:
 			attlist = [f.attname for f in LAMProcessMission._meta.fields]
+		attlist = ['id', 'LAM_product', 'LAM_techinst_serial_id', 'work_section_id', 'arrangement_date',
+		           'completion_date', 'available']
+	
 	except:
 		pass
 	all_entries_dict = []
@@ -1913,11 +2293,17 @@ def AnalyseLAMProcess(request, templateFileName):
 	if request.method == 'POST':
 		_missionId_list_str = request.POST.get('MissionID_list')
 		_missionId_list = _missionId_list_str.split(',')
-		_product_code_list = ['%s (id:%s)'%(LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id in _missionId_list]
+		_product_code_list = [
+			'%s (id:%s)'%(
+				','.join(map(lambda p:p.product_code, LAMProcessMission.objects.get(id=int(id)).LAM_product.all())),
+				id
+			) for id in _missionId_list
+		]
 
 		return render(request, templateFileName,
 					  {'Common_URL': Common_URL,
 					   'MissionID_list':_missionId_list_str,
+					   'MissionID_list_for_InitColorlist':_missionId_list,
 					   'Product_code_list':_product_code_list})
 	return render(request, templateFileName,
 				  {'Common_URL': Common_URL})
@@ -1959,11 +2345,15 @@ def getTestDataList(all_entries, testModel, manytomanykey):
 	for i in all_entries:
 		_dict = {}
 		for att in attlist:
-			_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
+			try:
+				_dict[att] = eval('i.get_%s_display()' % att)
+			except:
+				# _dict[att] = str(i.__getattribute__(att.replace('_id', '')))
+				_dict[att] = str(eval('i.%s'%att.replace('_id', '')))
 			if att in manytomanykey:
 				_dict[att] = list(map(str, list(i.__getattribute__(att).all())))
-			else:
-				_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
+			# else:
+			# 	_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
 		datalist.append(_dict)
 	return datalist
 
@@ -1995,7 +2385,7 @@ def edit_TemplatePhyChemTest(request, IfProductTest, EditForm):
 	# 元素
 	# element_items = _model_inst.LAM_product.product_category.material.chemicalelements.all().order_by('id')
 	if bool(IfProductTest):
-		element_items = _model_inst.LAM_product.product_category.material.chemicalelements.all().order_by('id')
+		element_items = _model_inst.LAM_product.all()[0].product_category.material.chemicalelements.all().order_by('id')
 	else:
 		element_items = _model_inst.RawStock.material.chemicalelements.all().order_by('id')
 	# 表格表头
@@ -2055,6 +2445,76 @@ def edit_TemplatePhyChemTest(request, IfProductTest, EditForm):
 				   'fracturetoughness_datalist': fracturetoughness_datalist,
 				   'chemical_datalist': chemical_datalist,
 				   'chemical_items': chemical_items,
+				   'operate': 'edit',
+				   'save_success': save_success,
+				   'Common_URL': Common_URL,
+				   'Back_URL': BackURL,
+				   'If_Product_Test': IfProductTest})
+
+
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def edit_TemplateNonDestructiveTest(request, IfProductTest, EditForm):
+	item_id = request.GET.get('item_id')
+	save_success = None
+	# 查询到指定的数据
+	try:
+		_model_inst = NonDestructiveTest_Mission.objects.get(id=item_id)
+	except:
+		messages.success(request, "未找到此条记录！")
+		return redirect(Common_URL['Back_URL_InspectionRecords_ProductNonDestructiveTest'])
+
+	# _form_tensile_data = _model_inst.mechanicaltest_tensile
+	# Defect_datalist = []
+	# if _model_inst.NDT_type == 'UT':
+		# 该检测任务内的超声测试结果
+	all_UT_entries = _model_inst.UT_defect.order_by('defect_number')
+	UTDefect_datalist = getTestDataList(all_UT_entries, UTDefectInformation, [])
+	# elif _model_inst.NDT_type == 'RT':
+		# 该检测任务内的X射线测试结果
+	all_RT_entries = _model_inst.RT_defect.order_by('defect_number')
+	RTDefect_datalist = getTestDataList(all_RT_entries, RTDefectInformation, [])
+	# elif _model_inst.NDT_type == 'PT':
+		# 该检测任务内的渗透测试结果
+	all_PT_entries = _model_inst.PT_defect.order_by('defect_number')
+	PTDefect_datalist = getTestDataList(all_PT_entries, PTDefectInformation, [])
+	# elif _model_inst.NDT_type == 'MT':
+		# 该检测任务内的磁粉测试结果
+	all_MT_entries = _model_inst.MT_defect.order_by('defect_number')
+	MTDefect_datalist = getTestDataList(all_MT_entries, MTDefectInformation, [])
+
+	if request.method != 'POST':
+		# 如果不是post,创建一个表单，并用instance=article当前数据填充表单
+		_form_inst = EditForm(instance=_model_inst)
+		# _form_Tensile = MechanicalTest_TensileForm()
+		_form_inst.itemid = item_id
+	else:
+		# 如果是post,instance=article当前数据填充表单，并用data=request.POST获取到表单里的内容
+		_form_inst = EditForm(instance=_model_inst, data=request.POST)
+
+		# _form_Tensile = MechanicalTest_TensileForm()
+		try:
+			_form_inst.save()  # 保存
+			_form_inst.itemid = item_id
+			_isValid = _form_inst.is_valid()
+			if _isValid:  # 验证
+				save_success = 'True'
+			else:
+				_form_inst.error_messages = _form_inst.errors.get_json_data()
+				save_success = 'False'
+		except:
+			save_success = 'False'
+			_form_inst.error_messages = _form_inst.errors.get_json_data()
+	if bool(IfProductTest):
+		BackURL = Common_URL['Back_URL_InspectionRecords_ProductNonDestructiveTest']
+	else:
+		BackURL = Common_URL['Back_URL_InspectionRecords_RawStockNonDestructiveTest']
+	
+	return render(request, "EditForm_NonDestructiveTest.html",
+				  {'form': _form_inst,
+				   'UTDefect_datalist': UTDefect_datalist,
+				   'RTDefect_datalist': RTDefect_datalist,
+				   'PTDefect_datalist': PTDefect_datalist,
+				   'MTDefect_datalist': MTDefect_datalist,
 				   'operate': 'edit',
 				   'save_success': save_success,
 				   'Common_URL': Common_URL,
@@ -2249,6 +2709,22 @@ def edit_RawStockPhyChemTest(request):
 	return edit_TemplatePhyChemTest(request, 0, RawStockPhyChemTestForm_Edit)
 
 
+
+# 产品无损检测 新建
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def new_ProductNonDestructiveTest(request):
+	return BasicInformation_New(request,
+								ModelForm=ProductNonDestructiveTestForm_New,
+								modelname='nondestructivetest_mission_Product',
+								TableType='advanced',
+								isvalidType='custom',
+								)
+
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def edit_ProductNonDestructiveTest(request):
+	# return edit_TemplatePhyChemTest(request, 1, ProductNonDestructiveTestForm_Edit)
+	return edit_TemplateNonDestructiveTest(request, 1, ProductNonDestructiveTestForm_Edit)
+
 '''============================================================================'''
 
 
@@ -2400,7 +2876,7 @@ def PhyChemTest_AddChemicalElement(request, MissionItemID, IfProductTest):
 	save_success = None
 	_model_inst = PhysicochemicalTest_Mission.objects.get(id=MissionItemID)
 	if bool(int(IfProductTest)):
-		chemical_items = _model_inst.LAM_product.product_category.material.chemicalelements.all().order_by('id')
+		chemical_items = _model_inst.LAM_product.all()[0].product_category.material.chemicalelements.all().order_by('id')
 	else:
 		chemical_items = _model_inst.RawStock.material.chemicalelements.all().order_by('id')
 	# chemical_items = [str(chem) for chem in chemical_items]
@@ -2453,7 +2929,7 @@ def PhyChemTest_EditChemicalElement(request, MissionItemID, ChemicalItemID, IfPr
 	chemicaltest_inst = ChemicalTest.objects.get(id=ChemicalItemID)
 	# 化学成分测试项
 	if bool(int(IfProductTest)):
-		chemical_items = _model_inst.LAM_product.product_category.material.chemicalelements.all().order_by('id')
+		chemical_items = _model_inst.LAM_product.all()[0].product_category.material.chemicalelements.all().order_by('id')
 	else:
 		chemical_items = _model_inst.RawStock.material.chemicalelements.all().order_by('id')
 	# chemical_items = [str(chem) for chem in chemical_items]
@@ -2519,24 +2995,382 @@ def PhyChemTest_EditChemicalElement(request, MissionItemID, ChemicalItemID, IfPr
 				   })
 
 
-# def func(_form_inst, MissionItemID):
-# 	test_chemical = ChemicalTest.objects.create(
-# 		sample_number = _form_inst.cleaned_data['sample_number'],
-# 		sampling_position=_form_inst.cleaned_data['sampling_position'],
-# 	)
-#
-# 	test_chemical_element = ChemicalTest_Element.objects.create(
-# 		element = _form_inst.cleaned_data['element'],
-# 		value = _form_inst.cleaned_data['value'],
-# 		)
-# 	test_chemical
-#
-# 	test_mission = PhysicochemicalTest_Mission.objects.get(id=MissionItemID)
-# 	test_mission.mechanicaltest_toughness.add(test_chemical_element.id)
-# 	test_mission.save()
-#
-# return PhyChemTest_AddSingleTestData(request, MissionItemID, MechanicalTest_ChemicalForm, func)
 
+# 弹出增加数据的子窗口
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_AddDefectData(request, MissionItemID, ModelForm, func):
+	save_success = None
+	if request.method != 'POST':
+		# 创建一个空表单在页面显示
+		_form_inst = ModelForm()
+	else:
+		# 否则为POST方式
+		# request.POST方法，将会获取到表单中我们输入的数据
+		_form_inst = ModelForm(request.POST)
+		# 验证其合法性，使用is_valid()方法
+		_isValid = _form_inst.is_valid()
+		if _isValid:
+			func(_form_inst, request, MissionItemID)
+			save_success = 'True'
+			_form_inst = ModelForm(request.POST)
+		else:
+			save_success = 'False'
+	_form_inst.set_Subarea_QuerySet(DefectInformationObj=None, MissionObj=NonDestructiveTest_Mission.objects.get(id = MissionItemID))
+	return render(request, "SubWindow_SimpleForm_with_photos.html",
+				  {'form': _form_inst,
+				   'operate': 'new',
+				   'save_success': save_success,
+				   'Common_URL': Common_URL,
+				   })
+
+
+# 弹出增加数据的子窗口
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_EditDefectData(request, MissionItemID, ModelForm, Model, func):
+	save_success = None
+	_existing_pictures = []
+	SingleTest_obj = Model.objects.get(id=MissionItemID)
+	if request.method != 'POST':
+		# 创建一个表单在页面显示
+		_form_inst = ModelForm(instance=SingleTest_obj)
+		
+	else:
+		# 否则为POST方式
+		# request.POST方法，将会获取到表单中我们输入的数据
+		
+		_form_inst = ModelForm(instance=SingleTest_obj, data=request.POST)
+		# 验证其合法性，使用is_valid()方法
+		_isValid = _form_inst.is_valid()
+
+		if _isValid:
+			# 验证通过，使用save()方法保存数据
+			_form_inst.save()
+			func(request, MissionItemID)
+			save_success = 'True'
+			_form_inst = ModelForm(request.POST)
+		else:
+			save_success = 'False'
+	_form_inst.set_Subarea_QuerySet(SingleTest_obj, None)
+	_existing_pictures = list(Model.objects.get(id=MissionItemID).photos.all())
+	return render(request, "SubWindow_SimpleForm_with_photos.html",
+				  {'form': _form_inst,
+				   'existing_pictures': _existing_pictures,
+				   'operate': 'edit',
+				   'save_success': save_success,
+				   'Common_URL': Common_URL,
+				   })
+
+# 新建超声缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_AddUTDefect(request, MissionItemID):
+	def func(_form_inst, request, MissionItemID):
+		UTDefect = UTDefectInformation.objects.create(
+			defect_number=_form_inst.cleaned_data['defect_number'],
+			defect_type=_form_inst.cleaned_data['defect_type'],
+			equivalent_hole_diameter=_form_inst.cleaned_data['equivalent_hole_diameter'],
+			radiation_equivalent=_form_inst.cleaned_data['radiation_equivalent'],
+			product_subarea=_form_inst.cleaned_data['product_subarea'],
+			X_coordinate=_form_inst.cleaned_data['X_coordinate'],
+			Y_coordinate=_form_inst.cleaned_data['Y_coordinate'],
+			Z_coordinate=_form_inst.cleaned_data['Z_coordinate'],
+			# photos=_form_inst.cleaned_data['photos']
+		)
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture = img
+			)
+			UTDefect.photos.add(_def_pic)
+		UTDefect.save()
+		test_mission = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+		test_mission.UT_defect.add(UTDefect.id)
+		test_mission.save()
+
+	return NonDestructiveTest_AddDefectData(request, MissionItemID, NonDestructiveTest_UTDefectForm, func)
+
+
+# 编辑超声缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_EditUTDefect(request, UTDefectID):
+	def func(request, UTDefectID):
+		UTDefect = UTDefectInformation.objects.get(id=UTDefectID)
+		# 之前上传的图片
+		_existing_pictures = list(UTDefect.photos.all())
+		# 删除图片
+		if 'jfiler-items-exclude-file-0' in request.POST:
+			for img_name in json.loads(request.POST['jfiler-items-exclude-file-0']):
+				_defectID = int(img_name.split('-')[0].split(':')[1])
+				DefectPicture.objects.get(id = _defectID).delete()
+			
+		# UTDefect.photos.clear()
+		# 保存新上传图片
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture=img
+			)
+			UTDefect.photos.add(_def_pic)
+		UTDefect.save()
+		
+	return NonDestructiveTest_EditDefectData(request, UTDefectID, NonDestructiveTest_UTDefectForm, UTDefectInformation, func)
+
+# 新建X射线缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_AddRTDefect(request, MissionItemID):
+	def func(_form_inst, request, MissionItemID):
+		RTDefect = RTDefectInformation.objects.create(
+			defect_number=_form_inst.cleaned_data['defect_number'],
+			defect_type=_form_inst.cleaned_data['defect_type'],
+			size=_form_inst.cleaned_data['size'],
+			product_subarea=_form_inst.cleaned_data['product_subarea'],
+			X_coordinate=_form_inst.cleaned_data['X_coordinate'],
+			Y_coordinate=_form_inst.cleaned_data['Y_coordinate'],
+			Z_coordinate=_form_inst.cleaned_data['Z_coordinate'],
+		)
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture = img
+			)
+			RTDefect.photos.add(_def_pic)
+		RTDefect.save()
+		test_mission = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+		test_mission.RT_defect.add(RTDefect.id)
+		test_mission.save()
+
+	return NonDestructiveTest_AddDefectData(request, MissionItemID, NonDestructiveTest_RTDefectForm, func)
+
+
+# 编辑X射线缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_EditRTDefect(request, RTDefectID):
+	def func(request, RTDefectID):
+		RTDefect = RTDefectInformation.objects.get(id=RTDefectID)
+		# 之前上传的图片
+		_existing_pictures = list(RTDefect.photos.all())
+		# 删除图片
+		if 'jfiler-items-exclude-file-0' in request.POST:
+			for img_name in json.loads(request.POST['jfiler-items-exclude-file-0']):
+				_defectID = int(img_name.split('-')[0].split(':')[1])
+				DefectPicture.objects.get(id=_defectID).delete()
+		
+		# UTDefect.photos.clear()
+		# 保存新上传图片
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture=img
+			)
+			RTDefect.photos.add(_def_pic)
+		RTDefect.save()
+	
+	return NonDestructiveTest_EditDefectData(request, RTDefectID, NonDestructiveTest_RTDefectForm, RTDefectInformation, func)
+
+
+# 新建荧光缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_AddPTDefect(request, MissionItemID):
+	def func(_form_inst, request, MissionItemID):
+		PTDefect = PTDefectInformation.objects.create(
+			defect_number=_form_inst.cleaned_data['defect_number'],
+			defect_type=_form_inst.cleaned_data['defect_type'],
+			product_subarea=_form_inst.cleaned_data['product_subarea'],
+			X_coordinate=_form_inst.cleaned_data['X_coordinate'],
+			Y_coordinate=_form_inst.cleaned_data['Y_coordinate'],
+			Z_coordinate=_form_inst.cleaned_data['Z_coordinate'],
+		)
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture=img
+			)
+			PTDefect.photos.add(_def_pic)
+		PTDefect.save()
+		test_mission = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+		test_mission.PT_defect.add(PTDefect.id)
+		test_mission.save()
+	
+	return NonDestructiveTest_AddDefectData(request, MissionItemID, NonDestructiveTest_PTDefectForm, func)
+
+
+# 编辑荧光缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_EditPTDefect(request, PTDefectID):
+	def func(request, PTDefectID):
+		PTDefect = RTDefectInformation.objects.get(id=PTDefectID)
+		# 之前上传的图片
+		_existing_pictures = list(PTDefect.photos.all())
+		# 删除图片
+		if 'jfiler-items-exclude-file-0' in request.POST:
+			for img_name in json.loads(request.POST['jfiler-items-exclude-file-0']):
+				_defectID = int(img_name.split('-')[0].split(':')[1])
+				DefectPicture.objects.get(id=_defectID).delete()
+		
+		# 保存新上传图片
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture=img
+			)
+			PTDefect.photos.add(_def_pic)
+		PTDefect.save()
+	
+	return NonDestructiveTest_EditDefectData(request, PTDefectID, NonDestructiveTest_PTDefectForm, PTDefectInformation,
+	                                         func)
+
+
+# 新建磁粉缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_AddMTDefect(request, MissionItemID):
+	def func(_form_inst, request, MissionItemID):
+		MTDefect = MTDefectInformation.objects.create(
+			defect_number=_form_inst.cleaned_data['defect_number'],
+			defect_type=_form_inst.cleaned_data['defect_type'],
+			product_subarea=_form_inst.cleaned_data['product_subarea'],
+			X_coordinate=_form_inst.cleaned_data['X_coordinate'],
+			Y_coordinate=_form_inst.cleaned_data['Y_coordinate'],
+			Z_coordinate=_form_inst.cleaned_data['Z_coordinate'],
+		)
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture=img
+			)
+			MTDefect.photos.add(_def_pic)
+		MTDefect.save()
+		test_mission = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+		test_mission.MT_defect.add(MTDefect.id)
+		test_mission.save()
+	
+	return NonDestructiveTest_AddDefectData(request, MissionItemID, NonDestructiveTest_MTDefectForm, func)
+
+
+# 编辑磁粉缺陷记录
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def NonDestructiveTest_EditMTDefect(request, MTDefectID):
+	def func(request, PTDefectID):
+		MTDefect = MTDefectInformation.objects.get(id=PTDefectID)
+		# 之前上传的图片
+		_existing_pictures = list(MTDefect.photos.all())
+		# 删除图片
+		if 'jfiler-items-exclude-file-0' in request.POST:
+			for img_name in json.loads(request.POST['jfiler-items-exclude-file-0']):
+				_defectID = int(img_name.split('-')[0].split(':')[1])
+				DefectPicture.objects.get(id=_defectID).delete()
+		
+		# 保存新上传图片
+		for img in request.FILES.getlist('file[]'):
+			_def_pic = DefectPicture.objects.create(
+				picture=img
+			)
+			MTDefect.photos.add(_def_pic)
+		MTDefect.save()
+	
+	return NonDestructiveTest_EditDefectData(request, MTDefectID, NonDestructiveTest_MTDefectForm, MTDefectInformation,
+	                                         func)
+
+
+# 浏览图片-UT 超声缺陷
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewUTDefectPictures(request, UTDefectID):
+	UTDefect_obj = UTDefectInformation.objects.get(id=UTDefectID)
+	_pictures_list = list(UTDefect_obj.photos.all())
+
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'Defect_obj': UTDefect_obj,
+				   'heading': 'UT超声检测缺陷(ID=%s)'%UTDefectID,
+				   'Common_URL': Common_URL,
+				   })
+
+# 浏览图片-RT 射线缺陷
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewRTDefectPictures(request, RTDefectID):
+	RTDefect_obj = RTDefectInformation.objects.get(id=RTDefectID)
+	_pictures_list = list(RTDefect_obj.photos.all())
+
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'Defect_obj': RTDefect_obj,
+				   'heading':  'RT射线检测缺陷(ID=%s)'%RTDefectID,
+				   'Common_URL': Common_URL,
+				   })
+
+# 浏览图片-PT 荧光缺陷
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewPTDefectPictures(request, PTDefectID):
+	PTDefect_obj = PTDefectInformation.objects.get(id=PTDefectID)
+	_pictures_list = list(PTDefect_obj.photos.all())
+
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'Defect_obj': PTDefect_obj,
+				   'heading':  'PT荧光检测缺陷(ID=%s)'%PTDefectID,
+				   'Common_URL': Common_URL,
+				   })
+
+# 浏览图片-MT 磁粉缺陷
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewMTDefectPictures(request, MTDefectID):
+	MTDefect_obj = MTDefectInformation.objects.get(id=MTDefectID)
+	_pictures_list = list(MTDefect_obj.photos.all())
+
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'Defect_obj': MTDefect_obj,
+				   'heading':  'MT磁粉检测缺陷(ID=%s)'%MTDefectID,
+				   'Common_URL': Common_URL,
+				   })
+
+
+# 浏览图片-一次检测任务中所有UT超声缺陷照片
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewAllUTDefectPictures(request, MissionItemID):
+	mission_obj = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+	_pictures_list = []
+	for ut_defect_obj in mission_obj.UT_defect.all():
+		for photo_obj in ut_defect_obj.photos.all():
+			_pictures_list.append(photo_obj)
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'heading': '检测任务(ID=%s)中UT超声检测缺陷照片'%MissionItemID,
+				   'Common_URL': Common_URL,
+				   })
+
+# 浏览图片-一次检测任务中所有RT射线缺陷照片
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewAllRTDefectPictures(request, MissionItemID):
+	mission_obj = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+	_pictures_list = []
+	for rt_defect_obj in mission_obj.RT_defect.all():
+		for photo_obj in rt_defect_obj.photos.all():
+			_pictures_list.append(photo_obj)
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'heading': '检测任务(ID=%s)中RT射线检测缺陷照片'%MissionItemID,
+				   'Common_URL': Common_URL,
+				   })
+
+# 浏览图片-一次检测任务中所有PT荧光缺陷照片
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewAllPTDefectPictures(request, MissionItemID):
+	mission_obj = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+	_pictures_list = []
+	for pt_defect_obj in mission_obj.PT_defect.all():
+		for photo_obj in pt_defect_obj.photos.all():
+			_pictures_list.append(photo_obj)
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'heading': '检测任务(ID=%s)中PT荧光检测缺陷照片'%MissionItemID,
+				   'Common_URL': Common_URL,
+				   })
+
+# 浏览图片-一次检测任务中所有MT磁粉缺陷照片
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def ViewAllMTDefectPictures(request, MissionItemID):
+	mission_obj = NonDestructiveTest_Mission.objects.get(id=MissionItemID)
+	_pictures_list = []
+	for mt_defect_obj in mission_obj.MT_defect.all():
+		for photo_obj in mt_defect_obj.photos.all():
+			_pictures_list.append(photo_obj)
+	return render(request, "SubWindow_ViewPhotos.html",
+				  {'pictures': _pictures_list,
+				   'heading': '检测任务(ID=%s)中MT磁粉检测缺陷照片'%MissionItemID,
+				   'Common_URL': Common_URL,
+				   })
 
 '''============================================================================'''
 def download_template(request, tempfilepath):
@@ -2927,31 +3761,32 @@ def PostLAMProcessData_CNCdata(request):
 					'''此处应更改，记录手动界面'''
 					# 若截图为执行状态，则保留文件，否则跳过
 					_status.screen_image = file
-					realtime_recognition = ImageRecognition.realtimeRecognizeImage(image)
+					realtime_recognition = ImageRecognition.realtimeRecognizeImage(image, DeviceCode)
 
 					try:
-						_status.ZValue = float(realtime_recognition.ZValue)
+						_status.ZValue = float(realtime_recognition['ZValue'])
 						# 更新近期实时记录
-						RealtimeRecord.Realtime_Records.addRecords(worksection.id, 'cncstatus', _timestamp, float(ZValue))
+						RealtimeRecord.Realtime_Records.addRecords(worksection.id, 'cncstatus', _timestamp, float(_status.ZValue))
 						# 更新精细数据表
 						RT_FineData.Realtime_FineData.add_processRecord(_timestamp,
 																		worksection.id,
 																		{
-																			'X_value': float(realtime_recognition.XValue),
-																			'Y_value': float(realtime_recognition.YValue),
-																			'Z_value': float(realtime_recognition.ZValue),
-																			'ScanningRate_value': float(realtime_recognition.ScanningRate),
-																			'FeedRate_value': float(realtime_recognition.FeedRate),
+																			'X_value': float(realtime_recognition['XValue']),
+																			'Y_value': float(realtime_recognition['YValue']),
+																			'Z_value': float(realtime_recognition['ZValue']),
+																			'ScanningRate_value': float(realtime_recognition['ScanningRate']),
+																			'FeedRate_value': float(realtime_recognition['FeedRate']),
 																			'if_exec_intr': if_exec_intr,
 																			'if_interrupt_intr': if_interrupt_intr})
 					except:
 						pass
 				_status.save()
 				# updateProcessDataIndexingInfo(worksection, dateint, datatype, data_id):
-				updateProcessDataIndexingInfo(worksection,
-											  int(_acqu_time.strftime('%Y%m%d')),
-											  'cncstatus',
-											  _status.id)
+				'''停止更新Process_CNCStatusdata_Date_Worksection_indexing'''
+				# updateProcessDataIndexingInfo(worksection,
+				# 							  int(_acqu_time.strftime('%Y%m%d')),
+				# 							  'cncstatus',
+				# 							  _status.id)
 				'''保存至实时截图路径'''
 				filepath = '.' + settings.REAL_TIME_SCREEN_URL + '/' + str(worksection.code) + '.png'
 				# print(filepath)
@@ -3105,23 +3940,24 @@ def PostLAMProcessData_Oxygen(request):
 		try:
 			worksection = getWorksectionByDesktopMacAddress(request.POST.get('macaddress', None))
 			_timestamp = int(time.mktime(_acqu_time.timetuple()))
-			_oxydata = Oxygendata(work_section=worksection,
-								  acquisition_time=_acqu_time,
-								  acquisition_timestamp = _timestamp,
-								  oxygen_value=float(request.POST.get('oxygen_value', None)),
-								  oxygen_sensor_value=float(request.POST.get('oxygen_sensor_value', None)),
-								  internal_pressure_value=float(request.POST.get('internal_pressure_value', None))
-								  )
-			_oxydata.save()
+			# _oxydata = Oxygendata(work_section=worksection,
+			# 					  acquisition_time=_acqu_time,
+			# 					  acquisition_timestamp = _timestamp,
+			# 					  oxygen_value=float(request.POST.get('oxygen_value', None)),
+			# 					  oxygen_sensor_value=float(request.POST.get('oxygen_sensor_value', None)),
+			# 					  internal_pressure_value=float(request.POST.get('internal_pressure_value', None))
+			# 					  )
+			# _oxydata.save()
 
 			# 更新近期实时记录 绘制现场操作实时曲线
 			RealtimeRecord.Realtime_Records.addRecords(worksection.id, 'oxygen', _timestamp, float(request.POST.get('oxygen_value', None)))
 
 			# updateProcessDataIndexingInfo(worksection, dateint, datetype, data_id):
-			updateProcessDataIndexingInfo(worksection,
-										  int(_acqu_time.strftime('%Y%m%d')),
-										  'oxygen',
-										  _oxydata.id)
+			'''停止更新Process_Oxygendata_Date_Worksection_indexing'''
+			# updateProcessDataIndexingInfo(worksection,
+			# 							  int(_acqu_time.strftime('%Y%m%d')),
+			# 							  'oxygen',
+			# 							  _oxydata.id)
 
 			# 更新精细数据表
 			RT_FineData.Realtime_FineData.add_processRecord(_timestamp, worksection.id, {'oxygen_value':float(request.POST.get('oxygen_value', None))})
@@ -3282,13 +4118,14 @@ def PostLAMProcessData_Laser(request):
 				_time = "20%d-%d-%d %s" % (_year, _month, _day, _rlist[1])
 				# logger.debug(_time)
 				_timestamp=int(time.mktime(time.strptime(_time, "%Y-%m-%d %H:%M:%S.%f")))
-				_laserdata = Laserdata(work_section=worksection,
-									   acquisition_time=_time,
-									   acquisition_timestamp = _timestamp,
-									   laser_power=float(_rlist[2]),
-									   laser_lightpath_temperature=float(_rlist[3]),
-									   laser_laser_temperature=float(_rlist[4]))
-				_laserdata.save()
+				'''停止更新写入Laserdata'''
+				# _laserdata = Laserdata(work_section=worksection,
+				# 					   acquisition_time=_time,
+				# 					   acquisition_timestamp = _timestamp,
+				# 					   laser_power=float(_rlist[2]),
+				# 					   laser_lightpath_temperature=float(_rlist[3]),
+				# 					   laser_laser_temperature=float(_rlist[4]))
+				# _laserdata.save()
 
 				# 更新近期实时记录
 				RealtimeRecord.Realtime_Records.addRecords(worksection.id, 'laser', _timestamp, float(_rlist[2]))
@@ -3300,11 +4137,12 @@ def PostLAMProcessData_Laser(request):
 				# logger.debug('laser_id:%d' % _laserdata.id)
 				# logger.debug('timeint:%d' % int(_time.split(' ')[0].replace('-','')))
 				# updateProcessDataIndexingInfo(worksection, dateint, datetype, data_id):
-				updateProcessDataIndexingInfo(worksection,
-											  datetime.datetime(int('20%d'%_year), _month, _day).strftime('%Y%m%d'),
-											  # int(_time.splsit(' ')[0].replace('-','')),
-											  'laser',
-											  _laserdata.id)
+				'''停止更新Process_Laserdata_Date_Worksection_indexing'''
+				# updateProcessDataIndexingInfo(worksection,
+				# 							  datetime.datetime(int('20%d'%_year), _month, _day).strftime('%Y%m%d'),
+				# 							  # int(_time.splsit(' ')[0].replace('-','')),
+				# 							  'laser',
+				# 							  _laserdata.id)
 				# Process_Laserdata_Date_Worksection_indexing
 				# print('laser success')
 			return 'success'
@@ -3372,8 +4210,12 @@ def lamprocessmission_CutRecords_by_Time(request):
 		mission = LAMProcessMission.objects.get(id=mission_id)
 
 		_PostData = request.POST.copy()
-		start_datetime = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:%M:%S")
-		finish_datetime = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:%M:%S")
+		try:
+			start_datetime = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:%M")
+			finish_datetime = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:%M")
+		except:
+			start_datetime = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:%M:%S")
+			finish_datetime = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:%M:%S")
 		# _form_inst.data['process_start_time'] = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:%M:%S")
 		# _form_inst.data['process_finish_time'] = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:%M:%S")
 
@@ -3389,64 +4231,95 @@ def lamprocessmission_CutRecords_by_Time(request):
 
 
 			worksection = mission.work_section
-			# 获取各项数据的最大最小数据id
-			with connection.cursor() as cursor:
-				# cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
-				cursor.execute(
-					"SELECT max(id),min(id) FROM lamdataserver.lamprocessdata_oxygendata where work_section_id = %d and acquisition_timestamp >= %d and acquisition_timestamp <= %d;" % (
-					worksection.id, start_timestamp, finish_timestamp))
-				row = cursor.fetchall()
-				oxygen_maxid = row[0][0]
-				oxygen_minid = row[0][1]
-				t2 = time.time()
-				cursor.execute(
-					"SELECT max(id),min(id) FROM lamdataserver.lamprocessdata_laserdata where work_section_id = %d and acquisition_timestamp >= %d and acquisition_timestamp <= %d;" % (
-					worksection.id, start_timestamp, finish_timestamp))
-				row = cursor.fetchall()
-				laser_maxid = row[0][0]
-				laser_minid = row[0][1]
-				t3=time.time()
-				cursor.execute(
-					"SELECT max(id),min(id) FROM lamdataserver.lamprocessdata_cncprocessstatus where work_section_id = %d and acquisition_timestamp >= %d and acquisition_timestamp <= %d;" % (
-						worksection.id, start_timestamp, finish_timestamp))
-				row = cursor.fetchall()
-				cnc_maxid = row[0][0]
-				cnc_minid = row[0][1]
-				print(t2-t1, t3-t2, time.time()-t3)
-				# 4.492816925048828 11.877208232879639 24.164589881896973
-				# 3.5282106399536133 9.010584831237793 23.99515962600708
-				# print(oxygen_minid, oxygen_maxid, laser_minid, laser_maxid, cnc_minid, cnc_maxid)
-				'''更新Process_Mission_timecut'''
-				if_mission_exists = False
-				try:
-					# ----若已存在，则更改
-					_model_inst = Process_Mission_timecut.objects.get(process_mission=mission)
-					if_mission_exists = True
-				except:
-					# ----若不存在，则新建
-					_model_inst = Process_Mission_timecut(process_mission=mission,
-														  process_start_time=start_DT_str,
-														  process_finish_time = finish_DT_str,
-														  laserdata_start_recordid = oxygen_minid,
-														  laserdata_finish_recordid = oxygen_maxid,
-														  oxygendata_start_recordid = laser_minid,
-														  oxygendata_finish_recordid = laser_maxid,
-														  cncstatusdata_start_recordid = cnc_minid,
-														  cncstatusdata_finish_recordid = cnc_maxid
-														  )
-					_model_inst.save()
-				if if_mission_exists:
-					# _model_inst.process_start_time = start_DT_str
-					_model_inst.process_start_time = start_datetime
-					# _model_inst.process_finish_time = finish_DT_str
-					_model_inst.process_finish_time = finish_datetime
-					_model_inst.laserdata_start_recordid = oxygen_minid
-					_model_inst.laserdata_finish_recordid = oxygen_maxid
-					_model_inst.oxygendata_start_recordid = laser_minid
-					_model_inst.oxygendata_finish_recordid = laser_maxid
-					_model_inst.cncstatusdata_start_recordid = cnc_minid
-					_model_inst.cncstatusdata_finish_recordid = cnc_maxid
-					_model_inst.save()
+			# 得到finedata开始、结束id
+			finedata_model = RT_FineData.Realtime_FineData.getFineDataModel_ByWSID(str(worksection.id))
+			finedata_obj = finedata_model.objects.get(acquisition_timestamp=start_timestamp)
+			_finedata_start_recordid = finedata_obj.id
+			finedata_obj = finedata_model.objects.get(acquisition_timestamp=finish_timestamp)
+			_finedata_finish_recordid = finedata_obj.id
+			
+			# if_mission_exists = False
+			try:
+				# ----若已存在，则更改
+				_model_inst = Process_Mission_timecut.objects.get(process_mission=mission)
+				# if_mission_exists = True
+				# _model_inst.process_start_time = start_DT_str
+				_model_inst.process_start_time = start_datetime
+				# _model_inst.process_finish_time = finish_DT_str
+				_model_inst.process_finish_time = finish_datetime
+				_model_inst.finedata_start_recordid = _finedata_start_recordid
+				_model_inst.finedata_finish_recordid = _finedata_finish_recordid
+				_model_inst.save()
+			except:
+				# ----若不存在，则新建
+				_model_inst = Process_Mission_timecut(process_mission=mission,
+				                                      # process_start_time=start_DT_str,
+				                                      # process_finish_time=finish_DT_str,
+				                                      process_start_time=start_datetime,
+				                                      process_finish_time=finish_datetime,
+				                                      finedata_start_recordid=_finedata_start_recordid,
+				                                      finedata_finish_recordid=_finedata_finish_recordid
+				                                      )
+				_model_inst.save()
+			
+			# # 获取各项数据的最大最小数据id
+			# with connection.cursor() as cursor:
+			# 	# cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
+			# 	cursor.execute(
+			# 		"SELECT max(id),min(id) FROM lamdataserver.lamprocessdata_oxygendata where work_section_id = %d and acquisition_timestamp >= %d and acquisition_timestamp <= %d;" % (
+			# 		worksection.id, start_timestamp, finish_timestamp))
+			# 	row = cursor.fetchall()
+			# 	oxygen_maxid = row[0][0]
+			# 	oxygen_minid = row[0][1]
+			# 	t2 = time.time()
+			# 	cursor.execute(
+			# 		"SELECT max(id),min(id) FROM lamdataserver.lamprocessdata_laserdata where work_section_id = %d and acquisition_timestamp >= %d and acquisition_timestamp <= %d;" % (
+			# 		worksection.id, start_timestamp, finish_timestamp))
+			# 	row = cursor.fetchall()
+			# 	laser_maxid = row[0][0]
+			# 	laser_minid = row[0][1]
+			# 	t3=time.time()
+			# 	cursor.execute(
+			# 		"SELECT max(id),min(id) FROM lamdataserver.lamprocessdata_cncprocessstatus where work_section_id = %d and acquisition_timestamp >= %d and acquisition_timestamp <= %d;" % (
+			# 			worksection.id, start_timestamp, finish_timestamp))
+			# 	row = cursor.fetchall()
+			# 	cnc_maxid = row[0][0]
+			# 	cnc_minid = row[0][1]
+			# 	print(t2-t1, t3-t2, time.time()-t3)
+			# 	# 4.492816925048828 11.877208232879639 24.164589881896973
+			# 	# 3.5282106399536133 9.010584831237793 23.99515962600708
+			# 	# print(oxygen_minid, oxygen_maxid, laser_minid, laser_maxid, cnc_minid, cnc_maxid)
+			# 	'''更新Process_Mission_timecut'''
+			# 	if_mission_exists = False
+			# 	try:
+			# 		# ----若已存在，则更改
+			# 		_model_inst = Process_Mission_timecut.objects.get(process_mission=mission)
+			# 		if_mission_exists = True
+			# 	except:
+			# 		# ----若不存在，则新建
+			# 		_model_inst = Process_Mission_timecut(process_mission=mission,
+			# 											  process_start_time=start_DT_str,
+			# 											  process_finish_time = finish_DT_str,
+			# 											  laserdata_start_recordid = oxygen_minid,
+			# 											  laserdata_finish_recordid = oxygen_maxid,
+			# 											  oxygendata_start_recordid = laser_minid,
+			# 											  oxygendata_finish_recordid = laser_maxid,
+			# 											  cncstatusdata_start_recordid = cnc_minid,
+			# 											  cncstatusdata_finish_recordid = cnc_maxid
+			# 											  )
+			# 		_model_inst.save()
+			# 	if if_mission_exists:
+			# 		# _model_inst.process_start_time = start_DT_str
+			# 		_model_inst.process_start_time = start_datetime
+			# 		# _model_inst.process_finish_time = finish_DT_str
+			# 		_model_inst.process_finish_time = finish_datetime
+			# 		_model_inst.laserdata_start_recordid = oxygen_minid
+			# 		_model_inst.laserdata_finish_recordid = oxygen_maxid
+			# 		_model_inst.oxygendata_start_recordid = laser_minid
+			# 		_model_inst.oxygendata_finish_recordid = laser_maxid
+			# 		_model_inst.cncstatusdata_start_recordid = cnc_minid
+			# 		_model_inst.cncstatusdata_finish_recordid = cnc_maxid
+			# 		_model_inst.save()
 
 			'''更新任务基本表LAMProcessMission'''
 			mission.completion_date = datetime.date.today()
@@ -3495,43 +4368,43 @@ def lamprocess_worksection_operate(request, WorksectionID):
 			else:
 				submit_text = '当前无任务'
 		return _form_inst,submit_text
-	def selectRecordID_Start(type, WorksectionID, _start_timestamp):
-		if type=='oxygen':
-			tablename = 'lamdataserver.lamprocessdata_oxygendata'
-		elif type == 'laser':
-			tablename = 'lamdataserver.lamprocessdata_laserdata'
-		elif type == 'cncstatus':
-			tablename = 'lamdataserver.lamprocessdata_cncprocessstatus'
-
-		with connection.cursor() as cursor:
-			cursor.execute(
-				"SELECT min(id) FROM %s where work_section_id = %d and acquisition_timestamp >= %d;" % (
-					tablename, WorksectionID, _start_timestamp))
-			row = cursor.fetchall()
-			_start_recordid = row[0][0]
-			if not _start_recordid:
-				cursor.execute(
-					"SELECT max(id) FROM %s where work_section_id = %d and acquisition_timestamp <= %d;" % (
-						tablename, WorksectionID, _start_timestamp))
-				row = cursor.fetchall()
-				_start_recordid = row[0][0]
-		return _start_recordid
-
-	def selectRecordID_Finish(type, WorksectionID, _start_record_id, _finish_timestamp):
-		if type=='oxygen':
-			tablename = 'lamdataserver.lamprocessdata_oxygendata'
-		elif type == 'laser':
-			tablename = 'lamdataserver.lamprocessdata_laserdata'
-		elif type == 'cncstatus':
-			tablename = 'lamdataserver.lamprocessdata_cncprocessstatus'
-
-		with connection.cursor() as cursor:
-			cursor.execute(
-				"SELECT max(id) FROM %s where work_section_id = %d and id >= %d and acquisition_timestamp <= %d;" % (
-					tablename, WorksectionID, _start_record_id, _finish_timestamp))
-			row = cursor.fetchall()
-			_finish_recordid = row[0][0]
-		return _finish_recordid
+	# def selectRecordID_Start(type, WorksectionID, _start_timestamp):
+	# 	if type=='oxygen':
+	# 		tablename = 'lamdataserver.lamprocessdata_oxygendata'
+	# 	elif type == 'laser':
+	# 		tablename = 'lamdataserver.lamprocessdata_laserdata'
+	# 	elif type == 'cncstatus':
+	# 		tablename = 'lamdataserver.lamprocessdata_cncprocessstatus'
+	#
+	# 	with connection.cursor() as cursor:
+	# 		cursor.execute(
+	# 			"SELECT min(id) FROM %s where work_section_id = %d and acquisition_timestamp >= %d;" % (
+	# 				tablename, WorksectionID, _start_timestamp))
+	# 		row = cursor.fetchall()
+	# 		_start_recordid = row[0][0]
+	# 		if not _start_recordid:
+	# 			cursor.execute(
+	# 				"SELECT max(id) FROM %s where work_section_id = %d and acquisition_timestamp <= %d;" % (
+	# 					tablename, WorksectionID, _start_timestamp))
+	# 			row = cursor.fetchall()
+	# 			_start_recordid = row[0][0]
+	# 	return _start_recordid
+	#
+	# def selectRecordID_Finish(type, WorksectionID, _start_record_id, _finish_timestamp):
+	# 	if type=='oxygen':
+	# 		tablename = 'lamdataserver.lamprocessdata_oxygendata'
+	# 	elif type == 'laser':
+	# 		tablename = 'lamdataserver.lamprocessdata_laserdata'
+	# 	elif type == 'cncstatus':
+	# 		tablename = 'lamdataserver.lamprocessdata_cncprocessstatus'
+	#
+	# 	with connection.cursor() as cursor:
+	# 		cursor.execute(
+	# 			"SELECT max(id) FROM %s where work_section_id = %d and id >= %d and acquisition_timestamp <= %d;" % (
+	# 				tablename, WorksectionID, _start_record_id, _finish_timestamp))
+	# 		row = cursor.fetchall()
+	# 		_finish_recordid = row[0][0]
+	# 	return _finish_recordid
 
 	save_success = None
 	WorksectionID = int(WorksectionID)
@@ -3572,28 +4445,33 @@ def lamprocess_worksection_operate(request, WorksectionID):
 				# 任务结束的时间及其时间戳
 				_finish_time = datetime.datetime.now()
 				_finish_timestamp=int(time.mktime(_finish_time.timetuple()))
-				# 查询任务开始的各项参数id
-				_oxygendata_start_recordid=_mission_attr_obj.oxygendata_start_recordid
-				_laserdata_start_recordid=_mission_attr_obj.laserdata_start_recordid
-				_cncstatusdata_start_recordid=_mission_attr_obj.cncstatusdata_start_recordid
-				if not _oxygendata_start_recordid:
-					_oxygendata_start_recordid = 1
-				if not _laserdata_start_recordid:
-					_laserdata_start_recordid = 1
-				if not _cncstatusdata_start_recordid:
-					_cncstatusdata_start_recordid = 1
-				# 找到各项过程记录终止的id
-				_oxygendata_finish_recordid = selectRecordID_Finish('oxygen', WorksectionID, _oxygendata_start_recordid, _finish_timestamp)
-				_laserdata_finish_recordid = selectRecordID_Finish('laser', WorksectionID, _laserdata_start_recordid, _finish_timestamp)
-				_cncstatusdata_finish_recordid = selectRecordID_Finish('cncstatus', WorksectionID, _cncstatusdata_start_recordid, _finish_timestamp)
+				# 得到finedata结束id
+				finedata_model = RT_FineData.Realtime_FineData.getFineDataModel_ByWSID(str(WorksectionID))
+				finedata_obj = finedata_model.objects.get(acquisition_timestamp = _finish_timestamp)
+				_finedata_finish_recordid = finedata_obj.id
+				# # 查询任务开始的各项参数id
+				# _oxygendata_start_recordid=_mission_attr_obj.oxygendata_start_recordid
+				# _laserdata_start_recordid=_mission_attr_obj.laserdata_start_recordid
+				# _cncstatusdata_start_recordid=_mission_attr_obj.cncstatusdata_start_recordid
+				# if not _oxygendata_start_recordid:
+				# 	_oxygendata_start_recordid = 1
+				# if not _laserdata_start_recordid:
+				# 	_laserdata_start_recordid = 1
+				# if not _cncstatusdata_start_recordid:
+				# 	_cncstatusdata_start_recordid = 1
+				# # 找到各项过程记录终止的id
+				# _oxygendata_finish_recordid = selectRecordID_Finish('oxygen', WorksectionID, _oxygendata_start_recordid, _finish_timestamp)
+				# _laserdata_finish_recordid = selectRecordID_Finish('laser', WorksectionID, _laserdata_start_recordid, _finish_timestamp)
+				# _cncstatusdata_finish_recordid = selectRecordID_Finish('cncstatus', WorksectionID, _cncstatusdata_start_recordid, _finish_timestamp)
 
 				# 任务实例属性
 				# 设置结束时间
 				_mission_attr_obj.process_finish_time = _finish_time
 				# 记录各项过程参数的终止id
-				_mission_attr_obj.laserdata_finish_recordid = _laserdata_finish_recordid
-				_mission_attr_obj.oxygendata_finish_recordid = _oxygendata_finish_recordid
-				_mission_attr_obj.cncstatusdata_finish_recordid = _cncstatusdata_finish_recordid
+				# _mission_attr_obj.laserdata_finish_recordid = _laserdata_finish_recordid
+				# _mission_attr_obj.oxygendata_finish_recordid = _oxygendata_finish_recordid
+				# _mission_attr_obj.cncstatusdata_finish_recordid = _cncstatusdata_finish_recordid
+				_mission_attr_obj.finedata_finish_recordid = _finedata_finish_recordid
 				_mission_attr_obj.save()
 
 				# 任务实例设置完成日期，
@@ -3619,16 +4497,21 @@ def lamprocess_worksection_operate(request, WorksectionID):
 				_mission_attr_obj = Process_Mission_timecut.objects.get(process_mission=crtmission_obj.process_mission)
 
 				# 找到各项过程记录起始的id
-				_oxygendata_start_recordid = selectRecordID_Start('oxygen', WorksectionID, _start_timestamp)
-				_laserdata_start_recordid = selectRecordID_Start('laser', WorksectionID, _start_timestamp)
-				_cncstatusdata_start_recordid = selectRecordID_Start('cncstatus', WorksectionID, _start_timestamp)
+				# _oxygendata_start_recordid = selectRecordID_Start('oxygen', WorksectionID, _start_timestamp)
+				# _laserdata_start_recordid = selectRecordID_Start('laser', WorksectionID, _start_timestamp)
+				# _cncstatusdata_start_recordid = selectRecordID_Start('cncstatus', WorksectionID, _start_timestamp)
 
 				# 设置开始时间
 				_mission_attr_obj.process_start_time = _start_time
+				
+				finedata_model = RT_FineData.Realtime_FineData.getFineDataModel_ByWSID(str(WorksectionID))
+				finedata_obj = finedata_model.objects.get(acquisition_timestamp=_start_timestamp)
+				_finedata_start_recordid = finedata_obj.id
+				_mission_attr_obj.finedata_start_recordid = _finedata_start_recordid
 				# 记录各项过程参数的终止id
-				_mission_attr_obj.laserdata_start_recordid = _laserdata_start_recordid
-				_mission_attr_obj.oxygendata_start_recordid = _oxygendata_start_recordid
-				_mission_attr_obj.cncstatusdata_start_recordid = _cncstatusdata_start_recordid
+				# _mission_attr_obj.laserdata_start_recordid = _laserdata_start_recordid
+				# _mission_attr_obj.oxygendata_start_recordid = _oxygendata_start_recordid
+				# _mission_attr_obj.cncstatusdata_start_recordid = _cncstatusdata_start_recordid
 				_mission_attr_obj.save()
 
 				save_success=True
@@ -4464,61 +5347,73 @@ def DrawData_Oxygen(request):
 
 
 # 将已存在的数据复制到FineData表中
-def Update_ExistingData_to_FineData(request):
+def Update_ExistingData_to_FineData(request, datatype):
+	
+	cache_text = CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData_text', True, datatype, None)
+	if cache_text is not None:
+		return
 	print('start Update_ExistingData_to_FineData...')
-	t1=time.time()
-
-	# 遍历氧含量数据
-	all_data_list = Oxygendata.objects.all()
-	count_i=0
-	count_sum = all_data_list.count()
-	for _data in all_data_list:
-		count_i += 1
-		if count_i % 1000 == 0:
-			print('Oxygen Data : %d/%d=%.3f' % (count_i, count_sum, count_i / count_sum))
-		# 更新精细数据表
-		RT_FineData.Realtime_FineData.add_processRecord(int(time.mktime(_data.acquisition_time.timetuple())), _data.work_section.id,
-														{'oxygen_value': _data.oxygen_value})
-
-	# # 遍历激光数据
-	# all_data_list = Laserdata.objects.all()
-	# count_i=0
-	# count_sum = all_data_list.count()
-	# for _data in all_data_list:
-	# 	count_i+=1
-	# 	if count_i%1000==0:
-	# 		print('Laser Data : %d/%d=%.3f'%(count_i, count_sum, count_i/count_sum))
-	# 	if count_i<106000:
-	# 		continue
-	# 	# 更新精细数据表
-	# 	RT_FineData.Realtime_FineData.add_processRecord(int(time.mktime(_data.acquisition_time.timetuple())),
-	# 	                                                _data.work_section.id,
-	# 	                                                {'laser_power': _data.laser_power})
-	#
-	# # 遍历机床运动数据
-	# all_data_list = CNCProcessStatus.objects.all()
-	# count_i = 0
-	# count_sum = all_data_list.count()
-	# for _data in all_data_list:
-	# 	count_i += 1
-	# 	if count_i % 1000 == 0:
-	# 		print('CNCProcessStatus Data : %d/%d=%.3f' % (count_i, count_sum, count_i / count_sum))
-	# 	# 更新精细数据表
-	# 	try:
-	# 		_autodata = _data.autodata
-	# 		RT_FineData.Realtime_FineData.add_processRecord(int(time.mktime(_data.acquisition_time.timetuple())),
-	# 		                                                _data.work_section.id,
-	# 		                                                {'X_value': _autodata.X_value,
-	# 		                                                 'Y_value': _autodata.Y_value,
-	# 		                                                 'Z_value': _autodata.Z_value,
-	# 		                                                 'ScanningRate_value': _autodata.ScanningRate_value,
-	# 		                                                 'FeedRate_value': _autodata.FeedRate_value,
-	# 		                                                 'program_name': _autodata.program_name,
-	# 		                                                 })
-	# 	except:
-	# 		pass
-
-
+	CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData_text', False, datatype,
+	              'ready to start')
+	t1 = time.time()
+	if datatype=='oxygen':
+		# 遍历氧含量数据
+		all_data_list = Oxygendata.objects.all()
+		count_i=0
+		count_sum = all_data_list.count()
+		for _data in all_data_list:
+			count_i += 1
+			if count_i % 1000 == 0:
+				CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData', False, 'oxygen', count_i / count_sum)
+				CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData_text', False, 'oxygen', '%s/%s'%(count_i, count_sum))
+			# 更新精细数据表
+			RT_FineData.Realtime_FineData.add_processRecord(int(time.mktime(_data.acquisition_time.timetuple())), _data.work_section.id,
+															{'oxygen_value': _data.oxygen_value})
+	elif datatype=='laser':
+		# 遍历激光数据
+		all_data_list = Laserdata.objects.all()
+		count_i=0
+		count_sum = all_data_list.count()
+		for _data in all_data_list:
+			count_i+=1
+			if count_i%1000==0:
+				CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData', False, 'laser', count_i / count_sum)
+				CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData_text', False, 'laser', '%s/%s'%(count_i, count_sum))
+			# if count_i<106000:
+			# 	continue
+			# 更新精细数据表
+			RT_FineData.Realtime_FineData.add_processRecord(int(time.mktime(_data.acquisition_time.timetuple())),
+			                                                _data.work_section.id,
+			                                                {'laser_power': _data.laser_power})
+	elif datatype == 'cncstatus':
+		# 遍历机床运动数据
+		all_data_list = CNCProcessStatus.objects.all()
+		count_i = 0
+		count_sum = all_data_list.count()
+		for _data in all_data_list:
+			count_i += 1
+			if count_i % 1000 == 0:
+				CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData', False, 'cncstatus', count_i / count_sum)
+				CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData_text', False, 'cncstatus',
+				              '%s/%s' % (count_i, count_sum))
+			# 更新精细数据表
+			try:
+				_autodata = _data.autodata
+				RT_FineData.Realtime_FineData.add_processRecord(int(time.mktime(_data.acquisition_time.timetuple())),
+				                                                _data.work_section.id,
+				                                                {'X_value': _autodata.X_value,
+				                                                 'Y_value': _autodata.Y_value,
+				                                                 'Z_value': _autodata.Z_value,
+				                                                 'ScanningRate_value': _autodata.ScanningRate_value,
+				                                                 'FeedRate_value': _autodata.FeedRate_value,
+				                                                 'program_name': _autodata.program_name,
+				                                                 'if_exec_intr':_data.if_exec_intr,
+				                                                 'if_interrupt_intr':_data.if_interrupt_intr,
+				                                                 })
+			except:
+				pass
+	
+	CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData_text', False, datatype, '')
 	print('end Update_ExistingData_to_FineData...')
 	html = "<html><body>Update_ExistingData_to_FineData Cost Time %f.</body></html>" % (time.time() - t1)
 	return HttpResponse(html)
@@ -4723,8 +5618,14 @@ def OpenLog():
 	global logger
 	logger = logging.getLogger()
 	logger.setLevel(logging.DEBUG)
-	time_handler = logging.handlers.TimedRotatingFileHandler('.' + MEDIA_LOGFLE_URL + 'LAMDataServer%s.log'%datetime.date.today().strftime('%Y-%m-%d'),
-															 when='midnight', interval=1, backupCount=0)
+	# time_handler = logging.handlers.TimedRotatingFileHandler('.' + MEDIA_LOGFLE_URL + 'LAMDataServer%s.log'%datetime.date.today().strftime('%Y-%m-%d'),
+	# 														 when='midnight', interval=1, backupCount=0)
+	time_handler = logging.handlers.TimedRotatingFileHandler(
+		os.path.join(APP_PATH, '.'+MEDIA_LOGFLE_URL + 'LAMDataServer%s.log'%datetime.date.today().strftime('%Y-%m-%d')).replace('\\', '/'),
+		# '.' + MEDIA_LOGFLE_URL + 'LAMDataServer%s.log'%datetime.date.today().strftime('%Y-%m-%d'),
+		when='midnight',
+		interval=1,
+		backupCount=0)
 	fmt = '%(asctime)s - %(funcName)s - %(lineno)s - %(levelname)s - %(message)s'
 	formatter = logging.Formatter(fmt)
 	time_handler.setFormatter(formatter)

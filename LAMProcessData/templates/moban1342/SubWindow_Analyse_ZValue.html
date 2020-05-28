@@ -6,6 +6,7 @@
 <!--<script src="/assets/js/dark.js"></script>-->
 <script src="/assets/ECharts/incubator-echarts/theme/dark.js"></script>
 <script type="text/javascript">
+    var GUID=guid()
     function calMax(arr) {
         let max = 0;
         arr.forEach((el) => {
@@ -270,10 +271,23 @@
             effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
         });
 
-    }
 
+    }
+    var getRandomColor = function() {
+
+        return (function(m, s, c) {
+            return (c ? arguments.callee(m, s, c - 1) : '#') +
+                s[m.floor(m.random() * 16)]
+        })(Math, '0123456789abcdef', 5)
+    }
     function onLoadData()
     {
+        colordict = {
+            {% for code in MissionID_list_for_InitColorlist %}
+            '{{ code }}':getRandomColor()
+            {% if not forloop.last %},{% endif %}
+            {% endfor %}
+        }
         $.get('/LAMProcessData/QueryData/AnalyseLAMProcess_ZValue/',
             {'MissionID_list':'{{ MissionID_list }}'},
             function (data) {
@@ -287,9 +301,9 @@
                 myChart_3D.hideLoading();
                 option = {
                     grid3D: {
-                        postEffect:{
-                            enable:false					//开启特效
-                            },
+<!--                        postEffect:{-->
+<!--                            enable:false					//开启特效-->
+<!--                            },-->
                         viewControl:{
                                 projection: 'orthographic',		//默认为透视投影'perspective'，也支持设置为正交投影'orthographic'
                                 autoRotate: true,				//自动旋转
@@ -308,7 +322,7 @@
                     tooltip: {},
                     title: {
                         text: '成形高度-成形时间散点图',
-<!--                        subtext: '3D{{ smalltitle|upper }} ',-->
+<!--                        subtext: '{{ Product_code_list|safe }} ',-->
                         left: 'center'
                     },
                     xAxis3D: {
@@ -330,12 +344,22 @@
                             '工件Z坐标',
                             '层提升高度'
                         ],
-                        source: data['data_3D']
+                        source: data['data_3D'],
+<!--                        source: data['data_3D'].map(function(item) {-->
+<!--                              return [item[0], item[1], item[2], item[3], item[4], item[4]*10];-->
+<!--                            })-->
                     },
                     series: [
                         {
                             type: 'scatter3D',
                             symbolSize: symbolSize,
+                            itemStyle: {
+                                normal: {
+                                    color: function(params){
+                                        return colordict[params.data[0]];
+                                    },
+                                }
+                            },
                             encode: {
                                 x: 1,
                                 y: 2,
@@ -366,6 +390,7 @@
                             name: '{{ code|safe }}',
                             type: 'line',
                             animation: false,
+<!--                            color: colordict['{{ code }}'],-->
                             data:data['data_2D']['{{ code|safe }}']
                         }{% if not forloop.last %},{% endif %}
                         {% endfor %}
@@ -374,6 +399,25 @@
 
             }
         );
+<!--        &lt;!&ndash;每隔一段时间查询一次后台计算进度&ndash;&gt;-->
+<!--        var sitv = setInterval(function(){-->
+<!--            $.get(-->
+<!--                '{{ Common_URL.Query_ProgressBarValue_Analyse_ZValue_By_MissionIDList }}'+MissionID_list+'/',-->
+<!--                function(res, textStatus)-->
+<!--                {-->
+<!--&lt;!&ndash;                    document.getElementById("progress_bar").style.width=res['progress_rate'];&ndash;&gt;-->
+<!--                    myChart_3D.showLoading({-->
+<!--                        text: '数据正在努力加载...('+ res['progress_rate'] +')',-->
+<!--                        textStyle: {fontSize : 30 , color: '#444' },-->
+<!--                        effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}-->
+<!--                    });-->
+<!--                    if(res['progress_rate']=='100%'){-->
+<!--&lt;!&ndash;                        alert('reload Inspection from database');&ndash;&gt;-->
+<!--                        clearInterval(sitv);-->
+<!--                    }-->
+<!--                }-->
+<!--            )-->
+<!--        }, 1000);-->
 
 
     }

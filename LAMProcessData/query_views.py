@@ -1,9 +1,12 @@
 # -*- coding: gbk -*-
 from django.http import HttpResponse
+import operator
+from functools import reduce
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
 
+from django.db.models import F
 from django.db.models import Q
 from django.shortcuts import render, render_to_response
 
@@ -31,7 +34,9 @@ from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
-
+from django.db import connection
+from django.db.models import Min,Avg,Max,Sum,Count
+import os
 import json
 import random
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -43,8 +48,8 @@ import sys
 # from lamdataserver.LAMProcessData.views import CacheOperator
 from LAMProcessData.views import CacheOperator, logger, time_data1, time_data2
 import LAMProcessData.process_realtime_finedata as RT_FineData
-# import settings.MEDIA_URL as MEDIA_URL
-
+from lamdataserver.settings import PDFCode_OriginalImage_URL, BASE_DIR
+import cv2
 
 GLOBAL_CNCScreenInfo_IDList = []
 
@@ -223,10 +228,14 @@ def queryData_LAMProcessParameterTechInstSerial_Refresh(request):
 @login_required
 @csrf_exempt
 def queryData_LAMProductMission_Preview(request, ProductID):
-	all_datadict = LAMProcessMission.objects.filter(available=True, LAM_product=ProductID).order_by('arrangement_date')
+	LAMProduct_obj = LAMProduct.objects.get(id = ProductID)
+	
+	all_datadict = LAMProduct_obj.Product_LAMProcessMission.all().order_by('arrangement_date')
+	# all_datadict = LAMProcessMission.objects.filter(available=True, LAM_product=ProductID).order_by('arrangement_date')
 	Mission_dict = {
 		'id_%d' % data.id:
-			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
+			{'LAMProduct':LAMProduct_obj.product_code,
+			 'LAM_techinst_serial': str(data.LAM_techinst_serial),
 			 'arrangement_date': str(data.arrangement_date),
 			 'completion_date': str(data.completion_date) if str(data.completion_date) else ' '}
 		for data in all_datadict
@@ -261,6 +270,38 @@ def queryData_RawStockPhyChemTestMission_Preview(request, RawStockID):
 		'id_%d' % data.id:
 			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
 			 'commission_date': str(data.commission_date),
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(Mission_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_ProductNonDestructiveTestMission_Preview(request, ProductID):
+	all_datadict = NonDestructiveTest_Mission.objects.filter(available=True, LAM_product=ProductID).order_by('arrangement_date')
+	Mission_dict = {
+		'id_%d' % data.id:
+			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
+			 'arrangement_date': str(data.arrangement_date),
+			 'machining_state': str(data.machining_state),
+			 'heat_treatment_state': str(data.heat_treatment_state),
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(Mission_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_RawStockNonDestructiveTestMission_Preview(request, RawStockID):
+	all_datadict = NonDestructiveTest_Mission.objects.filter(available=True, RawStock=RawStockID).order_by('arrangement_date')
+	Mission_dict = {
+		'id_%d' % data.id:
+			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
+			 'arrangement_date': str(data.arrangement_date),
+			 # 'machining_state': str(data.machining_state),
+			 # 'heat_treatment_state': str(data.heat_treatment_state),
 			}
 		for data in all_datadict
 	}
@@ -451,6 +492,56 @@ def queryData_WorksectionId_By_MissionID(request, MissionID):
 	html = json.dumps(_dict, ensure_ascii=False)
 	return HttpResponse(html, content_type='application/json')
 
+# 根据任务编号查询是否存在开始结束时间
+@login_required
+@csrf_exempt
+def queryData_StartFinishTime_IfExists_By_MissionID(request, MissionID):
+	mission = LAMProcessMission.objects.get(id=MissionID)
+	worksection_id = mission.work_section.id
+	mission_cut = Process_Mission_timecut.objects.get(process_mission=mission)
+	try:
+		start_datetime = mission_cut.process_start_time.strftime("%Y-%m-%dT%H:%M:%S")
+		finish_datetime = mission_cut.process_finish_time.strftime("%Y-%m-%dT%H:%M:%S")
+		exists = True
+	except:
+		exists = False
+	_dict = {
+		'exists': exists,
+		'worksectionID': worksection_id,
+	}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+# 根据任务编号查询是否存在开始结束时间
+@login_required
+@csrf_exempt
+def queryData_StartFinishTime_IfExists_By_MissionIDList(request, MissionIDList):
+	def checkOneMission(MissionID):
+		mission = LAMProcessMission.objects.get(id=int(MissionID))
+		mission_cut = Process_Mission_timecut.objects.get(process_mission=mission)
+		try:
+			start_datetime = mission_cut.process_start_time.strftime("%Y-%m-%dT%H:%M:%S")
+			finish_datetime = mission_cut.process_finish_time.strftime("%Y-%m-%dT%H:%M:%S")
+			exists = True
+		except:
+			exists = False
+		return exists
+		
+	_MissionIDList = MissionIDList.split(',')
+	CheckResult = map(lambda id: (id, checkOneMission(id)), _MissionIDList)
+	NotExistsList = list(filter(lambda re:not re[1], CheckResult))
+	if len(NotExistsList)>0:
+		all_exist = False
+	else:
+		all_exist = True
+	_dict = {
+		'NotExistsList': [item[0] for item in NotExistsList],
+		'all_exist':all_exist,
+	}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+
 # 根据任务编号查询开始结束时间（若存在）
 @login_required
 @csrf_exempt
@@ -521,199 +612,241 @@ def queryData_Oxydata_By_MissionDatetime(request, MissionID, StartDateTime, Fini
 		html = json.dumps('', ensure_ascii=False)
 		return HttpResponse(html, content_type='application/json')
 
+
 # 以工段id、起止时间、时间间隔查询氧含量、激光功率、CNC-Z数据
 @login_required
 @csrf_exempt
 # @cache_page(60 * 15)
 def queryData_data_By_WorkSectionDatetime(request, ifForceRefresh, WorksectionID, StartDateTime, FinishDateTime, Interval):
-	def getcache(worksection, dateint, indexmodel, datatype):
-		key = 'DATA_WS%s_D%d_TP%s' % (worksection.id, dateint, datatype)
-		cachevalue = cache.get(key)
-		if not cachevalue:
-			qset = (
-					Q(work_section=worksection) &
-					Q(index_date_int=dateint)
-			)
-			# if datatype == 'oxygen':
-			# 	indexmodel = Process_Oxygendata_Date_Worksection_indexing
-			# elif datatype == 'laser':
-			# 	indexmodel = Process_Laserdata_Date_Worksection_indexing
-			# elif datatype == 'cncstatus':
-			# 	indexmodel = Process_CNCStatusdata_Date_Worksection_indexing
-			try:
-				_dataindex = indexmodel.objects.filter(qset)[0]
-				cachevalue = _dataindex.data_string
-			except:
-				logger.debug('getcache error, qset:%s, datatype:%s'%(str(qset),datatype))
-				pass
-			cache.set(key, cachevalue)
-		return cache.get(key)
-	def setcache(worksection, dateint, indexmodel, datatype, data):
-		setkey = 'DATA_WS%s_D%d_TP%s' % (worksection.id, dateint, datatype)
-		qset = (
-				Q(work_section=worksection) &
-				Q(index_date_int=dateint)
-		)
-		# if datatype == 'oxygen':
-		# 	indexmodelname = Process_Oxygendata_Date_Worksection_indexing
-		# elif datatype == 'laser':
-		# 	indexmodelname = Process_Laserdata_Date_Worksection_indexing
-		# elif datatype == 'cncstatus':
-		# 	indexmodelname = Process_CNCStatusdata_Date_Worksection_indexing
-		try:
-			_dataindex = indexmodel.objects.filter(qset)[0]
-			_dataindex.data_string = data
-			_dataindex.save()
-		except:
-			logger.debug('setcache error, qset:%s, datatype:%s' % (str(qset),datatype))
-		cache.set(setkey, data)
-	def make_minute_data(datatype, indexmodelname, datamodelname, dateint, thisdatetime):
-		'''获得以分钟索引的数据字典'''
-		num_per_page = 1000
-		try:
-			qset = (
-					Q(work_section=worksection) &
-					Q(index_date_int=dateint)
-			)
-			indexing_datalist = indexmodelname.objects.filter(qset)[0]
-			data_startid = indexing_datalist.data_start_id
-		except:
-			data_startid = 1
-		try:
-			qset = (
-					Q(work_section=worksection) &
-					Q(index_date_int=dateint)
-			)
-			indexing_datalist = indexmodelname.objects.filter(qset)[0]
-			data_finishid = indexing_datalist.data_finish_id
-		except:
-			data_finishid = datamodelname.objects.last().id
-
-		# 根据此日的数据起始终止id 时间int值筛选
-		Sum_i = int(((data_finishid - data_startid) / num_per_page) + 1)
-		IntervalDict = {}
-		_flagvalue = -1
-		_tempValue = _flagvalue
-		# 初始化为当天的00:00:00所对应的时间戳
-		_lastdatatime = int(time.mktime(thisdatetime.timetuple()))
-		# 时间戳最小值为当天00:00:00所对应的时间戳
-		MinStamp=int(time.mktime(thisdatetime.timetuple()))
-		# 时间戳最大值为第二天00:00:00所对应的时间戳
-		MaxStamp=int(time.mktime((thisdatetime+datetime.timedelta(days=1)).timetuple()))
-		for Current_i in range(Sum_i):
-			_start_id = data_startid + Current_i * num_per_page
-			_end_id = min(data_startid + (Current_i + 1) * num_per_page, data_finishid)
-			qset = (
-					Q(id__gte=_start_id) &
-					Q(id__lte=_end_id) &
-					Q(acquisition_timestamp__gte=MinStamp) &
-					Q(acquisition_timestamp__lt=MaxStamp) &
-					Q(work_section=worksection)
-			)
-			_list = datamodelname.objects.filter(qset).order_by('acquisition_timestamp')
-			for _d in _list:
-				try:
-					if datatype == 'oxygen':
-						_tempValue = max(_tempValue, _d.oxygen_value)
-					elif datatype == 'laser':
-						_tempValue = max(_tempValue, _d.laser_power)
-					elif datatype == 'cncstatus':
-						_tempValue = max(_tempValue, _d.Z_value)
-
-					if _d.acquisition_timestamp is None:
-						_d.acquisition_timestamp = int(time.mktime(_d.acquisition_time.timetuple()))
-						_d.save()
-					if _d.acquisition_timestamp - _lastdatatime > Interval:
-						_timekey = _d.acquisition_time.strftime('%Y-%m-%d %H:%M:00')
-						IntervalDict[_timekey] = (_tempValue if _tempValue != -1 else '')
-						_tempValue = -1
-						_lastdatatime = _d.acquisition_timestamp
-				except:
-					pass
-		return IntervalDict
-
-	def make_day_data(datatype, indexmodelname, datamodelname, dateint,reDict):
-		_date_dt = datetime.datetime.strptime(str(dateint), '%Y%m%d')
-		cachevalue = getcache(worksection, _dateint, indexmodelname, datatype)
-		# [str(_date + datetime.timedelta(seconds=i * 60)) for i in range(24 * 60)]
-		# [str(_date_dt + datetime.timedelta(seconds=i * 60)) for i in range(24 * 60)]
-		'''以Interval=60计(1分钟)'''
-		# _thisday_datetimelist = [str(_date_dt + datetime.timedelta(seconds=i * 60)) for i in range(24 * 60)]
-		_thisday_datetimelist = [str(_date_dt + datetime.timedelta(seconds=i * Interval)) for i in
-		                         range(int(24 * 60 * 60 * 1.0 / Interval) + 1)]
-		_thisday_allDataDict = {}
-		if int(ifForceRefresh) == 0 and cachevalue:
-			_thisday_valuelist = cachevalue.split(',')
-			'''处理缓存中的数据'''
-			for i in zip(_thisday_datetimelist, _thisday_valuelist):
-				_thisday_allDataDict[i[0]] = i[1]
-		else:
-			'''计算当天_date_dt(datetime)的数据,若数据库中无某一时刻的数据，则返回的Dict缺少该项'''
-			# make_minute_data(datatype, indexmodelname, datamodelname, dateint, thisdatetime):
-			_thisday_existedDataDict = make_minute_data(datatype, indexmodelname,
-			                                            datamodelname, _dateint, _date_dt)
-			'''更新至包含当天所有分钟的字典'''
-			_thisday_allDataDict = {i: '' for i in _thisday_datetimelist}
-			_thisday_allDataDict.update(_thisday_existedDataDict)
-			'''按时间排序，输出数据，存入cache'''
-			itemlist = sorted(_thisday_allDataDict.items(), key=lambda e: e[0])
-			_thisday_valuelist = []
-			for item in itemlist:
-				_thisday_valuelist.append(str(item[1]))
-			setcache(worksection, _dateint, indexmodelname, datatype, ','.join(_thisday_valuelist))
-		reDict.update(_thisday_allDataDict)
-		# print(reDict)
-		pass
-
-	'''函数正文'''
-	t1=time.time()
-	# print(t1)
+	t1 = time.time()
 	try:
 		datetime_Start = datetime.datetime.strptime(StartDateTime, '%Y-%m-%d%H:%M')
 		datetime_Finish = datetime.datetime.strptime(FinishDateTime, '%Y-%m-%d%H:%M')
 	except:
 		datetime_Start = datetime.datetime.strptime(StartDateTime, '%Y-%m-%d%H:%M:%S')
 		datetime_Finish = datetime.datetime.strptime(FinishDateTime, '%Y-%m-%d%H:%M:%S')
-	# datetimelist = []
-	Interval=int(Interval)
-	deltaT = datetime.timedelta(seconds=Interval)
-	deltaTime = datetime_Finish-datetime_Start
-	deltaSeconds = deltaTime.days*24*60*60+deltaTime.seconds
-	datetimelist=[str(datetime_Start+deltaT*i) for i in range(int(deltaSeconds*1.0/Interval)+1)]
-
-	worksection = Worksection.objects.get(id=WorksectionID)
-
-	t2 = time.time()
-	try:
-		date_start = datetime_Start.date()
-		date_finish = datetime_Finish.date()
-		delta_days = (date_finish-date_start).days
-		reDict_Oxygen = {i: '' for i in datetimelist}
-		reDict_Laser = {i: '' for i in datetimelist}
-		reDict_CNCZ = {i: '' for i in datetimelist}
-
-		# 检查每天的记录是否在缓存内
-		for i in range(delta_days+1):
-			_date= date_start + datetime.timedelta(days=i)
-			_dateint = int(_date.strftime('%Y%m%d'))
-			make_day_data('oxygen', Process_Oxygendata_Date_Worksection_indexing, Oxygendata, _dateint,reDict_Oxygen)
-			make_day_data('laser', Process_Laserdata_Date_Worksection_indexing, Laserdata, _dateint, reDict_Laser)
-			make_day_data('cncstatus', Process_CNCStatusdata_Date_Worksection_indexing, CNCProcessStatus, _dateint, reDict_CNCZ)
-	except:
-		reDict_Oxygen = {}
-		reDict_Laser = {}
-		reDict_CNCZ = {}
-	_dict = {
-		'oxydata': list(reDict_Oxygen.values()),
-		'laserdata':list(reDict_Laser.values()),
-		'cnczdata':list(reDict_CNCZ.values()),
-		'datetime': datetimelist,
-	}
-	# print(reDict['2019-11-19 11:35:00'])
+	# Interval = int(Interval)
+	Timestamp_Start = int(datetime_Start.timestamp())
+	Timestamp_Finish = int(datetime_Finish.timestamp())
+	# finadata_model = RT_FineData.Realtime_FineData.getFineDataModel_ByWSID(str(WorksectionID))
+	# RecordID_Start = finadata_model.objects.get(acquisition_timestamp = Timestamp_Start).id
+	# RecordID_Finish = finadata_model.objects.get(acquisition_timestamp = Timestamp_Finish).id
+	with connection.cursor() as cursor:
+		# cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
+		cursor.execute(
+			"SELECT DATE_FORMAT(concat(date(acquisition_datetime),' ',hour(acquisition_datetime),':',floor( minute(acquisition_datetime) )) ,'%%Y-%%m-%%d %%H:%%i') as dataStartTime, max(oxygen_value) as oxygen_value, max(laser_power) as laser_power, min(Z_value) as Z_value FROM lamdataserver.lamprocessdata_process_realtime_finedata_by_worksectionid_%s where acquisition_timestamp > %d and acquisition_timestamp < %d group by DATE(acquisition_datetime),HOUR(acquisition_datetime),MINUTE(acquisition_datetime);" % (
+				WorksectionID, Timestamp_Start, Timestamp_Finish))
+		row = cursor.fetchall()
+		datetimelist = [i[0] for i in row]
+		oxydatalist = [i[1] if i[1]!= -1 else None for i in row]
+		laserdatalist = [i[2] if i[2]!= -1 else None for i in row]
+		cnczdatalist = [i[3] for i in row]
+	
+		_dict = {
+			'oxydata': oxydatalist,
+			'laserdata': laserdatalist,
+			'cnczdata': cnczdatalist,
+			'datetime': datetimelist,
+		}
+		# print(reDict['2019-11-19 11:35:00'])
 	html = json.dumps(_dict, ensure_ascii=False)
-	# print(html)
-	print(time.time()-t1)
+	print(time.time() - t1)
 	return HttpResponse(html, content_type='application/json')
+	
+
+# # 以工段id、起止时间、时间间隔查询氧含量、激光功率、CNC-Z数据
+# @login_required
+# @csrf_exempt
+# # @cache_page(60 * 15)
+# def queryData_data_By_WorkSectionDatetime(request, ifForceRefresh, WorksectionID, StartDateTime, FinishDateTime, Interval):
+# 	def getcache(worksection, dateint, indexmodel, datatype):
+# 		key = 'DATA_WS%s_D%d_TP%s' % (worksection.id, dateint, datatype)
+# 		cachevalue = cache.get(key)
+# 		if not cachevalue:
+# 			qset = (
+# 					Q(work_section=worksection) &
+# 					Q(index_date_int=dateint)
+# 			)
+# 			# if datatype == 'oxygen':
+# 			# 	indexmodel = Process_Oxygendata_Date_Worksection_indexing
+# 			# elif datatype == 'laser':
+# 			# 	indexmodel = Process_Laserdata_Date_Worksection_indexing
+# 			# elif datatype == 'cncstatus':
+# 			# 	indexmodel = Process_CNCStatusdata_Date_Worksection_indexing
+# 			try:
+# 				_dataindex = indexmodel.objects.filter(qset)[0]
+# 				cachevalue = _dataindex.data_string
+# 			except:
+# 				logger.debug('getcache error, qset:%s, datatype:%s'%(str(qset),datatype))
+# 				pass
+# 			cache.set(key, cachevalue)
+# 		return cache.get(key)
+# 	def setcache(worksection, dateint, indexmodel, datatype, data):
+# 		setkey = 'DATA_WS%s_D%d_TP%s' % (worksection.id, dateint, datatype)
+# 		qset = (
+# 				Q(work_section=worksection) &
+# 				Q(index_date_int=dateint)
+# 		)
+# 		# if datatype == 'oxygen':
+# 		# 	indexmodelname = Process_Oxygendata_Date_Worksection_indexing
+# 		# elif datatype == 'laser':
+# 		# 	indexmodelname = Process_Laserdata_Date_Worksection_indexing
+# 		# elif datatype == 'cncstatus':
+# 		# 	indexmodelname = Process_CNCStatusdata_Date_Worksection_indexing
+# 		try:
+# 			_dataindex = indexmodel.objects.filter(qset)[0]
+# 			_dataindex.data_string = data
+# 			_dataindex.save()
+# 		except:
+# 			logger.debug('setcache error, qset:%s, datatype:%s' % (str(qset),datatype))
+# 		cache.set(setkey, data)
+# 	def make_minute_data(datatype, indexmodelname, datamodelname, dateint, thisdatetime):
+# 		'''获得以分钟索引的数据字典'''
+# 		num_per_page = 1000
+# 		try:
+# 			qset = (
+# 					Q(work_section=worksection) &
+# 					Q(index_date_int=dateint)
+# 			)
+# 			indexing_datalist = indexmodelname.objects.filter(qset)[0]
+# 			data_startid = indexing_datalist.data_start_id
+# 		except:
+# 			data_startid = 1
+# 		try:
+# 			qset = (
+# 					Q(work_section=worksection) &
+# 					Q(index_date_int=dateint)
+# 			)
+# 			indexing_datalist = indexmodelname.objects.filter(qset)[0]
+# 			data_finishid = indexing_datalist.data_finish_id
+# 		except:
+# 			data_finishid = datamodelname.objects.last().id
+#
+# 		# 根据此日的数据起始终止id 时间int值筛选
+# 		Sum_i = int(((data_finishid - data_startid) / num_per_page) + 1)
+# 		IntervalDict = {}
+# 		_flagvalue = -1
+# 		_tempValue = _flagvalue
+# 		# 初始化为当天的00:00:00所对应的时间戳
+# 		_lastdatatime = int(time.mktime(thisdatetime.timetuple()))
+# 		# 时间戳最小值为当天00:00:00所对应的时间戳
+# 		MinStamp=int(time.mktime(thisdatetime.timetuple()))
+# 		# 时间戳最大值为第二天00:00:00所对应的时间戳
+# 		MaxStamp=int(time.mktime((thisdatetime+datetime.timedelta(days=1)).timetuple()))
+# 		for Current_i in range(Sum_i):
+# 			_start_id = data_startid + Current_i * num_per_page
+# 			_end_id = min(data_startid + (Current_i + 1) * num_per_page, data_finishid)
+# 			qset = (
+# 					Q(id__gte=_start_id) &
+# 					Q(id__lte=_end_id) &
+# 					Q(acquisition_timestamp__gte=MinStamp) &
+# 					Q(acquisition_timestamp__lt=MaxStamp) &
+# 					Q(work_section=worksection)
+# 			)
+# 			_list = datamodelname.objects.filter(qset).order_by('acquisition_timestamp')
+# 			for _d in _list:
+# 				try:
+# 					if datatype == 'oxygen':
+# 						_tempValue = max(_tempValue, _d.oxygen_value)
+# 					elif datatype == 'laser':
+# 						_tempValue = max(_tempValue, _d.laser_power)
+# 					elif datatype == 'cncstatus':
+# 						_tempValue = max(_tempValue, _d.Z_value)
+#
+# 					if _d.acquisition_timestamp is None:
+# 						_d.acquisition_timestamp = int(time.mktime(_d.acquisition_time.timetuple()))
+# 						_d.save()
+# 					if _d.acquisition_timestamp - _lastdatatime > Interval:
+# 						_timekey = _d.acquisition_time.strftime('%Y-%m-%d %H:%M:00')
+# 						IntervalDict[_timekey] = (_tempValue if _tempValue != -1 else '')
+# 						_tempValue = -1
+# 						_lastdatatime = _d.acquisition_timestamp
+# 				except:
+# 					pass
+# 		return IntervalDict
+#
+# 	def make_day_data(datatype, indexmodelname, datamodelname, dateint,reDict):
+# 		_date_dt = datetime.datetime.strptime(str(dateint), '%Y%m%d')
+# 		cachevalue = getcache(worksection, _dateint, indexmodelname, datatype)
+# 		# [str(_date + datetime.timedelta(seconds=i * 60)) for i in range(24 * 60)]
+# 		# [str(_date_dt + datetime.timedelta(seconds=i * 60)) for i in range(24 * 60)]
+# 		'''以Interval=60计(1分钟)'''
+# 		# _thisday_datetimelist = [str(_date_dt + datetime.timedelta(seconds=i * 60)) for i in range(24 * 60)]
+# 		_thisday_datetimelist = [str(_date_dt + datetime.timedelta(seconds=i * Interval)) for i in
+# 		                         range(int(24 * 60 * 60 * 1.0 / Interval) + 1)]
+# 		_thisday_allDataDict = {}
+# 		if int(ifForceRefresh) == 0 and cachevalue:
+# 			_thisday_valuelist = cachevalue.split(',')
+# 			'''处理缓存中的数据'''
+# 			for i in zip(_thisday_datetimelist, _thisday_valuelist):
+# 				_thisday_allDataDict[i[0]] = i[1]
+# 		else:
+# 			'''计算当天_date_dt(datetime)的数据,若数据库中无某一时刻的数据，则返回的Dict缺少该项'''
+# 			# make_minute_data(datatype, indexmodelname, datamodelname, dateint, thisdatetime):
+# 			_thisday_existedDataDict = make_minute_data(datatype, indexmodelname,
+# 			                                            datamodelname, _dateint, _date_dt)
+# 			'''更新至包含当天所有分钟的字典'''
+# 			_thisday_allDataDict = {i: '' for i in _thisday_datetimelist}
+# 			_thisday_allDataDict.update(_thisday_existedDataDict)
+# 			'''按时间排序，输出数据，存入cache'''
+# 			itemlist = sorted(_thisday_allDataDict.items(), key=lambda e: e[0])
+# 			_thisday_valuelist = []
+# 			for item in itemlist:
+# 				_thisday_valuelist.append(str(item[1]))
+# 			setcache(worksection, _dateint, indexmodelname, datatype, ','.join(_thisday_valuelist))
+# 		reDict.update(_thisday_allDataDict)
+# 		# print(reDict)
+# 		pass
+#
+# 	'''函数正文'''
+# 	t1=time.time()
+# 	# print(t1)
+# 	try:
+# 		datetime_Start = datetime.datetime.strptime(StartDateTime, '%Y-%m-%d%H:%M')
+# 		datetime_Finish = datetime.datetime.strptime(FinishDateTime, '%Y-%m-%d%H:%M')
+# 	except:
+# 		datetime_Start = datetime.datetime.strptime(StartDateTime, '%Y-%m-%d%H:%M:%S')
+# 		datetime_Finish = datetime.datetime.strptime(FinishDateTime, '%Y-%m-%d%H:%M:%S')
+# 	# datetimelist = []
+# 	Interval=int(Interval)
+# 	deltaT = datetime.timedelta(seconds=Interval)
+# 	deltaTime = datetime_Finish-datetime_Start
+# 	deltaSeconds = deltaTime.days*24*60*60+deltaTime.seconds
+# 	datetimelist=[str(datetime_Start+deltaT*i) for i in range(int(deltaSeconds*1.0/Interval)+1)]
+#
+# 	worksection = Worksection.objects.get(id=WorksectionID)
+#
+# 	t2 = time.time()
+# 	try:
+# 		date_start = datetime_Start.date()
+# 		date_finish = datetime_Finish.date()
+# 		delta_days = (date_finish-date_start).days
+# 		reDict_Oxygen = {i: '' for i in datetimelist}
+# 		reDict_Laser = {i: '' for i in datetimelist}
+# 		reDict_CNCZ = {i: '' for i in datetimelist}
+#
+# 		# 检查每天的记录是否在缓存内
+# 		for i in range(delta_days+1):
+# 			_date= date_start + datetime.timedelta(days=i)
+# 			_dateint = int(_date.strftime('%Y%m%d'))
+# 			make_day_data('oxygen', Process_Oxygendata_Date_Worksection_indexing, Oxygendata, _dateint,reDict_Oxygen)
+# 			make_day_data('laser', Process_Laserdata_Date_Worksection_indexing, Laserdata, _dateint, reDict_Laser)
+# 			make_day_data('cncstatus', Process_CNCStatusdata_Date_Worksection_indexing, CNCProcessStatus, _dateint, reDict_CNCZ)
+# 	except:
+# 		reDict_Oxygen = {}
+# 		reDict_Laser = {}
+# 		reDict_CNCZ = {}
+# 	_dict = {
+# 		'oxydata': list(reDict_Oxygen.values()),
+# 		'laserdata':list(reDict_Laser.values()),
+# 		'cnczdata':list(reDict_CNCZ.values()),
+# 		'datetime': datetimelist,
+# 	}
+# 	# print(reDict['2019-11-19 11:35:00'])
+# 	html = json.dumps(_dict, ensure_ascii=False)
+# 	# print(html)
+# 	print(time.time()-t1)
+# 	return HttpResponse(html, content_type='application/json')
 
 # 以工段id、起止时间、时间间隔查询氧含量数据
 @login_required
@@ -826,12 +959,17 @@ def queryData_Analysedata_Zvalue_By_MissionIDList(request):
 
 	_missionID_list_str = request.GET.get('MissionID_list')
 	_missionID_list = _missionID_list_str.split(',')
-	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
-	                      in _missionID_list]
+	_product_code_list = [
+		'%s (id:%s)' % (
+			','.join(map(lambda p: p.product_code, LAMProcessMission.objects.get(id=int(id)).LAM_product.all())),
+			id
+		) for id in _missionID_list
+	]
 	result = map(RT_FineData.AnalyseData.AnalyseData_ZValue_ByMissionID, _missionID_list)
 	jsondata_list = list(result)
 	data_3D = []
 	data_2D = {}
+	data_3D_dict = {}
 
 	try:
 		# 取时间最长的任务
@@ -839,6 +977,7 @@ def queryData_Analysedata_Zvalue_By_MissionIDList(request):
 		_max_minuteIndex_list = list(map(lambda l:max(l) ,_minuteIndex_list))
 		_max_minuteIndex = max(_max_minuteIndex_list)
 		data_2D['MinuteIndex'] = _minuteIndex_list[_max_minuteIndex_list.index(_max_minuteIndex)]
+		data_3D_dict['MinuteIndex'] = data_2D['MinuteIndex']
 	except:
 		pass
 
@@ -862,8 +1001,12 @@ def queryData_Analysedata_AccumulateData_By_MissionIDList(request):
 	t1 = time.time()
 	_missionID_list_str = request.GET.get('MissionID_list')
 	_missionID_list = _missionID_list_str.split(',')
-	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
-	                      in _missionID_list]
+	_product_code_list = [
+		'%s (id:%s)' % (
+			','.join(map(lambda p: p.product_code, LAMProcessMission.objects.get(id=int(id)).LAM_product.all())),
+			id
+		) for id in _missionID_list
+	]
 	''''''
 	# ?????
 	result = map(RT_FineData.AnalyseData.AnalyseData_AccumulateData_ByMissionID, _missionID_list)
@@ -886,8 +1029,12 @@ def queryData_Analysedata_LayerData_By_MissionIDList(request):
 	t1 = time.time()
 	_missionID_list_str = request.GET.get('MissionID_list')
 	_missionID_list = _missionID_list_str.split(',')
-	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
-	                      in _missionID_list]
+	_product_code_list = [
+		'%s (id:%s)' % (
+			','.join(map(lambda p: p.product_code, LAMProcessMission.objects.get(id=int(id)).LAM_product.all())),
+			id
+		) for id in _missionID_list
+	]
 	''''''
 	result = map(RT_FineData.AnalyseData.AnalyseData_LayerData_ByMissionID, _missionID_list)
 	jsondata_list = list(result)
@@ -933,8 +1080,10 @@ def queryData_Analysedata_ScanningRate3D_By_MissionIDList(request):
 	t1 = time.time()
 	_missionID_list_str = request.GET.get('MissionID_list')
 	_missionID_list = _missionID_list_str.split(',')
-	_product_code_list = ['%s (id:%s)' % (LAMProcessMission.objects.get(id=int(id)).LAM_product.product_code, id) for id
-	                      in _missionID_list]
+	_product_code_list = ['%s (id:%s)' % (
+		','.join(map(lambda p: p.product_code,LAMProcessMission.objects.get(id=int(id)).LAM_product.all())),
+		id
+	) for id in _missionID_list]
 	''''''
 	result = map(RT_FineData.AnalyseData.AnalyseData_LayerData_ByMissionID, _missionID_list)
 	jsondata_list = list(result)
@@ -1141,12 +1290,37 @@ def queryData_RealTimeRecord_by_WorksectionID(requests, WorksectionID):
 
 # print('query_view.py end')
 
+def queryData_GetChicharactersImg(requests, ImageFileName):
+	# imagepath = os.path.join(BASE_DIR, PDFCode_OriginalImage_URL) + ImageFileName
+	imagepath = BASE_DIR+PDFCode_OriginalImage_URL.replace('/','\\') + ImageFileName
+	img = cv2.imread(imagepath)
+	img = cv2.resize(img, (int(31 * img.shape[1]/img.shape[0]), int(31)), interpolation=cv2.INTER_CUBIC)
+	cv2.imwrite(imagepath+'_31H', img)  # 存储路径
+	with open(imagepath+'_31H', 'rb') as f:
+		image_data = f.read()
+	return HttpResponse(image_data, content_type="image/png")
+
+def queryData_GetDefectPicture(requests, DefectPictureID):
+	defectPic_obj = DefectPicture.objects.get(id = DefectPictureID)
+	pic_file = defectPic_obj.picture
+	# image_data = cv2.imread(BASE_DIR + path)
+	return HttpResponse(pic_file, content_type="image/png")
+
 def queryData_ProgressBarValue(Type,ID):
 	cache_value = CacheOperator(Type, True, ID, None)
 	if cache_value == None:
 		cache_value = 0.0
 	_dict = {
 		'progress_rate':'%.5f%%'%(100*cache_value),
+	}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return html
+def queryData_ProgressBarText(Type,ID):
+	cache_text= CacheOperator(Type, True, ID, None)
+	if cache_text == None:
+		cache_text =''
+	_dict = {
+		'progress_text':cache_text,
 	}
 	html = json.dumps(_dict, ensure_ascii=False)
 	return html
@@ -1195,4 +1369,130 @@ def queryData_ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID(reque
 	# 	'progress_rate':'%.5f%%'%(100*cache_value),
 	# }
 	html = queryData_ProgressBarValue('ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID', GUID)
+	return HttpResponse(html, content_type='application/json')\
+
+@login_required
+@csrf_exempt
+def queryData_ProgressBarValue_Update_ExistingData_to_FineData(request, dataType):
+	cache_value = CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData', True, dataType, None)
+	if cache_value == None:
+		cache_value = 0.0
+	cache_text = CacheOperator('ProgressBarValue_Update_ExistingData_to_FineData_text', True, dataType, None)
+	if cache_text == None:
+		cache_text = ''
+		
+	_dict = {
+		'progress_rate': '%.5f%%' % (100 * cache_value),
+		'progress_text': cache_text
+	}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_Statistic_RawStockFlow(request):
+	filter_start_date = datetime.datetime.strptime(request.POST['filter_start_date'],"%Y-%m-%d")
+	filter_finish_date = datetime.datetime.strptime(request.POST['filter_finish_date'],"%Y-%m-%d")
+	filter_product_code_list = request.POST['filter_product_code_list'].split(',') if request.POST['filter_product_code_list']!= 'null' else []
+	filter_product_category_list = request.POST['filter_product_category_list'].split(',') if request.POST['filter_product_category_list']!= 'null' else []
+	filter_techinst_serial_list = request.POST['filter_techinst_serial_list'].split(',') if request.POST['filter_techinst_serial_list']!= 'null' else []
+	# ('worksection', '成形工段'),
+	# ('productcategory', '产品类别'),
+	# ('productcode', '产品编号'),
+	cluster_item_list = request.POST['cluster_item_list'].split(',') if request.POST['cluster_item_list']!= 'null' else []
+	# qQueryList = [Q(message_time__range=messageTimeRange), Q(message_name__in=GroupList)]
+	qQueryList = [Q(available=True), Q(send_time__gte=filter_start_date), Q(send_time__lte=filter_finish_date)]
+	if len(filter_product_code_list)>0: qQueryList.append(Q(LAM_mission__LAM_product__id__in=filter_product_code_list))
+	if len(filter_product_category_list)>0: qQueryList.append(Q(LAM_mission__LAM_product__product_category__id__in=filter_product_category_list))
+	if len(filter_techinst_serial_list)>0: qQueryList.append(Q(LAM_mission__LAM_techinst_serial__id__in=filter_techinst_serial_list))
+	# qset = (
+	# 		Q(send_time__gte=filter_start_date) &
+	# 		Q(send_time__lte=filter_finish_date) &
+	# 		Q(LAM_mission__LAM_product__id__in=filter_product_code_list) &
+	# 		Q(LAM_mission__LAM_product__product_category__id__in=filter_product_category_list) &
+	# 		Q(LAM_mission__LAM_techinst_serial__id__in=filter_techinst_serial_list)
+	#
+	# )
+	
+	
+	# fields.append('id')
+	# fields.append('raw_stock_sent_amount')
+	# fields.append('send_addition__raw_stock_sent_amount')
+	
+	# a=RawStockSendRetrieve.objects.filter(qset).values(*fields)
+	# a=RawStockSendRetrieve.objects.filter(reduce(operator.and_, qQueryList)).values(*fields)
+	queryset = RawStockSendRetrieve.objects.filter(reduce(operator.and_, qQueryList)).values(
+			'id',
+			'LAM_mission',
+			'LAM_mission__work_section__code',
+			'LAM_mission__LAM_techinst_serial',
+			'raw_stock'
+		).annotate(
+		additionsend=Sum('send_addition__raw_stock_sent_amount', output_field=models.BooleanField()),
+		count=Count('send_addition__raw_stock_sent_amount'), firstsend=Avg('raw_stock_sent_amount'),
+		retrieve_unused=Avg('raw_stock_unused_amount'), retrieve_primary=Avg('raw_stock_primaryretrieve_amount'),
+		retrieve_secondary=Avg('raw_stock_secondaryretrieve_amount'),
+		)
+	def addSummaryData(data_dict):
+		data_dict['Sum_Used']=data_dict['firstsend'] + \
+		                     (data_dict['additionsend'] if data_dict['additionsend'] is not None else 0) - \
+		                     (data_dict['retrieve_unused'] if data_dict['retrieve_unused'] is not None else 0)
+		data_dict['Sum_Retrieve'] = (data_dict['retrieve_primary'] if  data_dict['retrieve_primary'] is not None else 0) + \
+		                            (data_dict['retrieve_secondary'] if data_dict['retrieve_secondary'] is not None else 0)
+		data_dict['str_techinst_serial'] = str(LAM_TechInst_Serial.objects.get(id=data_dict['LAM_mission__LAM_techinst_serial']))
+		data_dict['str_raw_stock'] = str(RawStock.objects.get(id=data_dict['raw_stock']))
+		data_dict['str_product_code'] = ','.join(map(str,LAMProcessMission.objects.get(id=data_dict['LAM_mission']).LAM_product.all()))
+		data_dict['str_product_category'] = ','.join(list(set(list(map(lambda p:str(p.product_category), LAMProcessMission.objects.get(id=data_dict['LAM_mission']).LAM_product.all())))))
+		
+	list(map(addSummaryData, list(queryset)))
+	# queryset.values(*cluster_fields)
+	
+	cluster_fields = []
+	thead_fields_text = ['合计用粉', '合计收粉']
+	tbody_fields_name = ['Sum_Used', 'Sum_Retrieve']
+	if len(cluster_item_list) == 0:
+		thead_fields_text = ['零件编号', '生产任务', '成形工段', '合计用粉', '合计收粉']
+		tbody_fields_name = ['str_product_code', 'str_techinst_serial', 'LAM_mission__work_section__code',
+		                     'Sum_Used', 'Sum_Retrieve']
+	if 'worksection' in cluster_item_list:
+		cluster_fields.append('LAM_mission__work_section__code')
+		thead_fields_text.insert(-2, '成形工段')
+		tbody_fields_name.insert(-2, 'LAM_mission__work_section__code')
+	if 'productcategory' in cluster_item_list:
+		cluster_fields.append('str_product_category')
+		thead_fields_text.insert(-2, '零件类别')
+		tbody_fields_name.insert(-2, 'str_product_category')
+	if 'productcode' in cluster_item_list:
+		cluster_fields.append('str_product_code')
+		thead_fields_text.insert(-2, '零件编号')
+		tbody_fields_name.insert(-2, 'str_product_code')
+	
+	# 若进行聚类操作，则将同类记录合并到一起
+	if len(cluster_item_list) != 0:
+		cluster_temp_dict = {}
+		for item in queryset:
+			key = tuple( item[i] for i in cluster_fields)
+			if key not in cluster_temp_dict:
+				cluster_temp_dict[key] = [item['Sum_Used'], item['Sum_Retrieve']]
+			else:
+				cluster_temp_dict[key] = list(map(lambda a,b:(a if a else 0) + (b if b else 0), cluster_temp_dict[key], [item['Sum_Used'], item['Sum_Retrieve']]))
+		queryset = [list(key)+value for key,value in cluster_temp_dict.items()]
+		queryset = [{i[0]:i[1] for i in zip( tbody_fields_name, data)} for data in queryset]
+		
+	
+	redict = {
+		'thead_fields': thead_fields_text,
+		'tbody_fields_name': tbody_fields_name,
+		'tbody_data': list(queryset)
+	}
+	
+	html = json.dumps(redict, ensure_ascii=False)
+	
+	return HttpResponse(html, content_type='application/json')
+
+'''暂时未用进度条功能'''
+@login_required
+@csrf_exempt
+def queryData_ProgressBarValue_Analyse_ZValue_By_MissionIDList(request, MissionIDList):
+	html = queryData_ProgressBarValue('ProgressBarValue_Analyse_ZValue_By_MissionIDList', MissionIDList)
 	return HttpResponse(html, content_type='application/json')

@@ -89,7 +89,9 @@
                                     <th align="center" style="width: 35px">选择</th>
                                     <th align="center" style="width: 35px">ID</th>
                                     {% for field in form %}
-                                    <th align="center">{{ field.label }}</th>
+                                    <th align="center">
+                                        {{ field.label }}
+                                    </th>
                                     {% endfor %}
                                 </tr>
                                 </thead>
@@ -102,9 +104,12 @@
                                                    value="{{record.id}}">
                                         </div>
                                     </td>
-                                    <!--{{ record }}-->
-                                    {% for field in record.values %}
-                                    <td>{{ field }}</td>
+<!--                                    {{ record }}-->
+<!--                                    {% for field in record.values %}-->
+<!--                                    <td>{{ field }}</td>-->
+<!--                                    {% endfor %}-->
+                                    {% for key, field in record.items %}
+                                    <td>{% if ImageField %}{% ifequal ImageField key %}<img src="{{ field }}" />{% endifequal %}{% ifnotequal ImageField key %}{{ field }}{% endifnotequal %}{% else %}{{ field }}{% endif %} </td>
                                     {% endfor %}
                                 </tr>
                                 {% endfor %}
@@ -116,12 +121,16 @@
                             <a href='send'>
                                 <button type="button" class="btn btn btn-success" name="item_add">发放</button>
                             </a>
+<!--                            <button type="submit" class="btn btn-primary" name="item_retrieve" formaction='send_addition/'>选中追加发放-->
+<!--                            </button>-->
                             <button type="submit" class="btn btn-primary" name="item_retrieve" formaction='retrieve/'>选中归还
                             </button>
                             {% else %}
+                            {% ifnotequal form.modelname 'PDFImageCode' %}
                             <a href='add'>
                                 <button type="button" class="btn btn btn-success" name="item_add">新增</button>
                             </a>
+                            {% endifnotequal %}
                             {% endifequal %}
                             {% ifequal form.modelname 'LAMProcessMission' %}
                             <button type="submit" class="btn btn-primary" name="item_finish" formaction='finish/'>选中完成
@@ -130,11 +139,12 @@
                             <button type="submit" class="btn btn-primary" name="item_edit" formaction='edit/'>选中编辑
                             </button>
                             {% endifequal %}
-
+                            {% ifnotequal form.modelname 'PDFImageCode' %}
                             <button type="button" class="btn btn-danger" name="item_delete"
                                     onclick="confirmDelete()">
                                 选中冻结
                             </button>
+                            {% endifnotequal %}
                             {% ifequal form.modelname 'RawStockSendRetrieve' %}
                             <div class="alert alert-info">
 									<strong>注意！</strong> 归还选项仅对粉末有效。
@@ -166,7 +176,8 @@
         var selectItemName=''
         var ItemList_id=new Array({% for record in all_entries %}{{ record.id|safe }}{% if not forloop.last %},{% endif %}{% endfor %});
         var ItemList_name=new Array({% for record in all_entries %}"{{ record|safe }}"{% if not forloop.last %},{% endif %}{% endfor %});
-
+        function load(){
+        }
         function Post(URL, PARAMTERS) {
             //创建form表单
             var temp_form = document.createElement("form");

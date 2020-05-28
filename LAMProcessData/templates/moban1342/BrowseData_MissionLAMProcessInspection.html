@@ -101,6 +101,32 @@
         }
     }
 
+    function MissionInspection(){
+        RefreshValue();
+        if(selectItemID!=-1)
+        {
+            $.get(
+                '{{ Common_URL.Query_StartFinishTime_IfExists_By_MissionID }}'+selectItemID+'/',
+                function(data, textStatus)
+                {
+                    this;
+                    if(data.exists == true){
+                        shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ProcessMissionInspection_LAMProcess }}'+selectItemID+'/',ifMax=true, window_W=1899,window_H=1250);
+                    }
+                    else{
+
+                        document.getElementById('WarningDiv').innerHTML ="<strong>错误！</strong>选中任务的起止时间不完整，请前往激光成形班组<a target='_blank' href='/LAMProcessData/ProcessRecords/WorksectionOperate_by_id/"+data.worksectionID+"/'>结束当前任务</a>或前往生产管理<a target='_blank' href='/LAMProcessData/ProcessRecords/LAMProcessMission/CutRecordsByTime/'>对任务时间重新划分</a>。"
+                        document.getElementById('WarningDiv').style.display='block';
+                        setTimeout( function(){
+                                document.getElementById('WarningDiv').style.display='none';
+                            }, 5 * 1000 );
+                    }
+                }
+            );
+
+        }
+
+    }
 
     <!--//弹出一个询问框，有确定和取消按钮-->
     <!--function confirmDelete() {-->
@@ -459,18 +485,16 @@
                                     <!--onclick="shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ChemicalElement_Add }}'+'{{ form.itemid }}/'+'{{ If_Product_Test }}/');">-->
                                     <!--增加-->
                                     <!--</button>-->
-                                    <button type="button" class="btn btn-primary" name="item_edit" onclick="
-                                        RefreshValue();
-                                        if(selectItemID!=-1)
-                                        {
-                                            shownewpage('{{ Common_URL.SubWindow_URL_InspectionRecords_ProcessMissionInspection_LAMProcess }}'+selectItemID+'/',ifMax=true, window_W=1899,window_H=1250);
-                                        }">
+                                    <button type="button" class="btn btn-primary" name="item_edit" onclick="MissionInspection();">
                                         过检选中记录
                                     </button>
                                     <!--<button type="button" class="btn btn-danger" name="item_delete"-->
                                             <!--onclick="confirmDelete();">-->
                                         <!--选中冻结-->
                                     <!--</button>-->
+                                    <div id="WarningDiv" class="alert alert-danger" style="display: none">
+                                        <strong>错误！</strong>选中任务的起止时间不完整，请结束当前任务或<a target="_blank" href="/LAMProcessData/ProcessRecords/LAMProcessMission/CutRecordsByTime/">重新划分</a>。
+                                    </div>
                                     {% if messages %}
                                     <script>
                                             {% for msg in messages %}

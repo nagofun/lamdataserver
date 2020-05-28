@@ -269,6 +269,7 @@
             },
             title: {
                 text: '激光成形过程位置坐标-瞬时扫描速率散点图',
+                subtext: "零件编号：{{ Product_code_list|safe }}",
 <!--            subtext: '3D{{ smalltitle|upper }} ',-->
                 left: 'center'
             },
@@ -319,7 +320,7 @@
                         'ZValue',
                         'ScanningRate',
                         ],
-                    data:data,
+                    data:data.filter(function(e){ return e[2]!=null && e[3]!=null && e[4]!=null && e[5]!=null }),
                     encode: {
                             x: 'XValue',
                             y: 'YValue',

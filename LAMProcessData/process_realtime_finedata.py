@@ -9,9 +9,11 @@ import datetime
 import threading
 from django.core.cache import cache
 from django.db.models import Q
+from django.db.models import Min,Avg,Max,Sum,Count
 import json
 from django.core.files.base import ContentFile
 from lamdataserver.settings import BASE_DIR
+
 import os
 
 '''cache MAP'''
@@ -123,6 +125,7 @@ class Realtime_FineData():
 		'5': Process_Realtime_FineData_By_WorkSectionID_5,
 		'6': Process_Realtime_FineData_By_WorkSectionID_6,
 	}
+	
 	def __init__(self):
 		pass
 
@@ -459,71 +462,45 @@ class Realtime_FineData():
 class AnalyseData():
 	def __init__(self):
 		pass
-
-	# 得到任务对应ZValue、层厚等信息，[[MissionID, ProductCode, MinuteIndex, ZValue, Thickness],[],[],...]
+	
 	@classmethod
-	def Make_CNCData_ZValue_AccumulateData(cls, MissionObj, ifgetZValue):
+	def Make_CNCData_ZValue_AccumulateData_UsingSQL(cls, MissionObj, ifgetZValue):
+		# t1=time.time()
 		_mission = MissionObj
 		_mission_id = _mission.id
-		'''1. 首先取出finedata，以分钟取整，'''
+		_worksection_id = _mission.work_section.id
 		_mission_timecut = _mission.Mission_Timecut
+		_FineDataModel = Realtime_FineData.getFineDataModel_ByWSID(str(_worksection_id))
+		
 		starttimestamp = time_data1(_mission_timecut.process_start_time)
 		endtimestamp = time_data1(_mission_timecut.process_finish_time)
-		first_minute_datetime = _mission_timecut.process_start_time.strftime("%Y-%m-%d %H:%M:00")
-		last_minute_datetime = _mission_timecut.process_finish_time.strftime("%Y-%m-%d %H:%M:00")
-		first_minute_timestamp = time_data1(first_minute_datetime)
-		last_minute_timestamp = time_data1(last_minute_datetime)
-		# 此处对first_minute_timestamp进行处理，截去换气时间，以开光第一秒对齐
-
-		# 过滤数据，仅保留开光后的数据
-		all_finedata = Realtime_FineData.getFineDataList_ByMission(_mission, (Q(laser_power__gte=100)))
-		all_finedata = Realtime_FineData.getFineDataList_ByMission(_mission, (Q(id__gte=0)))
-		# all_finedata = Realtime_FineData.getFineDataList_ByMission(_mission, (Q(laser_power__gte=-2)))
-
-		firstPower_finedata = all_finedata[0]
-		first_minute_timestamp = int(
-			firstPower_finedata.acquisition_timestamp - firstPower_finedata.acquisition_timestamp % 60)
-
-		timestamplist = [(first_minute_timestamp + min * 60, first_minute_timestamp + min * 60 + 59) for min in
-		                 range(int((endtimestamp - first_minute_timestamp) / 60))]
-
-		# 返回带时间数据，(minute_timestamp, finedata_list)
-		finedatalist = map(
-			lambda i: (i, Realtime_FineData.getFineDataList_ByWSID(_mission.work_section.id, i[0], i[1])),
-			timestamplist)
-
-		'''2. 对每分钟内的数据取ZValue最小值'''
-
-		def getMinZValue_MinuteData(finedata):
-			# 得到1分钟内最小ZValue
-			# ZValue_list = list(
-			# 	filter(lambda i: i != None, [_data.Z_value for _data in finedata if _data.laser_power > 100]))
-			ZValue_list = list(
-				filter(lambda i: i != None, [_data.Z_value for _data in finedata if _data.laser_power > -2]))
-			if len(ZValue_list) > 0:
-				return min(ZValue_list)
-			else:
-				return None
-		def getLaserValue_MinuteData(finedata):
-			# 得到1分钟内激光功率累积、停光秒数
-			sum_power = sum([_data.laser_power if _data.laser_power > 100 else 0 for _data in finedata])
-			laseroff_seconds = sum([0 if _data.laser_power > 100 else 1 for _data in finedata])
-			laseron_seconds =  sum([1 if _data.laser_power > 100 else 0 for _data in finedata])
-			return sum_power, laseroff_seconds, laseron_seconds
-
-
+		print(starttimestamp, endtimestamp)
+		
+		qset = (
+				       Q(acquisition_timestamp__gte=starttimestamp) &
+				       Q(acquisition_timestamp__lte=endtimestamp)
+		       )
+		firstfinedata_timestamp = _FineDataModel.objects.filter(qset & Q(if_exec_intr=1)).aggregate(timestamp=Min('acquisition_timestamp'))['timestamp']
+		object_ZValue_list = list(_FineDataModel.objects.filter(qset& Q(acquisition_timestamp__gte=firstfinedata_timestamp)).extra(select={'minuteindex':"FLOOR((acquisition_timestamp-%d)/60)"%firstfinedata_timestamp}).values('minuteindex').annotate(Min('Z_value')))
+		# 功率值大于100时计入累积功率，出光秒数
+		object_Laser_list = list(_FineDataModel.objects.filter(qset& Q(acquisition_timestamp__gte=firstfinedata_timestamp)& Q(laser_power__gte=-20)).extra(select={'minuteindex':"FLOOR((acquisition_timestamp-%d)/60)"%firstfinedata_timestamp}).values('minuteindex').annotate(Count('id'),Sum('laser_power')))
+		'''
+		SELECT
+			(FLOOR((acquisition_timestamp-1571535027)/60)) AS `minuteindex`, \
+			sum(laser_power) as laser_sum,\
+			sum((if(laser_power>0,1,0))) AS `laser_on`, \
+			sum((if(laser_power>0,0,1))) AS `laser_off` \
+		FROM `LAMProcessData_process_realtime_finedata_by_worksectionid_1` \
+		WHERE \
+			(`LAMProcessData_process_realtime_finedata_by_worksectionid_1`.`acquisition_timestamp` >= 1571532180 \
+			AND `LAMProcessData_process_realtime_finedata_by_worksectionid_1`.`acquisition_timestamp` <= 1571963760 \
+			AND `LAMProcessData_process_realtime_finedata_by_worksectionid_1`.`acquisition_timestamp` >= 1571535027) \
+		group by minuteindex
+		'''
 		# 分钟时间戳-Z值列表
-		minute_ZValue_list = [(minute_stamp, getMinZValue_MinuteData(finedata)) for (minute_stamp, finedata) in
-		                      finedatalist]
-
-		# 重新赋值  返回带时间数据，(minute_timestamp, finedata_list)
-		finedatalist = map(
-			lambda i: (i, Realtime_FineData.getFineDataList_ByWSID(_mission.work_section.id, i[0], i[1])),
-			timestamplist)
+		minute_ZValue_list = [(i['minuteindex'], i['Z_value__min']) for i in object_ZValue_list]
 		# 分钟时间戳-能量累积 & 关光秒数
-		minute_Laser_list = [getLaserValue_MinuteData(finedata) for (minute_stamp, finedata) in
-		                      finedatalist]
-
+		minute_Laser_list = [(i['minuteindex'], i['laser_power__sum'], i['id__count'] ) for i in object_Laser_list]
 		'''3. 计算每分钟Z高度的变化值'''
 		_currentZValue = minute_ZValue_list[0][1]
 		_currentThickness = 0.0
@@ -537,7 +514,6 @@ class AnalyseData():
 					_currentThickness = 0.0
 			_thickness.append(float('%.2f' % _currentThickness))
 			_currentZValue = ZValue
-
 		'''4. 计算每分钟的层厚'''
 		'''     遍历_thickness列表，将0.0元素替换成相邻非零元素'''
 		# 得到非零坐标
@@ -557,21 +533,14 @@ class AnalyseData():
 		'''5. 将Z高度数值与层厚数值打包组成json'''
 		'''[[MissionID, ProductCode, MinuteIndex, ZValue, Thickness],[],[],...]'''
 		_count = len(minute_ZValue_list)
-		_product_code = _mission.LAM_product.product_code
-
-		missionid_list = [_mission_id for i in range(_count)]
-		minute_index_list = range(_count)
-		productcode_list = [_product_code for i in range(_count)]
-		ZValue_list = [i[1] for i in minute_ZValue_list]
-		Data = zip(missionid_list, productcode_list, minute_index_list, ZValue_list, _P191_list)
-
+		_product_code = ','.join(map(lambda p: p.product_code, _mission.LAM_product.all()))
+	
+		ZValueData = [(_mission_id, _product_code, i[0], i[1], _P191_list[id] ) for id, i in enumerate(minute_ZValue_list)]
 		'''6. 将开光功率累积、关光秒数累积数值打包成json'''
-		LaserData = list(zip(missionid_list, productcode_list, minute_index_list, [i[0]for i in minute_Laser_list], [i[1]for i in minute_Laser_list], [i[2]for i in minute_Laser_list]))
-
-		ZValueData = list(Data)
-
-		# return_json = json.dumps(list(Data), ensure_ascii=False)
-
+		'''[[MissionID, ProductCode, MinuteIndex, SUM_Power, LaserOFF_Seconds, LaserON_Seconds], [], [], ...]'''
+		LaserData = [(_mission_id, _product_code, i[0], i[1], 60-i[2], i[2]) for id, i in enumerate(minute_Laser_list)]
+		
+		
 		# 如数据库中无此条目，则需从FineData中计算得来
 		_Process_CNCData = Process_CNCData_Mission.objects.create(
 			process_mission=_mission,
@@ -587,7 +556,160 @@ class AnalyseData():
 		)
 		_Process_CNCData.save()
 		return_json = ZValueData if ifgetZValue else LaserData
+		# t10 = time.time()
+		# print('t10-t1:%.4f' % (t10 - t1))
 		return return_json
+		
+		# with connection.cursor() as cursor:
+		# 	# cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
+		# 	cursor.execute(
+		# 		"SELECT DATE_FORMAT(concat(date(acquisition_datetime),' ',hour(acquisition_datetime),':',floor( minute(acquisition_datetime) )) ,'%%Y-%%m-%%d %%H:%%i') as dataStartTime, max(oxygen_value) as oxygen_value, max(laser_power) as laser_power, min(Z_value) as Z_value FROM lamdataserver.lamprocessdata_process_realtime_finedata_by_worksectionid_%s where acquisition_timestamp > %d and acquisition_timestamp < %d group by DATE(acquisition_datetime),HOUR(acquisition_datetime),MINUTE(acquisition_datetime);" % (
+		# 			WorksectionID, Timestamp_Start, Timestamp_Finish))
+		# 	row = cursor.fetchall()
+		
+	# 得到任务对应ZValue、层厚等信息，[[MissionID, ProductCode, MinuteIndex, ZValue, Thickness],[],[],...]
+	# @classmethod
+	# def Make_CNCData_ZValue_AccumulateData(cls, MissionObj, ifgetZValue):
+	# 	t1=time.time()
+	# 	_mission = MissionObj
+	# 	_mission_id = _mission.id
+	# 	'''1. 首先取出finedata，以分钟取整，'''
+	# 	_mission_timecut = _mission.Mission_Timecut
+	# 	starttimestamp = time_data1(_mission_timecut.process_start_time)
+	# 	endtimestamp = time_data1(_mission_timecut.process_finish_time)
+	# 	first_minute_datetime = _mission_timecut.process_start_time.strftime("%Y-%m-%d %H:%M:00")
+	# 	last_minute_datetime = _mission_timecut.process_finish_time.strftime("%Y-%m-%d %H:%M:00")
+	# 	first_minute_timestamp = time_data1(first_minute_datetime)
+	# 	last_minute_timestamp = time_data1(last_minute_datetime)
+	# 	# 此处对first_minute_timestamp进行处理，截去换气时间，以开光第一秒对齐
+	#
+	# 	# 过滤数据，仅保留开光后的数据
+	# 	all_finedata = Realtime_FineData.getFineDataList_ByMission(_mission, (Q(laser_power__gte=100)))
+	# 	all_finedata = Realtime_FineData.getFineDataList_ByMission(_mission, (Q(id__gte=0)))
+	# 	# all_finedata = Realtime_FineData.getFineDataList_ByMission(_mission, (Q(laser_power__gte=-2)))
+	# 	t2 = time.time()
+	# 	firstPower_finedata = all_finedata[0]
+	# 	first_minute_timestamp = int(
+	# 		firstPower_finedata.acquisition_timestamp - firstPower_finedata.acquisition_timestamp % 60)
+	#
+	# 	timestamplist = [(first_minute_timestamp + min * 60, first_minute_timestamp + min * 60 + 59) for min in
+	# 	                 range(int((endtimestamp - first_minute_timestamp) / 60))]
+	#
+	# 	# 返回带时间数据，(minute_timestamp, finedata_list)
+	# 	finedatalist = map(
+	# 		lambda i: (i, Realtime_FineData.getFineDataList_ByWSID(_mission.work_section.id, i[0], i[1])),
+	# 		timestamplist)
+	#
+	# 	t3 = time.time()
+	# 	'''2. 对每分钟内的数据取ZValue最小值'''
+	#
+	# 	def getMinZValue_MinuteData(finedata):
+	# 		# 得到1分钟内最小ZValue
+	# 		# ZValue_list = list(
+	# 		# 	filter(lambda i: i != None, [_data.Z_value for _data in finedata if _data.laser_power > 100]))
+	# 		ZValue_list = list(
+	# 			filter(lambda i: i != None, [_data.Z_value for _data in finedata if _data.laser_power and _data.laser_power > -2]))
+	# 		if len(ZValue_list) > 0:
+	# 			return min(ZValue_list)
+	# 		else:
+	# 			return None
+	# 	def getLaserValue_MinuteData(finedata):
+	# 		# 得到1分钟内激光功率累积、停光秒数
+	# 		sum_power = sum([_data.laser_power if _data.laser_power and _data.laser_power > 100 else 0 for _data in finedata])
+	# 		laseroff_seconds = sum([0 if _data.laser_power and _data.laser_power > 100 else 1 for _data in finedata])
+	# 		laseron_seconds =  sum([1 if _data.laser_power and _data.laser_power > 100 else 0 for _data in finedata])
+	# 		return sum_power, laseroff_seconds, laseron_seconds
+	#
+	#
+	# 	# 分钟时间戳-Z值列表
+	# 	minute_ZValue_list = [(minute_stamp, getMinZValue_MinuteData(finedata)) for (minute_stamp, finedata) in
+	# 	                      finedatalist]
+	# 	t4 = time.time()
+	# 	# 重新赋值  返回带时间数据，(minute_timestamp, finedata_list)
+	# 	finedatalist = map(
+	# 		lambda i: (i, Realtime_FineData.getFineDataList_ByWSID(_mission.work_section.id, i[0], i[1])),
+	# 		timestamplist)
+	# 	t5 = time.time()
+	# 	# 分钟时间戳-能量累积 & 关光秒数
+	# 	minute_Laser_list = [getLaserValue_MinuteData(finedata) for (minute_stamp, finedata) in
+	# 	                      finedatalist]
+	# 	t6 = time.time()
+	# 	'''3. 计算每分钟Z高度的变化值'''
+	# 	_currentZValue = minute_ZValue_list[0][1]
+	# 	_currentThickness = 0.0
+	# 	_thickness = []
+	# 	for minute_stamp, ZValue in minute_ZValue_list:
+	# 		if ZValue is None or _currentZValue is None:
+	# 			_currentThickness = 0.0
+	# 		else:
+	# 			_currentThickness = ZValue - _currentZValue
+	# 			if abs(_currentThickness) > 5:
+	# 				_currentThickness = 0.0
+	# 		_thickness.append(float('%.2f' % _currentThickness))
+	# 		_currentZValue = ZValue
+	# 	t7 = time.time()
+	# 	'''4. 计算每分钟的层厚'''
+	# 	'''     遍历_thickness列表，将0.0元素替换成相邻非零元素'''
+	# 	# 得到非零坐标
+	# 	_Nonzero_thickness = [(index, tkns) for (index, tkns) in enumerate(_thickness) if tkns != 0.0]
+	# 	_P191_list = _thickness.copy()
+	# 	pre_index = 0  # 遍历_thickness时上一个层提升参数的下标
+	# 	# 替换0.0元素
+	# 	for _index, (index, _tkns) in enumerate(_Nonzero_thickness):
+	# 		# index以前的非零都要替换
+	# 		_P191_list[pre_index + 1:index] = [_tkns] * (index - pre_index - 1)
+	# 		pre_index = index
+	# 		if _index == 0:
+	# 			_P191_list[0] = _tkns
+	# 		if _index == len(_Nonzero_thickness) - 1:
+	# 			# 	最后一个，替换到最后的0.0元素
+	# 			_P191_list[index:] = [_tkns] * (len(_P191_list) - index)
+	# 	t8 = time.time()
+	# 	'''5. 将Z高度数值与层厚数值打包组成json'''
+	# 	'''[[MissionID, ProductCode, MinuteIndex, ZValue, Thickness],[],[],...]'''
+	# 	_count = len(minute_ZValue_list)
+	# 	_product_code = ','.join( map(lambda p:p.product_code, _mission.LAM_product.all()) )
+	#
+	# 	missionid_list = [_mission_id for i in range(_count)]
+	# 	minute_index_list = range(_count)
+	# 	productcode_list = [_product_code for i in range(_count)]
+	# 	ZValue_list = [i[1] for i in minute_ZValue_list]
+	# 	Data = zip(missionid_list, productcode_list, minute_index_list, ZValue_list, _P191_list)
+	#
+	# 	t9 = time.time()
+	# 	'''6. 将开光功率累积、关光秒数累积数值打包成json'''
+	# 	LaserData = list(zip(missionid_list, productcode_list, minute_index_list, [i[0]for i in minute_Laser_list], [i[1]for i in minute_Laser_list], [i[2]for i in minute_Laser_list]))
+	#
+	# 	ZValueData = list(Data)
+	#
+	# 	# return_json = json.dumps(list(Data), ensure_ascii=False)
+	#
+	# 	# 如数据库中无此条目，则需从FineData中计算得来
+	# 	_Process_CNCData = Process_CNCData_Mission.objects.create(
+	# 		process_mission=_mission,
+	# 	)
+	# 	_Process_CNCData.save()
+	# 	_Process_CNCData.zvalue_data_file.save(
+	# 		'%s-Mission_zvalue%s.json' % (_product_code, _mission_id),
+	# 		ContentFile(json.dumps(ZValueData, ensure_ascii=False))
+	# 	)
+	# 	_Process_CNCData.accumulate_data_file.save(
+	# 		'%s-Mission_laser%s.json' % (_product_code, _mission_id),
+	# 		ContentFile(json.dumps(LaserData, ensure_ascii=False))
+	# 	)
+	# 	_Process_CNCData.save()
+	# 	return_json = ZValueData if ifgetZValue else LaserData
+	# 	t10 = time.time()
+	# 	print('t2-t1:%.4f'%(t2-t1))
+	# 	print('t3-t2:%.4f'%(t3-t2))
+	# 	print('t4-t3:%.4f'%(t4-t3))
+	# 	print('t5-t4:%.4f'%(t5-t4))
+	# 	print('t6-t5:%.4f'%(t6-t5))
+	# 	print('t7-t6:%.4f'%(t7-t6))
+	# 	print('t8-t7:%.4f'%(t8-t7))
+	# 	print('t9-t8:%.4f'%(t9-t8))
+	# 	print('t10-t9:%.4f'%(t10-t9))
+	# 	return return_json
 
 	# 得到关于时间-层厚、Z高度的数据
 	@classmethod
@@ -597,7 +719,8 @@ class AnalyseData():
 		_Process_CNCData_Set = _mission.Mission_CNCData.all()
 		if len(_Process_CNCData_Set) == 0:
 			# 如数据库中无此条目，则需从FineData中计算得来
-			return_json = cls.Make_CNCData_ZValue_AccumulateData(_mission, True)
+			return_json = cls.Make_CNCData_ZValue_AccumulateData_UsingSQL(_mission, True)
+			# return_json = cls.Make_CNCData_ZValue_AccumulateData(_mission, True)
 
 		else:
 			_Process_CNCData = _Process_CNCData_Set[0]
@@ -614,7 +737,8 @@ class AnalyseData():
 		_mission = LAMProcessMission.objects.get(id=_mission_id)
 		_Process_CNCData_Layer_Set = _mission.Mission_LayerCNCData.all()
 		if len(_Process_CNCData_Layer_Set) == 0:
-			_product_code = _mission.LAM_product.product_code
+			# _product_code = _mission.LAM_product.product_code
+			_product_code = ','.join( map(lambda p:p.product_code, _mission.LAM_product.all()) )
 			''''''
 			# 过滤数据，仅保留开光后的数据
 			all_finedata = Realtime_FineData.getFineDataList_ByMission(_mission)
@@ -667,7 +791,8 @@ class AnalyseData():
 		_Process_CNCData_Set = _mission.Mission_CNCData.all()
 		if len(_Process_CNCData_Set) == 0:
 			# 如数据库中无此条目，则需从FineData中计算得来
-			return_json = cls.Make_CNCData_ZValue_AccumulateData(_mission, False)
+			return_json = cls.Make_CNCData_ZValue_AccumulateData_UsingSQL(_mission, False)
+			# return_json = cls.Make_CNCData_ZValue_AccumulateData(_mission, False)
 
 		else:
 			_Process_CNCData = _Process_CNCData_Set[0]

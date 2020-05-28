@@ -1,6 +1,6 @@
 # coding:utf-8
 from functools import reduce
-from wand.image import Image
+# from wand.image import Image
 import pytesseract
 import datetime
 import time
@@ -1351,22 +1351,24 @@ def pyMuPDF_fitz(pdfPath = None,stream = None,filetype=None, ifTemporaryFile=Fal
 
 
 def Save_ImgCode(text, imgshape, imgcode, img):
-	'''查找是否有text已存在，如有，则退出，如无，则保存'''
-	all_objects = PDFImageCode.objects.filter((Q(imagecode=imgcode)))
-	if len(list(all_objects))==0:
-		_file_path = '.'+PDFCode_OriginalImage_URL+tempfile.mkdtemp().split('\\')[-1]+'.png'
-		# _temp_path = os.path.join(tempfile.mkdtemp()+'.png')
-		originalImg = cv2.imwrite(_file_path, img)
-		# originalImg = img.tobytes()
-		_pdfImgCode = PDFImageCode.objects.create(
-			image_width = imgshape[0],
-			image_height = imgshape[1],
-			imagecode = imgcode,
-			text = text,
-			OriginalImage = _file_path,
-		)
-		_pdfImgCode.save()
-		# os.remove(_temp_path)
+	'''若能正确识别，（包括已存在及不存在但有相似），则不保存'''
+	if Get_ImgText(imgshape, imgcode) == text:
+		# 若能正确识别，则不保存
+		return
+	# all_objects = PDFImageCode.objects.filter((Q(imagecode=imgcode)))
+	# if len(list(all_objects))==0:
+	_file_path = '.'+PDFCode_OriginalImage_URL+tempfile.mkdtemp().split('\\')[-1]+'.png'
+	# _temp_path = os.path.join(tempfile.mkdtemp()+'.png')
+	cv2.imwrite(_file_path, img)
+	_pdfImgCode = PDFImageCode.objects.create(
+		image_width = imgshape[0],
+		image_height = imgshape[1],
+		imagecode = imgcode,
+		text = text,
+		OriginalImage = _file_path,
+	)
+	_pdfImgCode.save()
+	# os.remove(_temp_path)
 	
 def Get_ImgText(imgshape, imgcode):
 	'''遍历数据库，查找形状、code，如相同或相近，则返回text'''

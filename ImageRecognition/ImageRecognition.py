@@ -3,6 +3,7 @@
 import cv2
 import pytesseract
 import os, shutil
+from lamdataserver.settings import APP_PATH
 # import matplotlib.pyplot as plt
 import ImageRecognition.ImageBinaryCode as ImgBC
 # import initImageSectionJsonFile as initImageSectionJsonFile
@@ -28,8 +29,11 @@ print('--***--  SSTTAARRTT  --***--')
 TemplateHASHList = []
 ClassifyDir = []
 TemplateImageName = []
-with open("./ImageRecognition/IMAGE Templates/ImageSectionInfo_code.json", 'r') as load_f:
-	ImageSectionInfo_dict = json.load(load_f)
+# with open("./ImageRecognition/IMAGE Templates/ImageSectionInfo_code.json", 'r') as load_f:
+# 	ImageSectionInfo_dict = json.load(load_f)
+with open(os.path.join(APP_PATH,'ImageSectionInfo_code.json').replace('\\','/'), 'r') as load_f:
+    ImageSectionInfo_dict = json.load(load_f)
+    pass
 
 
 # print('before ImageStatus')

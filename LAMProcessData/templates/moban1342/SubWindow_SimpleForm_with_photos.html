@@ -1,0 +1,361 @@
+{% extends "SubWindow_base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+
+
+
+
+    <link href="/assets/jquery.filer/css/jquery.filer.css" type="text/css" rel="stylesheet" />
+    <link href="/assets/jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css" type="text/css" rel="stylesheet" />
+<!--    <script src="/assets/jquery.filer/js/jquery-latest.min.js"></script>-->
+<!--&lt;!&ndash;    <script src="http://code.jquery.com/jquery-latest.min.js"></script>&ndash;&gt;-->
+    <script src="/assets/jquery.filer/js/jquery.filer.min.js"></script>
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-10">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+
+
+                            <form  method="post" action="" enctype="multipart/form-data" >{% csrf_token %}
+
+                                <label></label>
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.error_messages|safe }}
+                                    {{ form.errors }}
+                                </div>
+                                {% endifequal %}
+                                <div class="form-group">
+
+                                    <!--<label>理化检测ID</label>-->
+                                    <!--&lt;!&ndash;<input class="form-control">&ndash;&gt;-->
+                                    <!--<input class="form-control" id="preWTestItemID" type="text"-->
+                                    <!--value="" disabled="">-->
+
+                                    {% for field in form %}
+                                    <div class="form-group">
+                                        <label>{{ field.label|safe }}</label>
+                                        {{ field }}
+                                    </div>
+                                    {% endfor %}
+
+<!--                                    <script src="/assets/uploadify-master/jquery.uploadifive.min.js"></script>-->
+<!--                                    <script type="text/javascript">-->
+
+<!--                                        $(function() {-->
+<!--                                            $("#file_upload_1").uploadify({-->
+<!--                                                height    : 30,-->
+<!--                                                swf       : '/uploadify/uploadify.swf',-->
+<!--                                                uploader  : '/uploadify/uploadify.php',-->
+<!--                                                width     : 120-->
+<!--                                            });-->
+<!--                                        });-->
+
+<!--                                        $("#uploadBtn1").uploadify({-->
+<!--                                            swf : "/js/plugins/uploadify/uploadify.swf",-->
+<!--                                            uploader : "/realAuthImageUpload",-->
+<!--                                            fileObjName : "image",-->
+<!--                                            buttonText    : "上传正面照片",-->
+<!--                                            fileTypeExts  : "*.jpg;*.png;*.gif;*.jpeg",-->
+<!--                                            multi      : false,-->
+<!--                                            overrideEvents:['onUploadSuccess','onSelect'],-->
+<!--                                                onUploadSuccess:function(file,data){-->
+<!--                                                $("#uploadImg1").attr("src",data);-->
+<!--                                                $("#uploadImage1").val(data);-->
+<!--                                                }-->
+<!--                                        });-->
+
+
+<!--                                    </script>-->
+
+
+
+
+<!--                                                                        <input id="fileupload" type="file" multiple="multiple" />-->
+<!--                                                                        <hr />-->
+<!--                                                                        <b>Live Preview</b>-->
+<!--                                                                        <br />-->
+<!--                                                                        <br />-->
+<!--                                                                        <div id="dvPreview">-->
+<!--                                                                        </div>-->
+<!--                                                                        <br />-->
+<!--                                                                        <hr />-->
+<!--                                                                        <script language="javascript" type="text/javascript">-->
+<!--                                                                            $(function () {-->
+<!--                                                                                $("#fileupload").change(function () {-->
+<!--                                                                                    if (typeof (FileReader) != "undefined") {-->
+<!--                                                                                        var dvPreview = $("#dvPreview");-->
+<!--                                                                                        dvPreview.html("");-->
+<!--                                                                                        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.jpg|.jpeg|.gif|.png|.bmp)$/;-->
+<!--                                                                                        $($(this)[0].files).each(function () {-->
+<!--                                                                                            var file = $(this);-->
+<!--                                                                                            if (regex.test(file[0].name.toLowerCase())) {-->
+<!--                                                                                                var reader = new FileReader();-->
+<!--                                                                                                reader.onload = function (e) {-->
+<!--                                                                                                    var img = $("<img />");-->
+<!--                                                                                                    img.attr("style", "height:100px;width: 100px");-->
+<!--                                                                                                    img.attr("src", e.target.result);-->
+<!--                                                                                                    dvPreview.append(img);-->
+<!--                                                                                                }-->
+<!--                                                                                                reader.readAsDataURL(file[0]);-->
+<!--                                                                                            } else {-->
+<!--                                                                                                alert(file[0].name + " is not a valid image file.");-->
+<!--                                                                                                dvPreview.html("");-->
+<!--                                                                                                return false;-->
+<!--                                                                                            }-->
+<!--                                                                                        });-->
+<!--                                                                                    } else {-->
+<!--                                                                                        alert("This browser does not support HTML5 FileReader.");-->
+<!--                                                                                    }-->
+<!--                                                                                });-->
+<!--                                                                            });-->
+<!--                                                                        </script>-->
+
+
+<!--                                                                        <div class="form-group container">-->
+<!--                                                                            <label>请选择一个图像文件：</label>-->
+<!--                                                                            <input type="file" id="file_input" multiple/>-->
+<!--                                                                        </div>-->
+<!--======================================================================================================================-->
+<!--    <script type="text/javascript" src="/assets/chosen_v1.8.7/jquery-1.4.4.min.js"></script>-->
+<!--    <script type="text/javascript" src="/assets/chosen_v1.8.7/chosen.jquery.js"></script>-->
+<!--                                    <script type="text/javascript">-->
+<!--        $(".chosen-select").chosen({-->
+<!--            no_results_text: "没有找到结果！",//搜索无结果时显示的提示-->
+<!--            search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配-->
+<!--            allow_single_deselect:true, //是否允许取消选择-->
+<!--        })-->
+
+
+<!--    </script>-->
+
+
+
+<!--<form action="." method="post" enctype="multipart/form-data">-->
+                                    <div class="form-group">
+                                        <label>上传图片</label>
+                                        <input type="file" name="file" id="filer_input" multiple="multiple">
+                                    </div>
+
+<!--      <input type="submit" value="Submit">-->
+<!--</form>-->
+    <script type="text/javascript">
+<!--        $('#filer_input').filer({-->
+<!--        &lt;!&ndash;    limit: 3,&ndash;&gt;-->
+<!--        &lt;!&ndash;    maxSize: 3,&ndash;&gt;-->
+<!--            extensions: ['jpg', 'jpeg', 'png', 'gif', 'tiff'],-->
+<!--            changeInput: true,-->
+<!--            showThumbs: true,-->
+<!--            addMore: true-->
+<!--        });-->
+
+<!--         $('#filer_input').filer();-->
+
+    </script>
+
+                                    <!--======================================================================================================================-->
+<!--======================================================================================================================-->
+<!--<input type="file" name="myfiles" multiple="">-->
+
+<!--                                                                        {% if form.IfUploadPhotos %}-->
+<!--                                                                            <div class="form-group">-->
+<!--                                                                                <label>图片上传</label>-->
+<!--                                                                                    <div id="uploader_wrapper">-->
+<!--                                                                                        <div id="uploader_container">-->
+<!--                                                                                            &lt;!&ndash;头部，相册选择和格式选择&ndash;&gt;-->
+<!--                                                                                            <link rel="stylesheet" type="text/css" href="/assets/webuploader-master/css/webuploader.css" />-->
+<!--                                                                                            <link rel="stylesheet" type="text/css" href="/assets/webuploader-master/examples/image-upload/style.css" />-->
+<!--                                                                                            <div id="uploader">-->
+<!--                                                                                                <div class="queueList">-->
+<!--                                                                                                    <div id="dndArea" class="placeholder">-->
+<!--                                                                                                        <div id="filePicker"></div>-->
+<!--                                                                                                        <p>或将照片拖到这里，单次最多可选300张</p>-->
+<!--                                                                                                    </div>-->
+<!--                                                                                                </div>-->
+<!--                                                                                                <div class="statusBar" style="display:none;">-->
+<!--                                                                                                    <div class="progress">-->
+<!--                                                                                                        <span class="text">0%</span>-->
+<!--                                                                                                        <span class="percentage"></span>-->
+<!--                                                                                                    </div><div class="info"></div>-->
+<!--                                                                                                    <div class="btns">-->
+<!--                                                                                                        <div id="filePicker2"></div>-->
+<!--                                                                                                        <div class="uploadBtn">开始上传</div>-->
+<!--                                                                                                    </div>-->
+<!--                                                                                                </div>-->
+<!--                                                                                            </div>-->
+<!--                                                                                        </div>-->
+<!--                                                                                    </div>-->
+<!--&lt;!&ndash;                                                                                    <script type="text/javascript" src="/assets/webuploader-master/examples/image-upload/jquery.js"></script>&ndash;&gt;-->
+<!--                                                                                    <script type="text/javascript" src="/assets/webuploader-master/dist/webuploader.js"></script>-->
+<!--                                                                                    <script type="text/javascript" src="/assets/webuploader-master/examples/image-upload/upload.js"></script>-->
+
+
+<!--                                    &lt;!&ndash;                                            <div id="demo" class="demo"></div>&ndash;&gt;-->
+<!--                                                                            </div>-->
+
+<!--                                    &lt;!&ndash;                                        <link rel="stylesheet" href="/assets/zyUpload/control/css/zyUpload.css" type="text/css">&ndash;&gt;-->
+<!--                                    &lt;!&ndash;                                        &lt;!&ndash; 引用核心层插件 &ndash;&gt;&ndash;&gt;-->
+<!--                                    &lt;!&ndash;                                        <script src="/assets/zyUpload/core/zyFile.js"></script>&ndash;&gt;-->
+<!--                                    &lt;!&ndash;                                        &lt;!&ndash; 引用控制层插件 &ndash;&gt;&ndash;&gt;-->
+<!--                                    &lt;!&ndash;                                        <script src="/assets/zyUpload/control/js/zyUpload.js"></script>&ndash;&gt;-->
+<!--                                    &lt;!&ndash;                                        &lt;!&ndash; 引用初始化JS &ndash;&gt;&ndash;&gt;-->
+<!--                                    &lt;!&ndash;                                        <script src="/assets/zyUpload/core/lanrenzhijia.js"></script>&ndash;&gt;-->
+<!--                                                                        {% endif %}-->
+
+                                    <!--{{ form.id }}-->
+                                </div>
+
+
+                                <button type="submit" class="btn btn-primary">保存</button>
+
+                                <a href="javascript:window.opener.location.reload();window.opener=null;window.open('','_self');window.close();"
+                                   class="btn btn-danger">关闭</a>
+
+                                {% if messages %}
+                                <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+
+
+                                </script>
+                                {% endif %}
+
+                            </form>
+                            <label></label>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+    <script type="text/javascript">
+<!--        $(".chosen-select").chosen({-->
+<!--            no_results_text: "没有找到结果！",//搜索无结果时显示的提示-->
+<!--            search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配-->
+<!--            allow_single_deselect:true, //是否允许取消选择-->
+<!--        })-->
+
+    $('#filer_input').filer({
+        changeInput: '<div class="jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-folder"></i></div><div class="jFiler-input-text"><h3>点击本框</h3> <span style="display:inline-block; margin: 15px 0">或</span></div><a class="jFiler-input-choose-btn blue">浏览文件</a></div></div>',
+        showThumbs: true,
+        addMore: true,
+        theme: "dragdropbox",
+        {% ifequal operate 'edit' %}
+<!--        增加已上传文件的显示url-->
+        files: [
+            {% for pic in existing_pictures %}
+            {
+                name: "ID:{{ pic.id }}-{{ pic.picture.name }}",
+                size: {{ pic.picture.size }},
+                type: "image/jpg",
+                file: "{{ Common_URL.Query_DefectPicture }}{{ pic.id }}/"
+            }{% if not forloop.last%},{% endif %}
+            {% endfor %}
+<!--            {-->
+<!--                name: "appended_file.jpg",-->
+<!--                size: 5453,-->
+<!--                type: "image/jpg",-->
+<!--                file: "http://dummyimage.com/720x480/f9f9f9/191a1a.jpg"-->
+<!--            },-->
+<!--            {-->
+<!--                name: "appended_file_2.jpg",-->
+<!--                size: 9453,-->
+<!--                type: "image/jpg",-->
+<!--                file: "http://dummyimage.com/640x480/f9f9f9/191a1a.jpg"-->
+<!--            }-->
+        ],
+        {% endifequal %}
+        {% verbatim %}
+        templates: {
+            box: '<ul class="jFiler-items-list jFiler-items-grid"></ul>',
+            item: '<li class="jFiler-item">\
+                        <div class="jFiler-item-container">\
+                            <div class="jFiler-item-inner">\
+                                <div class="jFiler-item-thumb">\
+                                    <div class="jFiler-item-status"></div>\
+                                    <div class="jFiler-item-info">\
+                                        <span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name | limitTo: 25}}</b></span>\
+                                        <span class="jFiler-item-others">{{fi-size2}}</span>\
+                                    </div>\
+                                    {{fi-image}}\
+                                </div>\
+                                <div class="jFiler-item-assets jFiler-row">\
+                                    <ul class="list-inline pull-left">\
+                                        <li>{{fi-progressBar}}</li>\
+                                    </ul>\
+                                    <ul class="list-inline pull-right">\
+                                        <li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
+                                    </ul>\
+                                </div>\
+                            </div>\
+                        </div>\
+                    </li>',
+            itemAppend: '<li class="jFiler-item">\
+                            <div class="jFiler-item-container">\
+                                <div class="jFiler-item-inner">\
+                                    <div class="jFiler-item-thumb">\
+                                        <div class="jFiler-item-status"></div>\
+                                        <div class="jFiler-item-info">\
+                                            <span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name | limitTo: 25}}</b></span>\
+                                            <span class="jFiler-item-others">{{fi-size2}}</span>\
+                                        </div>\
+                                        {{fi-image}}\
+                                    </div>\
+                                    <div class="jFiler-item-assets jFiler-row">\
+                                        <ul class="list-inline pull-left">\
+                                            <li><span class="jFiler-item-others">{{fi-icon}}</span></li>\
+                                        </ul>\
+                                        <ul class="list-inline pull-right">\
+                                            <li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
+                                        </ul>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </li>',
+            itemAppendToEnd: false,
+            removeConfirmation: true,
+            _selectors: {
+                list: '.jFiler-items-list',
+                item: '.jFiler-item',
+                remove: '.jFiler-item-trash-action'
+            }
+        }
+        {% endverbatim %}
+    });
+    </script>
+</div>
+{% endblock %}

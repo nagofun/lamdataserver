@@ -103,6 +103,9 @@
                                     <button type="button" class="btn btn-primary" onclick="Left_select_reverse();">
                                         反选
                                     </button>
+                                    <div id="WarningDiv" class="alert alert-danger" style="display: none">
+                                        <strong>错误！</strong>选中任务的起止时间不完整，请结束当前任务或<a target="_blank" href="/LAMProcessData/ProcessRecords/LAMProcessMission/CutRecordsByTime/">重新划分</a>。
+                                    </div>
                                 </form>
                             </div>
 
@@ -541,21 +544,55 @@
 
     <!--跳转至分析页面-->
     function JumpToAnalyseLAMProcess(operationType){
-        params = {
-            'MissionID_list':Right_Mission_List,
-        };
-        if(operationType == 'LayerData' || operationType == 'ScanningRate3D' || operationType == 'AccumulateData'){
-            // 原窗口打开
-            window.opener.Post("{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/',params);
-<!--        window.opener.location="{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/';-->
-            window.opener=null;
-            window.open('','_self');
-            window.close();
-        }
-        else{
-            // 当前窗口打开
-            Post("{{ Target_URL }}",params);
-        }
+            $.get(
+                '{{ Common_URL.Query_StartFinishTime_IfExists_By_MissionIDList }}'+Right_Mission_List+'/',
+                function(data, textStatus)
+                {
+                    this;
+                    if(data.all_exist == false){
+                        document.getElementById('WarningDiv').innerHTML ="<strong>错误！</strong>选中任务(ID="+data.NotExistsList+")的起止时间不完整，请前往激光成形班组<B>结束当前任务</B>或前往生产管理<a target='_blank' href='/LAMProcessData/ProcessRecords/LAMProcessMission/CutRecordsByTime/'>对任务时间重新划分</a>。"
+                        document.getElementById('WarningDiv').style.display='block';
+                        setTimeout( function(){
+                                document.getElementById('WarningDiv').style.display='none';
+                            }, 5 * 1000 );
+                    }
+                    else{
+                        params = {
+                            'MissionID_list':Right_Mission_List,
+                        };
+                        if(operationType == 'LayerData' || operationType == 'ScanningRate3D' || operationType == 'AccumulateData'){
+                            // 原窗口打开
+                            window.opener.Post("{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/',params);
+                <!--        window.opener.location="{{ Common_URL.AnalyseLAMProcess }}"+operationType+'/';-->
+                            window.opener=null;
+                            window.open('','_self');
+                            window.close();
+                        }
+                        else{
+                            // 当前窗口打开
+                            Post("{{ Target_URL }}",params);
+                        }
+                    }
+                }
+            );
+<!--        for(let mission_id in Right_Mission_List){-->
+<!--            $.get(-->
+<!--                '{{ Common_URL.Query_StartFinishTime_IfExists_By_MissionID }}'+Right_Mission_List[mission_id]+'/',-->
+<!--                function(data, textStatus)-->
+<!--                {-->
+<!--                    this;-->
+<!--                    if(data.exists == false){-->
+<!--                        document.getElementById('WarningDiv').innerHTML ="<strong>错误！</strong>选中任务(ID="+Right_Mission_List[mission_id]+")的起止时间不完整，请前往激光成形班组<a target='_blank' href='/LAMProcessData/ProcessRecords/WorksectionOperate_by_id/"+data.worksectionID+"/'>结束当前任务</a>或前往生产管理<a target='_blank' href='/LAMProcessData/ProcessRecords/LAMProcessMission/CutRecordsByTime/'>对任务时间重新划分</a>。"-->
+<!--                        document.getElementById('WarningDiv').style.display='block';-->
+<!--                        setTimeout( function(){-->
+<!--                                document.getElementById('WarningDiv').style.display='none';-->
+<!--                            }, 5 * 1000 );-->
+
+<!--                    }-->
+<!--                }-->
+<!--            );-->
+<!--        }-->
+
 
     }
 

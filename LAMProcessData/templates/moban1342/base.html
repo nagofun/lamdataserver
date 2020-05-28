@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>LMPM Data Server 激光增材制造过程记录系统</title>
+    <link rel="shortcut icon" href="/assets/img/favicon-1.ico" type="image/x-icon" />
     <!-- Bootstrap Styles-->
     <link href="/assets/css/bootstrap.css" rel="stylesheet"/>
     <!-- FontAwesome Styles-->
@@ -19,6 +20,16 @@
     <!-- ECharts-->
     <link href="/assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet"/>
     <script src="/assets/js/echarts.js"></script>
+    <link href="/assets/chosen_v1.8.7/chosen.css" type="text/css" rel="stylesheet" />
+<!--    <script type="text/javascript" src="/assets/js/jquery-1.10.2.js"></script>-->
+    <script type="text/javascript" src="/assets/chosen_v1.8.7/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="/assets/chosen_v1.8.7/chosen.jquery.js"></script>
+
+    <script src="/assets/chosen_v1.8.7/docsupport/jquery-3.2.1.min.js" type="text/javascript"></script>
+    <script src="/assets/chosen_v1.8.7/chosen.jquery.js" type="text/javascript"></script>
+    <script src="/assets/chosen_v1.8.7/docsupport/prism.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/chosen_v1.8.7/docsupport/init.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="/assets/js/matching.js"></script>
 </head>
 <body onload="load()">
 <div id="wrapper">
@@ -285,7 +296,16 @@
                         <li>
                             <a href="{{ Common_URL.Back_URL_heattreatmentstate }}">热处理状态</a>
                         </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_machiningstate }}">机械加工状态</a>
+                        </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_chicharacters }}">PDF文字识别记忆</a>
+                        </li>
                     </ul>
+                </li>
+                <li>
+                    <a href="/LAMProcessData/SystemOperation/"><i class="fa fa-qrcode"></i>系统操作</a>
                 </li>
                 {% endif %}
                 {% if perms.LAMProcessData.Technique %}
@@ -314,6 +334,9 @@
                         </li>
                         <li>
                             <a href="{{ Common_URL.Back_URL_lamprocessparameters }}">工艺参数包</a>
+                        </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_lamproductsubarea }}">零件分区</a>
                         </li>
                     </ul>
                 </li>
@@ -344,6 +367,9 @@
                         <li>
                             <a href="{{ Common_URL.Back_URL_rawstockflow }}">原材料发放回收记录</a>
                         </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_rawstockflow_statistic }}">原材料发放回收统计</a>
+                        </li>
                     </ul>
                 </li>
                 {% endif %}
@@ -355,7 +381,13 @@
                             <a href="{{ Common_URL.Back_URL_InspectionRecords_RawStockPhyChemTest }}">原材料理化检验记录</a>
                         </li>
                         <li>
+                            <a href="{{ Common_URL.Back_URL_InspectionRecords_RawStockNonDestructiveTest }}">原材料无损记录</a>
+                        </li>
+                        <li>
                             <a href="{{ Common_URL.Back_URL_InspectionRecords_ProductPhyChemTest }}">产品理化检验记录</a>
+                        </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_InspectionRecords_ProductNonDestructiveTest }}">产品无损记录</a>
                         </li>
                     </ul>
                 </li>

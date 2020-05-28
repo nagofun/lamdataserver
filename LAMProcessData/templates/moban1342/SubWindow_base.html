@@ -33,7 +33,23 @@
     <script src="/assets/ECharts/incubator-echarts/theme/shine.js"></script>
     <script src="/assets/ECharts/incubator-echarts/theme/roma.js"></script>
 
+<!--    <link href="/assets/jquery.filer/css/jquery.filer.css" type="text/css" rel="stylesheet" />-->
+<!--    <link href="/assets/jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css" type="text/css" rel="stylesheet" />-->
+    <!--文件上传控件-->
+    <script src="/assets/jquery.filer/js/jquery-latest.min.js"></script>
+<!--    <script src="http://code.jquery.com/jquery-latest.min.js"></script>-->
+<!--    <script src="/assets/jquery.filer/js/jquery.filer.min.js"></script>-->
 
+    <link href="/assets/chosen_v1.8.7/chosen.css" type="text/css" rel="stylesheet" />
+<!--    <script type="text/javascript" src="/assets/js/jquery-1.10.2.js"></script>-->
+<!--    <script type="text/javascript" src="/assets/chosen_v1.8.7/jquery-1.4.4.min.js"></script>-->
+    <script type="text/javascript" src="/assets/chosen_v1.8.7/chosen.jquery.js"></script>
+
+<!--    <script src="/assets/chosen_v1.8.7/docsupport/jquery-3.2.1.min.js" type="text/javascript"></script>-->
+    <script src="/assets/chosen_v1.8.7/chosen.jquery.js" type="text/javascript"></script>
+    <script src="/assets/chosen_v1.8.7/docsupport/prism.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/chosen_v1.8.7/docsupport/init.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="/assets/js/matching.js"></script>
 
     <!--&lt;!&ndash;时间css start&ndash;&gt;-->
     <!--<link href="/assets/datetimepicker/jiaoben6136/css/bootstrap-datetimepicker.css" rel="stylesheet">-->
@@ -162,6 +178,13 @@
             this.splice(index, 1);
         }
     };
+    function S4() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    // Generate a pseudo-GUID by concatenating random hexadecimal.
+    function guid() {
+       return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    };
     <!--字符串转时间戳-->
     function datatimestr_to_timestamp(datetimestr){
         date = datetimestr.substring(0,19);
@@ -218,7 +241,7 @@
 <!-- JS Scripts-->
 <!-- jQuery Js -->
 <!--此处去掉后datetimepicker可用??-->
-<script src="/assets/js/jquery-1.10.2.js"></script>
+<!--<script src="/assets/js/jquery-1.10.2.js"></script>-->
 <script src="/assets/js/jquery-ui.min.js"></script>
 <!-- Bootstrap Js -->
 <script src="/assets/js/bootstrap.min.js"></script>
@@ -264,7 +287,100 @@
 <!--<script src="/assets/datetimepicker/jiaoben6136/js/base.js"></script>-->
 <!-- end datetimepicker-->
 <script>
+    $(".chosen-select").chosen({
+        no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+        search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+        allow_single_deselect:true, //是否允许取消选择
+    })
 
+
+<!--    $('#filer_input').filer({-->
+<!--        changeInput: '<div class="jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-folder"></i></div><div class="jFiler-input-text"><h3>点击本框</h3> <span style="display:inline-block; margin: 15px 0">或</span></div><a class="jFiler-input-choose-btn blue">浏览文件</a></div></div>',-->
+<!--        showThumbs: true,-->
+<!--        theme: "dragdropbox",-->
+
+<!--        files: [-->
+<!--            {-->
+<!--                name: "appended_file.jpg",-->
+<!--                size: 5453,-->
+<!--                type: "image/jpg",-->
+<!--                file: "http://dummyimage.com/720x480/f9f9f9/191a1a.jpg"-->
+<!--            },-->
+<!--            {-->
+<!--                name: "appended_file_2.jpg",-->
+<!--                size: 9453,-->
+<!--                type: "image/jpg",-->
+<!--                file: "http://dummyimage.com/640x480/f9f9f9/191a1a.jpg"-->
+<!--            }-->
+<!--        ],-->
+
+<!--        {% verbatim %}-->
+<!--        templates: {-->
+<!--            box: '<ul class="jFiler-items-list jFiler-items-grid"></ul>',-->
+<!--            item: '<li class="jFiler-item">\-->
+<!--                        <div class="jFiler-item-container">\-->
+<!--                            <div class="jFiler-item-inner">\-->
+<!--                                <div class="jFiler-item-thumb">\-->
+<!--                                    <div class="jFiler-item-status"></div>\-->
+<!--                                    <div class="jFiler-item-info">\-->
+<!--                                        <span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name | limitTo: 25}}</b></span>\-->
+<!--                                        <span class="jFiler-item-others">{{fi-size2}}</span>\-->
+<!--                                    </div>\-->
+<!--                                    {{fi-image}}\-->
+<!--                                </div>\-->
+<!--                                <div class="jFiler-item-assets jFiler-row">\-->
+<!--                                    <ul class="list-inline pull-left">\-->
+<!--                                        <li>{{fi-progressBar}}</li>\-->
+<!--                                    </ul>\-->
+<!--                                    <ul class="list-inline pull-right">\-->
+<!--                                        <li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\-->
+<!--                                    </ul>\-->
+<!--                                </div>\-->
+<!--                            </div>\-->
+<!--                        </div>\-->
+<!--                    </li>',-->
+<!--            itemAppend: '<li class="jFiler-item">\-->
+<!--                            <div class="jFiler-item-container">\-->
+<!--                                <div class="jFiler-item-inner">\-->
+<!--                                    <div class="jFiler-item-thumb">\-->
+<!--                                        <div class="jFiler-item-status"></div>\-->
+<!--                                        <div class="jFiler-item-info">\-->
+<!--                                            <span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name | limitTo: 25}}</b></span>\-->
+<!--                                            <span class="jFiler-item-others">{{fi-size2}}</span>\-->
+<!--                                        </div>\-->
+<!--                                        {{fi-image}}\-->
+<!--                                    </div>\-->
+<!--                                    <div class="jFiler-item-assets jFiler-row">\-->
+<!--                                        <ul class="list-inline pull-left">\-->
+<!--                                            <li><span class="jFiler-item-others">{{fi-icon}}</span></li>\-->
+<!--                                        </ul>\-->
+<!--                                        <ul class="list-inline pull-right">\-->
+<!--                                            <li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\-->
+<!--                                        </ul>\-->
+<!--                                    </div>\-->
+<!--                                </div>\-->
+<!--                            </div>\-->
+<!--                        </li>',-->
+<!--            itemAppendToEnd: false,-->
+<!--            removeConfirmation: true,-->
+<!--            _selectors: {-->
+<!--                list: '.jFiler-items-list',-->
+<!--                item: '.jFiler-item',-->
+<!--                remove: '.jFiler-item-trash-action'-->
+<!--            }-->
+<!--        }-->
+<!--        {% endverbatim %}-->
+<!--    });-->
+
+
+<!--    $('#filer_input').filer({-->
+<!--        &lt;!&ndash;    limit: 3,&ndash;&gt;-->
+<!--        &lt;!&ndash;    maxSize: 3,&ndash;&gt;-->
+<!--            extensions: ['jpg', 'jpeg', 'png', 'gif', 'tiff'],-->
+<!--            changeInput: true,-->
+<!--            showThumbs: true,-->
+<!--            addMore: true-->
+<!--        });-->
 </script>
 
 </body>
