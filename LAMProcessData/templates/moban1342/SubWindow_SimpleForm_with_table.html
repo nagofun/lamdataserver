@@ -1,0 +1,327 @@
+{% extends "SubWindow_base.html" %}
+
+{% block content %}
+
+<!--说明：-->
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ form.subtitle |upper }}</small>
+
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-10">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+
+                            <form role="form" method="post" action="">{% csrf_token %}
+
+                                <label></label>
+
+                                <div class="form-group">
+
+                                    <!--<label>理化检测ID</label>-->
+                                    <!--&lt;!&ndash;<input class="form-control">&ndash;&gt;-->
+                                    <!--<input class="form-control" id="preWTestItemID" type="text"-->
+                                           <!--value="" disabled="">-->
+
+                                    {% for field in form %}
+                                            <div class="form-group">
+                                                <label>{{ field.label|safe }}</label>
+                                                {{ field }}
+                                            </div>
+                                    {% endfor %}
+
+                                    <!--{{ form.id }}-->
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-hover" >
+                                        <thead>
+
+                                            <tr>
+                                                <script>
+
+                                                </script>
+                                                {% for head_label in form.tableHeader %}
+                                                <th>{{ head_label }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody id="id_tbody">
+                                            <tr>
+                                                {% for head_label in form.tableHeader %}
+                                                <td></td>
+                                                {% endfor %}
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+<!--                                <button type="submit" class="btn btn-primary" >保存</button>-->
+
+<!--                                <a href="javascript:window.opener.location.reload();window.opener=null;window.open('','_self');window.close();"  class="btn btn-primary">关闭并返回</a>-->
+                                <a href="javascript:PostMessageToFatherPage();window.close();"  class="btn btn-primary">关闭并返回</a>
+
+                                {% if messages %}
+                                <script>
+                                            {% for msg in messages %}
+                                                alert('{{ msg.message }}');
+                                            {% endfor %}
+
+                                </script>
+                                {% endif %}
+
+                            </form>
+                            <label></label>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <!-- /.panel -->
+
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+    <script type="text/javascript">
+
+        $(".chosen-select").chosen({
+            no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+            search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+            allow_single_deselect:true, //是否允许取消选择
+        })
+        document.getElementById('id_FunctionName').value='{{ form.Function_name_initial }}';
+        StructureCode = {{ StructureCode }};
+        {% ifequal operate 'edit' %}
+        <!-- 若为编辑，则从父页面查询数据,并刷新Table显示 -->
+        QueryMessageFromFatherPage({{ StructureID }});
+        checkForm();
+        {% endifequal %}
+        <!-- 增加table数据 -->
+        function refreshTableData(data)
+        {
+            var tbody=document.getElementById('id_tbody');
+            var rowNum=tbody.rows.length;
+            if(rowNum>0)
+            {
+                for(i=0;i<rowNum;i++)
+                {
+                    <!--table.deleteRow(i);-->
+                    tbody.deleteRow(i);
+                    rowNum=rowNum-1;
+                    i=i-1;
+                }
+            }
+            <!--alert(table.rows.length)-->
+            for(var ever in data) {
+                var row=tbody.insertRow(-1);
+                for(var item in data[ever]){
+                    if(item!='remove'){
+                    var c1=row.insertCell(-1);
+                    c1.innerHTML=data[ever][item];
+                    }
+                }
+            }
+        }
+        <!--  检查参数  -->
+        function checkFunctionParam(){
+            start_Z_value = document.getElementById('id_StartZValue').value;
+            finish_Z_value = document.getElementById('id_FinishZValue').value;
+            thickness = document.getElementById('id_Thickness').value;
+            first_function_number = document.getElementById('id_FirstFunctionNumber').value;
+            isready = true;
+            <!--  判断是否为空   -->
+            if(start_Z_value.length==0 && !isNaN(Number(start_Z_value))){
+                NoticeInput('id_StartZValue', 'red')
+                isready=false
+            }
+            else {start_Z_value = Number(start_Z_value)}
+            if(finish_Z_value.length==0 && !isNaN(Number(finish_Z_value))){
+                NoticeInput('id_FinishZValue', 'red')
+                isready=false
+            }
+            else {finish_Z_value = Number(finish_Z_value)}
+            if(thickness.length==0 && !isNaN(Number(thickness)) && Number(thickness)<=0){
+                NoticeInput('id_Thickness', 'red')
+                isready=false
+            }
+            else {thickness = Number(thickness)}
+            if(first_function_number.length==0 && !isNaN(Number(first_function_number)) && Number(first_function_number)<=0 ){
+                NoticeInput('id_FirstFunctionNumber', 'red')
+                isready=false
+            }
+            else {first_function_number = Number(first_function_number)}
+            <!--   判断是否符合逻辑   -->
+            if(start_Z_value>finish_Z_value){
+                NoticeInput('id_StartZValue', 'red')
+                NoticeInput('id_FinishZValue', 'red')
+                isready=false
+            }
+        }
+
+        <!--  检查暂停冷却函数参数  -->
+        function checkFunctionParam_delay(){
+            start_Z_value = document.getElementById('id_StartZValue').value;
+            finish_Z_value = document.getElementById('id_FinishZValue').value;
+            delay_time = document.getElementById('id_DelayTime').value;
+            isready = true;
+            <!--  判断是否为空   -->
+            if(start_Z_value.length==0 && !isNaN(Number(start_Z_value))){
+                NoticeInput('id_StartZValue', 'red')
+                isready=false
+            }
+            else {start_Z_value = Number(start_Z_value)}
+            if(finish_Z_value.length==0 && !isNaN(Number(finish_Z_value))){
+                NoticeInput('id_FinishZValue', 'red')
+                isready=false
+            }
+            else {finish_Z_value = Number(finish_Z_value)}
+            if(delay_time.length==0 && !isNaN(Number(delay_time)) && Number(delay_time)<=0){
+                NoticeInput('id_DelayTime', 'red')
+                isready=false
+            }
+            else {delay_time = Number(delay_time)}
+            <!--   判断是否符合逻辑   -->
+            if(start_Z_value>finish_Z_value){
+                NoticeInput('id_StartZValue', 'red')
+                NoticeInput('id_FinishZValue', 'red')
+                isready=false
+            }
+        }
+
+        <!-- 计算函数范围并刷新Table表 -->
+        function checkForm(){
+            if( isInArray(['1', '2', '3', '4', '5', '6', '8'], String(StructureCode))){
+                checkFunctionParam();
+                if(isready){
+                    if( thickness>= (finish_Z_value-start_Z_value)){
+                        <!-- 定截面 -->
+                        isConstant = true
+
+                        data = [[
+                            start_Z_value,
+                            finish_Z_value,
+                            {% for i in form.FunColumnRange %}
+                            (first_function_number+{{ i }}),
+                            {% endfor %}
+                        ]];
+                    }else{
+                        <!-- 变截面 -->
+                        isConstant = false
+                        var count = Math.ceil((finish_Z_value-start_Z_value)/thickness);
+                        data = [[
+                            start_Z_value,
+                            finish_Z_value,
+                            {% for i in form.FunColumnRange %}
+                            (first_function_number+count*{{ i }})+'~<br>'+(first_function_number+count*({{ i }}+1)-1),
+                            {% endfor %}
+                        ]];
+                    }
+                    refreshTableData(data);
+                }
+            }
+            else{
+                checkFunctionParam_delay();
+                if(isready){
+                    data = [[
+                        start_Z_value,
+                        finish_Z_value,
+                        delay_time,
+                    ]];
+                    refreshTableData(data);
+                }
+            }
+
+        }
+        <!--  从父页面查询数据  -->
+        function QueryMessageFromFatherPage(structure_id){
+            paramdict = window.opener.paramdict;
+<!--            console.log(paramdict);-->
+            document.getElementById('id_FunctionName').value=paramdict['FunctionName'];
+            document.getElementById('id_FunctionNote').value=paramdict['FunctionNote'];
+            document.getElementById('id_StartZValue').value=paramdict['StartZValue'];
+            document.getElementById('id_FinishZValue').value=paramdict['FinishZValue'];
+            if(document.getElementById("id_DelayTime")){
+                document.getElementById('id_DelayTime').value=paramdict['DelayTime'];
+            }
+            if(document.getElementById("id_Thickness")){
+                document.getElementById('id_Thickness').value=paramdict['Thickness'];
+            }
+            if(document.getElementById("id_FirstFunctionNumber")){
+                document.getElementById('id_FirstFunctionNumber').value=paramdict['FirstFunctionNumber'];
+            }
+            if(paramdict['Function_Contour'] != '/'){
+                document.getElementById('id_Function_Contour').value=paramdict['Function_Contour'];
+            }
+        }
+
+        <!--  传递参数给父页面  -->
+        function PostMessageToFatherPage(){
+            var postdata = {
+                    "StructureType": '{{ form.subtitle |upper }}',
+                    "StructureCode": {{ StructureCode }},
+                    "FunctionName": document.getElementById('id_FunctionName').value,
+                    "FunctionNote": document.getElementById('id_FunctionNote').value,
+                    "start_Z_value": start_Z_value,
+                    "finish_Z_value": finish_Z_value,
+<!--                    "thickness": thickness,-->
+<!--                    "first_function_number": first_function_number,-->
+                }
+            if(document.getElementById("id_DelayTime")){
+                postdata["delay_time"]=document.getElementById("id_DelayTime").value;
+            }
+            else{
+                postdata["delay_time"] = '/';
+            }
+
+            if(document.getElementById("id_Thickness")){
+                postdata["thickness"]=document.getElementById("id_Thickness").value;
+            }
+            else{
+                postdata["thickness"] = '/';
+            }
+
+            if(document.getElementById("id_FirstFunctionNumber")){
+                postdata["first_function_number"]=document.getElementById("id_FirstFunctionNumber").value;
+            }
+            else{
+                postdata["first_function_number"] = '/';
+            }
+
+            if(document.getElementById("id_Function_Contour")){
+                postdata["if_contour"]=document.getElementById("id_Function_Contour").value;
+            }
+            else{
+                postdata["if_contour"] = '/';
+            }
+
+            {% if StructureID %}
+            postdata["edit_StructureID"] = {{ StructureID }};
+            {% else %}
+            postdata["edit_StructureID"] = '/';
+            {% endif %}
+
+
+            window.opener.postMessage(postdata, "*");
+        }
+
+    </script>
+    {% endblock %}

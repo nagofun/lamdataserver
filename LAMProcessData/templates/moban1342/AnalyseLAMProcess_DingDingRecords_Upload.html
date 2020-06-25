@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="/assets/jquery.filer/js/jquery-latest.min.js"></script>
+    <link href="/assets/jquery.filer/css/jquery.filer.css" type="text/css" rel="stylesheet" />
+    <link href="/assets/jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css" type="text/css" rel="stylesheet" />
+    <script src="/assets/jquery.filer/js/jquery.filer.min.js"></script>
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                上传
+                <small>钉钉-激光成形日志</small>
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+
+                    <div class="panel panel-default">
+
+                        <div class="panel-body">
+                            <form  method="post" action="" enctype="multipart/form-data" >{% csrf_token %}
+                                <div class="form-group">
+                                    <label>上传图片</label>
+                                    <input type="file" name="image_file" id="filer_input" multiple="multiple">
+                                </div>
+                                <div class="form-group">
+                                    <label>上传Excel文件</label>
+                                    <input type="file" name="excel_file" id="filer_input_excel" multiple="multiple">
+                                </div>
+                                <input type="submit" value="提交" class="btn btn-success">
+                            </form>
+                            {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.error_messages|safe }}
+                                    {{ form.errors }}
+                                </div>
+                            {% endifequal %}
+                        </div>
+                        <!-- /.panel-body -->
+
+                    </div>
+                <!-- /.panel -->
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function load(){
+        this;
+    }
+<!--        $(".chosen-select").chosen({-->
+<!--            no_results_text: "没有找到结果！",//搜索无结果时显示的提示-->
+<!--            search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配-->
+<!--            allow_single_deselect:true, //是否允许取消选择-->
+<!--        })-->
+
+    $('#filer_input_excel').filer({
+        limit: 1,
+        maxSize: 1,
+        extensions: ['xls'],
+        changeInput: true,
+        showThumbs: true,
+
+    });
+
+    $('#filer_input').filer({
+        changeInput: '<div class="jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-folder"></i></div><div class="jFiler-input-text"><h3>点击本框</h3> <span style="display:inline-block; margin: 15px 0">或</span></div><a class="jFiler-input-choose-btn blue">浏览文件</a></div></div>',
+        showThumbs: true,
+        theme: "dragdropbox",
+        {% verbatim %}
+        templates: {
+            box: '<ul class="jFiler-items-list jFiler-items-grid"></ul>',
+            item: '<li class="jFiler-item">\
+                        <div class="jFiler-item-container">\
+                            <div class="jFiler-item-inner">\
+                                <div class="jFiler-item-thumb">\
+                                    <div class="jFiler-item-status"></div>\
+                                    <div class="jFiler-item-info">\
+                                        <span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name | limitTo: 25}}</b></span>\
+                                        <span class="jFiler-item-others">{{fi-size2}}</span>\
+                                    </div>\
+                                    {{fi-image}}\
+                                </div>\
+                                <div class="jFiler-item-assets jFiler-row">\
+                                    <ul class="list-inline pull-left">\
+                                        <li>{{fi-progressBar}}</li>\
+                                    </ul>\
+                                    <ul class="list-inline pull-right">\
+                                        <li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
+                                    </ul>\
+                                </div>\
+                            </div>\
+                        </div>\
+                    </li>',
+            itemAppend: '<li class="jFiler-item">\
+                            <div class="jFiler-item-container">\
+                                <div class="jFiler-item-inner">\
+                                    <div class="jFiler-item-thumb">\
+                                        <div class="jFiler-item-status"></div>\
+                                        <div class="jFiler-item-info">\
+                                            <span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name | limitTo: 25}}</b></span>\
+                                            <span class="jFiler-item-others">{{fi-size2}}</span>\
+                                        </div>\
+                                        {{fi-image}}\
+                                    </div>\
+                                    <div class="jFiler-item-assets jFiler-row">\
+                                        <ul class="list-inline pull-left">\
+                                            <li><span class="jFiler-item-others">{{fi-icon}}</span></li>\
+                                        </ul>\
+                                        <ul class="list-inline pull-right">\
+                                            <li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
+                                        </ul>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </li>',
+            itemAppendToEnd: false,
+            removeConfirmation: true,
+            _selectors: {
+                list: '.jFiler-items-list',
+                item: '.jFiler-item',
+                remove: '.jFiler-item-trash-action'
+            }
+        }
+        {% endverbatim %}
+    });
+</script>
+{% endblock %}

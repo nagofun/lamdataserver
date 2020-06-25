@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--<script src="/assets/jquery.filer/js/jquery-latest.min.js"></script>-->
+<!--    <link href="/assets/jquery.filer/css/jquery.filer.css" type="text/css" rel="stylesheet" />-->
+<!--    <link href="/assets/jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css" type="text/css" rel="stylesheet" />-->
+<!--    <script src="/assets/jquery.filer/js/jquery.filer.min.js"></script>-->
+
+    <link rel="stylesheet" type="text/css" href="/assets/viewerjs-master/dist/viewer.min.css">
+    <script type="text/javascript" charset="utf-8" src="/assets/viewerjs-master/dist/viewer.min.js"></script>
+
+
+    <style type="text/css">
+    photo_height = 80;
+    @charset "utf-8";
+    /* CSS Document */
+    *{
+        margin:0;
+        padding:0;
+    }
+    body{
+        font-family:"微软雅黑";
+        background-color:#ddd;
+    }
+    .box{
+<!--        width:300px;-->
+<!--        height:400px;-->
+<!--        height:400px;-->
+        background:#fff;
+        margin:3px auto;
+        padding:3px;
+    }
+    .box .head span{
+        font-size:18px;
+        color:#333;
+    }
+    .box .head{
+        margin-bottom:5px;
+    }
+    .box .head a{
+        text-decoration:none;
+        float:right;
+        font-size:15px;
+        color:#333;
+    }
+    .box .head a:hover{
+        color:#F00;
+    }
+    .box ul li{
+        width:100px;
+<!--        width:160px;-->
+        height:120px;
+<!--        height:240px;-->
+        list-style:none;
+        position:relative;
+        float:left;
+        margin-left:3px;
+        margin-bottom:3px;
+        overflow:hidden;
+    }
+    .box ul li .deatil{
+<!--        width:160px;-->
+<!--        height:240px;-->
+        background:rgba(0,0,0,0.7);
+        position:absolute;
+        top:-240px;
+        -webkit-transition:all 0.3s ease;<!--适应ie，谷歌，苹果浏览器内核-->
+        -o-transition:all 0.3s ease;<!--适应Opera浏览器内核-->
+        -moz-transition:all 0.3s ease;<!--火狐浏览器-->
+        -ms-transition:all 0.3s ease;<!--微软-->
+    }
+
+    .box ul li .deatil h2{
+        font-size:18px;
+        color:#fff;
+        text-align:center;
+        padding-top:5px;
+        }
+    .box ul li .deatil p{
+        font-size:16px;
+        text-align:center;
+        margin:3px;
+        color:#fff;
+    }
+    .box ul li .deatil a{
+        font-size:15px;
+        display:block;
+        color:#fff;
+        background-color:#F00;
+        text-decoration:none;
+        width:100px;
+        height:40px;
+        text-align:center;
+        line-height:10px;
+        margin:0 auto;
+        padding-inline-start: 5px;
+    }
+    .box ul li:hover .deatil{
+        top:0;
+    }
+    img{
+        display:block;
+        width:100%;
+        heigth:300px;
+        object-fit:cover
+    }
+
+
+    </style>
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                浏览
+                <small>钉钉-激光成形日志</small>
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-7">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                                <thead>
+
+                                <tr>
+                                    <th align="center" style="width: 24px">ID</th>
+                                    {% for field,width in Browse_fields %}
+                                    <th align="center" style="width: {{ width }}">
+                                        {{ field }}
+                                    </th>
+                                    {% endfor %}
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for record in all_entries %}
+                                    <tr onclick="refreshForm({{ record.id }});">
+                                        {% for label, field in record.items %}
+                                        <td>{{ field|truncatewords:10 }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+
+                            </table>
+                        </div>
+                        <!-- /.panel-body -->
+
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th align="center" style="width: 20%"></th>
+                                        <th align="center" style="width: 80%"></th>
+                                    </tr>
+                                </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td ><b>时间</b></td>
+                                            <td id="id_acquisition_time"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>事件描述</b></td>
+                                            <td id="id_description"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>日志填报人</b></td>
+                                            <td id="id_writer"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>汇报人</b></td>
+                                            <td id="id_reporter"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>成形工段编号</b></td>
+                                            <td id="id_worksection_code"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>零件编号</b></td>
+                                            <td id="id_product_code"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>评论信息</b></td>
+                                            <td id="id_comment">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>照片</b></td>
+                                            <td id="id_photos">
+                                                <div class="box">
+                                              <!-- 图片内容 -->
+                                                    <ul id="viewer">
+                                                        {% for pic in pictures %}
+                                                        <li>
+                                                            <img src="{{ Common_URL.Query_DingDingRecordPicture }}{{ pic.id }}/"  height="240px" alt=""/>
+                                                        </li>
+                                                        {% empty %}
+                                                        <li>暂无照片</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+<!--                            <form role="form" method="post" action="">{% csrf_token %}-->
+<!--                                {% for field in form %}-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>{{ field.label }}</label>-->
+<!--                                    {{ field |safe }}-->
+<!--                                </div>-->
+<!--                                {% endfor %}-->
+<!--                            </form>-->
+                        </div>
+                        <!-- /.panel-body -->
+
+                    </div>
+                </div>
+                <!-- /.panel -->
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function load(){
+        this;
+    }
+<!--        $(".chosen-select").chosen({-->
+<!--            no_results_text: "没有找到结果！",//搜索无结果时显示的提示-->
+<!--            search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配-->
+<!--            allow_single_deselect:true, //是否允许取消选择-->
+<!--        })-->
+
+<!--    $('#filer_input_excel').filer({-->
+<!--        limit: 1,-->
+<!--        maxSize: 1,-->
+<!--        extensions: ['xls'],-->
+<!--        changeInput: true,-->
+<!--        showThumbs: true,-->
+
+<!--    });-->
+
+<!--    根据id，刷新右侧表格-->
+    function refreshForm(record_id){
+        $.get(
+            '{{ Common_URL.Query_DingDingRecords_info }}'+record_id+'/',
+            function(data, textStatus)
+            {
+                this;
+                document.getElementById('id_acquisition_time').innerHTML=data['acquisition_time'];
+                document.getElementById('id_writer').innerHTML=data['writer'];
+                document.getElementById('id_reporter').innerHTML=data['reporter'];
+                document.getElementById('id_worksection_code').innerHTML=data['worksection_code'];
+                document.getElementById('id_product_code').innerHTML=data['product_code'];
+                document.getElementById('id_description').innerHTML=data['description'];
+
+                if(data['description'].length>0){
+                    _desc = '';
+                    var desclist =  data['description'].split('\n')
+                    for(var line in desclist){
+                        if(line == 'remove'){break;}
+                        _desc += desclist[line]+'<br>'
+                    }
+
+                }else{_desc=''}
+                document.getElementById('id_description').innerHTML=_desc;
+
+                if(data['comment'].length>0){
+                    _cmt = '<ul>';
+                    var cmtlist =  data['comment'].split('\n')
+                    for(var line in cmtlist){
+                    if(line == 'remove'){break;}
+                    _cmt += '<li>'+cmtlist[line]+'</li>'
+                    }
+                    _cmt += '</ul>';
+                }else{_cmt='暂无评论'}
+                document.getElementById('id_comment').innerHTML=_cmt;
+
+                <!--  图片  -->
+                _photos_html = '<div class="box"><ul id="viewer">';
+                for(var photo_id in data['photos']){
+                    if(photo_id == 'remove'){break;}
+                    _photo='<li><img src="{{ Common_URL.Query_DingDingRecordPicture }}' +data['photos'][photo_id]+ '/" height="120px"  alt=""/></li>';
+                    _photos_html+=_photo;
+                }
+                _photos_html += '</ul></div>';
+                document.getElementById('id_photos').innerHTML =_photos_html
+                viewer = new Viewer(document.getElementById('viewer'),{
+                    url: 'data-original'
+                });
+            }
+        );
+
+    }
+</script>
+{% endblock %}

@@ -4,6 +4,9 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>LMPM Data Server 激光增材制造过程记录系统</title>
+
+
+
     <link rel="shortcut icon" href="/assets/img/favicon-1.ico" type="image/x-icon" />
     <!-- Bootstrap Styles-->
     <link href="/assets/css/bootstrap.css" rel="stylesheet"/>
@@ -30,6 +33,8 @@
     <script src="/assets/chosen_v1.8.7/docsupport/prism.js" type="text/javascript" charset="utf-8"></script>
     <script src="/assets/chosen_v1.8.7/docsupport/init.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" src="/assets/js/matching.js"></script>
+
+
 </head>
 <body onload="load()">
 <div id="wrapper">
@@ -434,6 +439,12 @@
                         <li>
                             <a onclick="shownewpage_MissionFilter('{{ Common_URL.SubWindow_URL_AnalyseLAMProcess_MissionFilter_LayerData }}', true);">激光成形过程分层分析</a>
                         </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_AnalyseLAMProcess_DingDingRecords_Upload }}">上传钉钉激光成形日志</a>
+                        </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_AnalyseLAMProcess_DingDingRecords_Browse }}">浏览钉钉激光成形日志</a>
+                        </li>
                     </ul>
                 </li>
                 {% endif %}
@@ -447,6 +458,9 @@
                         </li>
                         <li>
                             <a href="{{ Common_URL.Back_URL_SShapeBreak }}">负搭接弓字步拆分</a>
+                        </li>
+                        <li>
+                            <a href="{{ Common_URL.Back_URL_MakeMainProgramFile_8070 }}">在线生成CNC8070主程序段</a>
                         </li>
 
                     </ul>
@@ -588,6 +602,23 @@
         <!--$("#"+objid).animate({backgroundColor:colorvalue1,color: "#fff"},400);-->
         $("#"+objid).animate({backgroundColor:"#fff",color: "#000000"},500);
     }
+    function openPostWindow(templatename, params, window_W=600,window_H=700) {
+<!--        var newWin = window.open(templatename,'content','width='+window_W+',height='+window_H+',top=150,left=280, toolbar=yes, menubar=yes, scrollbars=auto, resizable=no, location=no, status=no'),-->
+<!--        var newWin = window.open();-->
+        newWin=window.open('','');
+	    newWin.document.write("<p>这是'我的窗口'</p>");
+	    newWin.focus();
+        formStr = '';
+        //设置样式为隐藏，打开新标签再跳转页面前，如果有可显示的表单选项，用户会看到表单内容数据
+        formStr = '<form style="visibility:hidden;" method="POST" action="' + templatename + '">'
+        for (var i in params) {
+            formStr += '<input type="hidden" name="'+i+'" value=\'' + params[i] + '\' />'
+        }
+        formStr += '</form>';
+        newWin.document.body.innerHTML = formStr;
+        newWin.document.forms[0].submit();
+        return newWin;
+    }
     function shownewpage(templatename,ifMax=false, window_W=600,window_H=700)
     {
         if(ifMax==true){
@@ -681,12 +712,24 @@
 
     <!--显示input值，返回datalist对应value-->
     <!-- 其中 option 中，如此标记：  data-value="42" value="The answer"-->
-    function getValue_from_datalist(input_id, datalist_id, ){
+    function getValue_from_datalist(input_id, datalist_id ){
         var shownVal = document.getElementById(input_id).value;
         return document.querySelector("#"+datalist_id+" option[value='"+shownVal+"']").dataset.value;
     }
 
-
+    /**
+     * 使用循环的方式判断一个元素是否存在于一个数组中
+     * @param {Object} arr 数组
+     * @param {Object} value 元素值
+     */
+    function isInArray(arr,value){
+        for(var i = 0; i < arr.length; i++){
+            if(value === arr[i]){
+                return true;
+            }
+        }
+        return false;
+    }
 
 	Array.prototype.indexOf = function(val) {
         for (var i = 0; i < this.length; i++) {

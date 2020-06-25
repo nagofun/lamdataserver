@@ -52,6 +52,7 @@ import LAMProcessData.realtime_records as RealtimeRecord
 import LAMProcessData.process_realtime_finedata as RT_FineData
 from apscheduler.scheduler import Scheduler
 import json
+import xlrd
 # import LAMProcessData.checkmd5
 # import sys
 # import lamdataserver.settings.DEBUG as DEBUG
@@ -351,6 +352,7 @@ Common_URL['UpdateRecordToFineData'] = Common_URL['ProcessPath'] + 'LAMProcessDa
 # Common_URL['UpdateRecordToFineData'] = Common_URL['ProcessPath'] + 'QueryData/ProgressBarValue/Update_ExistingData_to_FineData'
 Common_URL['Query_UpdateRecordToFineData'] = Common_URL['ProcessPath'] +  'QueryData/ProgressBarValue/Update_ExistingData_to_FineData/'
 Common_URL['Query_DefectPicture'] = Common_URL['ProcessPath'] +  'QueryData/NonDestructiveTest/DefectPicture_by_Defect/'
+Common_URL['Query_DingDingRecordPicture'] = Common_URL['ProcessPath'] +  'QueryData/AnalyseLAMProcess/DingDingRecordPictures_by_ID/'
 
 # 基本信息
 Common_URL['EditBasicInfomation'] = Common_URL['ProcessPath'] + 'EditBasicInfomation/'
@@ -400,6 +402,7 @@ Common_URL['Back_URL_machiningstate'] = Common_URL['EditBasicInfomation'] + 'Mac
 Common_URL['Back_URL_physicochemicaltest_mission_Product'] = Common_URL['InspectionRecords'] + 'PhysicochemicalTest/Product/'
 Common_URL['Back_URL_physicochemicaltest_mission_RawStock'] = Common_URL['InspectionRecords'] + 'PhysicochemicalTest/RawStock/'
 Common_URL['Back_URL_nondestructivetest_mission_Product'] = Common_URL['InspectionRecords'] + 'NonDestructiveTest/Product/'
+Common_URL['Back_URL_nondestructivetest_mission_RawStock'] = Common_URL['InspectionRecords'] + 'NonDestructiveTest/RawStock/'
 
 # 子窗
 Common_URL['SubWindow_URL_LAMProcessParameters_Add'] = Common_URL['Back_URL_lamprocessparameters'] + 'AddLAMParameter/'
@@ -493,6 +496,10 @@ Common_URL['Back_URL_AnalyseLAMProcess_AccumulateData'] = Common_URL['AnalyseLAM
 Common_URL['Back_URL_AnalyseLAMProcess_LayerData'] = Common_URL['AnalyseLAMProcess'] + 'LayerData/'
 Common_URL['Back_URL_AnalyseLAMProcess_ScanningRate3D'] = Common_URL['AnalyseLAMProcess'] + 'ScanningRate3D/'
 
+Common_URL['Back_URL_AnalyseLAMProcess_DingDingRecords_Upload'] = Common_URL['AnalyseLAMProcess'] + 'DingDingRecords/Upload/'
+Common_URL['Back_URL_AnalyseLAMProcess_DingDingRecords_Browse'] = Common_URL['AnalyseLAMProcess'] + 'DingDingRecords/Browse/'
+Common_URL['Query_DingDingRecords_info'] = Common_URL['ProcessPath'] + 'QueryData/AnalyseLAMProcess/DingDingRecords_by_ID/'
+
 # 激光成形现场操作
 
 # Common_URL['Back_URL_'] = Common_URL[
@@ -521,6 +528,7 @@ del _allWorksection_list
 # 编程小工具
 Common_URL['Back_URL_BreakBlockResumption'] = Common_URL['PracticalTools'] + 'BreakBlockResumption/'
 Common_URL['Back_URL_SShapeBreak'] = Common_URL['PracticalTools'] + 'SShapeBreak/'
+Common_URL['Back_URL_MakeMainProgramFile_8070'] = Common_URL['PracticalTools'] + 'MakeMainProgramFile_8070/'
 
 # 查询
 Common_URL['Query_LAMTechInst_Preview'] = Common_URL['ProcessPath'] + 'QueryData/PreviewTable/LAMTechniqueInstruction/'
@@ -2725,6 +2733,20 @@ def edit_ProductNonDestructiveTest(request):
 	# return edit_TemplatePhyChemTest(request, 1, ProductNonDestructiveTestForm_Edit)
 	return edit_TemplateNonDestructiveTest(request, 1, ProductNonDestructiveTestForm_Edit)
 
+# 原材料无损检测 新建
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def new_RawStockNonDestructiveTest(request):
+	return BasicInformation_New(request,
+								ModelForm=RawStockNonDestructiveTestForm_New,
+								modelname='nondestructivetest_mission_RawStock',
+								TableType='advanced',
+								isvalidType='custom',
+								)
+
+@permission_required('LAMProcessData.Operator_INSP', login_url=Common_URL['403'])
+def edit_RawStockNonDestructiveTest(request):
+	return edit_TemplateNonDestructiveTest(request, 0, RawStockNonDestructiveTestForm_Edit)
+
 '''============================================================================'''
 
 
@@ -3382,6 +3404,119 @@ def download_template(request, tempfilepath):
 	return response
 
 '''============================================================================'''
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def AnalyseLAMProcess_DingDingRecords_Upload(request):
+	# 上传钉钉日志
+	def filter_emoji(desstr, restr=''):
+		# 过滤表情
+		try:
+			res = re.compile(u'[\U00010000-\U0010ffff]')
+		except re.error:
+			res = re.compile(u'[\uD800-\uDBFF][\uDC00-\uDFFF]')
+		return res.sub(restr, desstr)
+	
+	if request.method != 'POST':
+		return render(request, "AnalyseLAMProcess_DingDingRecords_Upload.html",
+		              {'Common_URL': Common_URL,})
+	else:
+		# for img in request.FILES.getlist('image_file[]'):
+		# 	_def_pic = DingDingPicture.objects.create(
+		# 		picture=img
+		# 	)
+		# 	DingDingPicture.objects.create()
+		try:
+			uploadedFile = request.FILES.get('excel_file')
+			tempFilePath = uploadedFile.temporary_file_path()
+		# for excel in request.FILES.getlist('excel_file'):
+			x1 = xlrd.open_workbook(tempFilePath)
+			Sheet_obj = x1.sheets()[0]
+			nrows = Sheet_obj.nrows  # 获取该sheet中的有效行数
+			for i in range(1, nrows):
+				row_value = Sheet_obj.row_values(i, start_colx=0, end_colx=None)  # 返回由该行中所有单元格的数据组成的列表
+				if row_value[0] == '':
+					continue
+				try:
+					_datetime = datetime.datetime.strptime(row_value[7], "%Y-%m-%d %H:%M")
+				except:
+					_datetime = datetime.datetime.strptime(row_value[3], "%Y年%m月%d日 %H:%M")
+				if len(LAMProcess_DingDingRecord.objects.filter(acquisition_timestamp=int(time.mktime(_datetime.timetuple()))))>0:
+					continue
+					
+				_image_url_list = row_value[12].split('\n')
+				_image_name_list = list(map(lambda _url : os.path.basename(_url),  _image_url_list))
+				_image_list = list(filter(lambda _temp_image: _temp_image.name in _image_name_list, request.FILES.getlist('image_file[]')))
+				_record = LAMProcess_DingDingRecord.objects.create(
+					acquisition_time = _datetime,
+					acquisition_timestamp = int(time.mktime(_datetime.timetuple())),
+					description = row_value[5],
+					writer = row_value[1],
+					reporter = row_value[10],
+					worksection_code = row_value[8]+','+row_value[6],
+					product_code = row_value[9],
+					comment = filter_emoji(row_value[14]),
+				)
+				for _img in _image_list:
+					_photo_obj = DingDingPicture.objects.create(
+						picture=_img
+					)
+					_record.photos.add(_photo_obj)
+				_record.save()
+			success = True
+		except:
+			success = False
+				
+				
+			
+		return render(request, "AnalyseLAMProcess_DingDingRecords_Upload.html",
+		              {'Common_URL': Common_URL,
+		               'save_success':success})
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def AnalyseLAMProcess_DingDingRecords_Browse(request):
+	# 浏览钉钉日志
+	Browse_fields = [
+		['时间','150px'],
+		['事件描述',''],
+		['工段','100px'],
+		['产品编号','100px'],
+	]
+	try:
+		all_entries = LAMProcess_DingDingRecord.objects.all()
+		_modelfilednames = [f.attname for f in LAMProcess_DingDingRecord._meta.fields]
+		# attlist = [f.attname for f in LAMProcess_DingDingRecord._meta.fields]
+		attlist = ['id','acquisition_time',
+		          'description',
+		          'worksection_code',
+		          'product_code',]
+	except:
+		pass
+	
+	all_entries_dict = []
+	if all_entries is not None:
+		for i in all_entries:
+			_dict = {}
+			for att in attlist:
+				if att in _modelfilednames:
+					# 替换_id, 从而获得外键实例的名称
+					_dict[att] = str(i.__getattribute__(att.replace('_id', '')))
+				else:
+					_dict[att] = list(map(str, list(i.__getattribute__(att).all())))
+			
+			# _dict['displayname'] = str(i)
+			
+			_dict['description'] = _dict['description'][:100]+'...' if len(_dict['description'])>100 else _dict['description']
+			all_entries_dict.append(_dict)
+	
+	
+	# all_entries = list(LAMProcess_DingDingRecord.objects.all().order_by('acquisition_timestamp'))
+	_form_inst = DingDingRecordsForm_Browse()
+	return render(request, "AnalyseLAMProcess_DingDingRecords_Browse.html",
+	              {'Common_URL': Common_URL,
+	               'Browse_fields':Browse_fields,
+	               'all_entries':all_entries_dict,
+	               'form':_form_inst,
+	               })
+
 
 @permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
 def PracticalTools_BreakBlockResumption(request):
@@ -3475,6 +3610,7 @@ def PracticalTools_BreakBlockResumption(request):
 				   'save_success':save_success,
 				   })
 
+
 @permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
 def PracticalTools_SShapeBreak(request):
 	# 连续弓字步拆分扫描
@@ -3532,7 +3668,447 @@ def PracticalTools_SShapeBreak(request):
 				   'tempfile_name':tempfile_name,
 				   'save_success': save_success,
 				   })
+
+
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def PracticalTools_MakeMainProgramFile_8070(request):
+	# 生成主程序段并提供下载
+
+	'''主函数开始'''
+	print('start PracticalTools_MakeMainProgramFile')
+	tempfile_name = None
+	if request.method != 'POST':
+		# 创建一个空表单在页面显示
+		_form_inst = MainProgramFileForm()
+		save_success = None
+		return render(request, "PracticalTools_MakeMainProgramFile.html",
+		              {'form': _form_inst,
+		               'Common_URL': Common_URL,
+		               'tempfile_name': tempfile_name,
+		               'save_success': save_success,
+		               })
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def PracticalTools_MakeMainProgramFile_8070_MakeCode(request):
+	if request.method == 'POST':
+		def makecode(_func):
+			if _func['type_code'] in ['1', '2', '3', '4', '5', '6', '8']:
+				# 是否定截面
+				IfConstantLayer = True if _func['thickness'] >= _func['finish_z_value'] - _func['start_z_value'] else False
+				TabText = '\t'
+				gcode = '(%s)\n(%s)\n%%L %s\n\n' % (_func['type'], _func['note'], _func['name'])
+				if _func['type_code'] == '1':
+					# '8周期（弓字步正搭接填充）'
+					
+					if IfConstantLayer:
+						# 定截面
+						gcode += '\t$IF [P114>=%.3f] * [P114<%.3f]\n' % (_func['start_z_value'], _func['finish_z_value'])
+						if _func['if_contour']:
+							gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % (_func['first_function_number'] + 8, _func['first_function_number'] + 9)
+						gcode += '\t\t$IF [P110==1] * [P111==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [P111==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==1] * [P111==2]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [P111==2]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==1] * [P111==3]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [P111==3]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==1] * [P111==4]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [P111==4]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ENDIF\n' % tuple([_func['first_function_number'] + i for i in [0, 4, 1, 5, 2, 6, 3, 7]])
+						if _func['if_contour']:
+							gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % (_func['first_function_number'] + 8, _func['first_function_number'] + 9)
+						gcode += '\t$ENDIF \n'
+					
+					else:
+						# 变截面
+						layers = int((_func['finish_z_value'] - _func['start_z_value']) / _func['thickness'])
+						
+						for i in range(layers):
+							gcode += '\t%s [P114>=%.3f] * [P114<%.3f]\n' % (
+										["$IF", "$ELSEIF"][i > 0],
+										_func['start_z_value'] + i * _func['thickness'],
+										_func['start_z_value'] + (i + 1) * _func['thickness'])
+							if _func['if_contour']:
+								gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==1]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==1]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ENDIF\n' %  tuple([_func['first_function_number'] + layers * j + i for j in range(8,10)])
+							gcode += '\t\t$IF [P110==1] * [P111==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [P111==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==1] * [P111==2]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [P111==2]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==1] * [P111==3]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [P111==3]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==1] * [P111==4]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [P111==4]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % tuple([_func['first_function_number'] + layers * j + i for j in [0,4,1,5,2,6,3,7]])
+							if _func['if_contour']:
+								gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==0]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==0]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ENDIF\n' % tuple([_func['first_function_number'] + layers * j + i for j in range(8,10)])
+							
+						gcode += '\t$ENDIF\n'
+				
+				elif _func['type_code'] == '2':
+					# '4周期（弓字步负搭接填充/回填负搭接填充）'
+					if IfConstantLayer:
+						# 定截面
+						gcode += '\t$IF [P114>=%.3f] * [P114<%.3f]\n' % (_func['start_z_value'], _func['finish_z_value'])
+						if _func['if_contour']:
+							gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % (
+							         _func['first_function_number'] + 4, _func['first_function_number'] + 5)
+						gcode += '\t\t$IF [P110==1] * [[P111 MOD 2]==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==1] * [[P111 MOD 2]==0]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==0]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ENDIF\n' % tuple(
+							[_func['first_function_number'] + i for i in [0, 2, 1, 3]])
+						if _func['if_contour']:
+							gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % (
+							         _func['first_function_number'] + 4, _func['first_function_number'] + 5)
+						gcode += '\t$ENDIF \n'
+					else:
+						# 变截面
+						layers = int((_func['finish_z_value'] - _func['start_z_value']) / _func['thickness'])
+						for i in range(layers):
+							gcode += '\t%s [P114>=%.3f] * [P114<%.3f]\n' % (
+								["$IF", "$ELSEIF"][i > 0],
+								_func['start_z_value'] + i * _func['thickness'],
+								_func['start_z_value'] + (i + 1) * _func['thickness'])
+							if _func['if_contour']:
+								gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==1]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==1]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ENDIF\n' % tuple(
+									[_func['first_function_number'] + layers * j + i for j in range(4, 6)])
+							gcode += '\t\t$IF [P110==1] * [[P111 MOD 2]==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==1] * [[P111 MOD 2]==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % tuple(
+								[_func['first_function_number'] + layers * j + i for j in [0, 2, 1, 3]])
+							if _func['if_contour']:
+								gcode += '\t\t$IF [P200==1] * [P110==1] * [P112==0]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ELSEIF [P200==1] * [P110==2] * [P112==0]\n' \
+								         '\t\t\t#CALL %d.NC\n' \
+								         '\t\t$ENDIF\n' % tuple(
+									[_func['first_function_number'] + layers * j + i for j in range(4, 6)])
+						gcode += '\t$ENDIF\n'
+				elif _func['type_code'] == '3':
+					# '4周期（轮廓偏移填充）'
+					if IfConstantLayer:
+						# 定截面
+						gcode += '\t$IF [P114>=%.3f] * [P114<%.3f]\n' % (_func['start_z_value'], _func['finish_z_value'])
+						gcode += '\t\t$IF [P110==1] * [[P111 MOD 2]==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==1] * [[P111 MOD 2]==0]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==0]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ENDIF\n' % tuple(
+							[_func['first_function_number'] + i for i in [0, 2, 1, 3]])
+						gcode += '\t$ENDIF \n'
+					else:
+						# 变截面
+						layers = int((_func['finish_z_value'] - _func['start_z_value']) / _func['thickness'])
+						for i in range(layers):
+							gcode += '\t%s [P114>=%.3f] * [P114<%.3f]\n' % (
+								["$IF", "$ELSEIF"][i > 0],
+								_func['start_z_value'] + i * _func['thickness'],
+								_func['start_z_value'] + (i + 1) * _func['thickness'])
+							gcode += '\t\t$IF [P110==1] * [[P111 MOD 2]==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==1] * [[P111 MOD 2]==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2] * [[P111 MOD 2]==0]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % tuple(
+								[_func['first_function_number'] + layers * j + i for j in [0, 2, 1, 3]])
+						gcode += '\t$ENDIF\n'
+				elif _func['type_code'] == '4' or _func['type_code'] == '5':
+					# '2周期（轮廓线扫描）'
+					# '2周期（低功率扫坡口根部）'
+					if IfConstantLayer:
+						# 定截面
+						gcode += '\t$IF [P114>=%.3f] * [P114<%.3f]\n' % (_func['start_z_value'], _func['finish_z_value'])
+						gcode += '\t\t$IF [P110==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P110==2]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ENDIF\n' % tuple(
+							[_func['first_function_number'] + i for i in [0, 1]])
+						gcode += '\t$ENDIF \n'
+					else:
+						# 变截面
+						layers = int((_func['finish_z_value'] - _func['start_z_value']) / _func['thickness'])
+						for i in range(layers):
+							gcode += '\t%s [P114>=%.3f] * [P114<%.3f]\n' % (
+								["$IF", "$ELSEIF"][i > 0],
+								_func['start_z_value'] + i * _func['thickness'],
+								_func['start_z_value'] + (i + 1) * _func['thickness'])
+							gcode += '\t\t$IF [P110==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P110==2]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % tuple(
+								[_func['first_function_number'] + layers * j + i for j in [0, 1]])
+						gcode += '\t$ENDIF\n'
+				
+				elif _func['type_code'] == '6':
+					# 'N周期（定期补偿成形）'
+					if IfConstantLayer:
+						# 定截面
+						gcode += '\t$IF [P114>=%.3f] * [P114<%.3f]\n' % (_func['start_z_value'], _func['finish_z_value'])
+						gcode += '\t\t$IF [P213==1]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P213==2]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P213==3]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ELSEIF [P213==4]\n' \
+						         '\t\t\t#CALL %d.NC\n' \
+						         '\t\t$ENDIF\n' % tuple(
+							[_func['first_function_number'] + i for i in [0, 2, 1, 3]])
+						gcode += '\t$ENDIF \n'
+					else:
+						# 变截面
+						layers = int((_func['finish_z_value'] - _func['start_z_value']) / _func['thickness'])
+						for i in range(layers):
+							gcode += '\t%s [P114>=%.3f] * [P114<%.3f]\n' % (
+								["$IF", "$ELSEIF"][i > 0],
+								_func['start_z_value'] + i * _func['thickness'],
+								_func['start_z_value'] + (i + 1) * _func['thickness'])
+							gcode += '\t\t$IF [P213==1]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P213==2]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P213==3]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ELSEIF [P213==4]\n' \
+							         '\t\t\t#CALL %d.NC\n' \
+							         '\t\t$ENDIF\n' % tuple(
+								[_func['first_function_number'] + layers * j + i for j in [0, 2, 1, 3]])
+						gcode += '\t$ENDIF\n'
+						
+				elif _func['type_code'] == '8':
+					# '1周期（轮廓线扫描）'
+					if IfConstantLayer:
+						# 定截面
+						gcode += '\t$IF [P114>=%.3f] * [P114<%.3f]\n' % (
+						_func['start_z_value'], _func['finish_z_value'])
+						gcode += '\t\t#CALL %d.NC\n'  % (_func['first_function_number'])
+						gcode += '\t$ENDIF \n'
+					else:
+						# 变截面
+						layers = int((_func['finish_z_value'] - _func['start_z_value']) / _func['thickness'])
+						for i in range(layers):
+							gcode += '\t%s [P114>=%.3f] * [P114<%.3f]\n' % (
+								["$IF", "$ELSEIF"][i > 0],
+								_func['start_z_value'] + i * _func['thickness'],
+								_func['start_z_value'] + (i + 1) * _func['thickness'])
+							gcode += '\t\t#CALL %d.NC\n'  % tuple(
+								[_func['first_function_number'] + layers * j + i for j in [0]])
+						gcode += '\t$ENDIF\n'
+				gcode += '#RET\n'
+			else:
+				gcode = ''
+			return gcode
+		
+		
+		SubFunction_JsonData = json.loads(request.POST['SubFunction_Text'])
+		Template_Content = request.POST
+		FunctionList = []
+		_startZValue, _finishZValue = None, None
+		for key_id in SubFunction_JsonData:
+			sub_func_infolist = SubFunction_JsonData[key_id]
+			if not _startZValue or _startZValue > sub_func_infolist[4]:
+				_startZValue = sub_func_infolist[4]
+			if not _finishZValue or _finishZValue < sub_func_infolist[5]:
+				_finishZValue = sub_func_infolist[5]
+			_func = {
+				'id': int(sub_func_infolist[0]),
+				'type': sub_func_infolist[1],
+				'name': sub_func_infolist[2],
+				'note': sub_func_infolist[3],
+				'start_z_value': float(sub_func_infolist[4]),
+				'finish_z_value': float(sub_func_infolist[5]),
+				'thickness': float(sub_func_infolist[6]) if sub_func_infolist[6] != '/' else None,
+				'first_function_number': float(sub_func_infolist[7]) if sub_func_infolist[7] != '/' else None,
+				'if_contour': True if sub_func_infolist[8] == 'true' else False,
+				'delay_time':int(sub_func_infolist[9]) if sub_func_infolist[9] != '/' else None,
+				'type_code': str(sub_func_infolist[10][0]),
+				'powder_turn_On': [],
+			}
+			_func['gcode'] = makecode(_func)
+			FunctionList.append(_func)
+			pass
+		if len(FunctionList)>0:
+			START_Z_VALUE = min(map(lambda func: func['start_z_value'], FunctionList ))
+			FINISH_Z_VALUE = max(map(lambda func: func['finish_z_value'], FunctionList ))
+		else:
+			START_Z_VALUE, FINISH_Z_VALUE=0, 0
+			
+		# Powder_On_Throughout  是否始终保持开粉状态
+		# 若有暂停或者有空扫操作，则为False，否则为True
+		if any([func['type_code']=='7' for func in FunctionList]) or any([func['type_code']=='5' for func in FunctionList]):
+			Powder_On_Throughout = False
+		else:
+			Powder_On_Throughout = True
+		# 根据不同函数的高度段切分高度范围
+		StartZValue_list = [func['start_z_value'] for func in FunctionList]
+		FinishZValue_list = [func['finish_z_value'] for func in FunctionList]
+		ZValue_list = list(set(StartZValue_list + FinishZValue_list + [START_Z_VALUE, FINISH_Z_VALUE]))
+		ZValue_list.sort()
+		ZValue_range_list = list(zip(ZValue_list[:-1], ZValue_list[1:]))
+		FunctionIfcontain_ZValueRange_list = [[ func['start_z_value']<= Zrange[0] and func['finish_z_value']>= Zrange[1]  for Zrange in ZValue_range_list] for func in FunctionList]
+		# 针对每个高度段，若本函数需关粉而后面非None的函数需开粉，则本函数结束后应开粉
+		FunctionIfNeedPowder_DivideBy_ZRange = [
+			[None
+			    if not j[zrange_id] else
+			 FunctionList[func_id]['type_code'] in ['1', '2', '3', '4', '6', '8']
+			 for func_id, j in enumerate(FunctionIfcontain_ZValueRange_list)]
+			for zrange_id, Zrange in enumerate(ZValue_range_list)]
+		for func_id, func in enumerate(FunctionList):
+			if func['type_code'] in ['1', '2', '3', '4', '6', '8']:
+				continue
+			for zrange_id, zrange_by_func_list in enumerate(FunctionIfNeedPowder_DivideBy_ZRange):
+				# 仅对关粉阶段进行识别，过滤zrange_by_func_list中标记为None的阶段
+				if zrange_by_func_list[func_id] == False:
+					rest_Not_None_list = list(filter(lambda x: x != None, zrange_by_func_list[func_id+1:]))
+					if len(rest_Not_None_list) > 0:
+						if rest_Not_None_list[0]:
+							if len(func['powder_turn_On'])==0:
+								func['powder_turn_On'].append(list(ZValue_range_list[zrange_id]))
+							elif func['powder_turn_On'][-1][1] == ZValue_range_list[zrange_id][0]:
+								# 将相邻的两个范围合并
+								func['powder_turn_On'][-1][1] = ZValue_range_list[zrange_id][1]
+							else:
+								func['powder_turn_On'].append(list(ZValue_range_list[zrange_id]))
+		
+		
+		return render(request, 'Template_Fagor8070.html',
+		              {
+			              'START_Z_VALUE':START_Z_VALUE,
+			              'FINISH_Z_VALUE':FINISH_Z_VALUE,
+			              'Program_FileCode':request.POST['Program_FileCode'],
+			              'Program_DrawingCode':request.POST['Program_DrawingCode'],
+			              'Program_TechInstCode':request.POST['Program_TechInstCode'],
+			              'Program_WorksectionCode':request.POST['Program_WorksectionCode'],
+			              'Program_Code':request.POST['Program_Code'],
+			              'Program_SubFunctionPath':request.POST['Program_SubFunctionPath'],
+			              'Program_Pace':request.POST['Program_Pace'],
+			              'Powder_On_Order':request.POST['Powder_Order'].split('/')[0],
+			              'Powder_Off_Order':request.POST['Powder_Order'].split('/')[1],
+			              'FunctionList':FunctionList,
+			              'Powder_On_Throughout':Powder_On_Throughout,
+			              # 'Cooldown_Time':int(request.POST['Cooldown_Time']),
+			              'DateTime':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+			              
+			              
+		              })
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def PracticalTools_MakeMainProgramFile_8070_AddStructure(request, StructureCode):
+# 	新增一个结构
+# (
+#     '连续函数',
+#     (
+#         (1, '8周期（弓字步正搭接填充）'),
+#         (2, '4周期（弓字步负搭接填充/回填负搭接填充/轮廓偏移填充）'),
+#         (3, '2周期（轮廓线扫描）'),
+#         (4, '2周期（低功率扫坡口根部）'),
+#         (5, 'N周期（定期补偿成形）'),
+#     )
+# ),
+# (
+#     '分段函数',
+#     (
+#         (11, '8周期（弓字步正搭接填充）'),
+#         (12, '4周期（弓字步负搭接填充/回填负搭接填充/轮廓偏移填充）'),
+#         (13, '2周期（轮廓线扫描）'),
+#     )
+# )
+	
+	# 创建一个空表单在页面显示
+	_form_inst = MainProgram_8070_Function_Form()
+	_form_inst.InitFields_By_StructureCode(StructureCode, operation='new')
+
+	return render(request, "SubWindow_SimpleForm_with_table.html",
+	              {'form': _form_inst,
+	               'StructureCode':StructureCode,
+	               'operate': 'new',
+	               # 'save_success': save_success,
+	               'Common_URL': Common_URL,
+	               })
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def PracticalTools_MakeMainProgramFile_8070_EditStructure(request, StructureCode, StructureID):
+	# 创建一个空表单在页面显示
+	
+	# StructureCode = request.POST['StructureCode']
+	_form_inst = MainProgram_8070_Function_Form()
+	_form_inst.InitFields_By_StructureCode(StructureCode, operation='edit')
+	
+	return render(request, "SubWindow_SimpleForm_with_table.html",
+	              {'form': _form_inst,
+	               'StructureCode': StructureCode,
+	               'StructureID': StructureID,
+	               'operate': 'edit',
+	               # 'save_success': save_success,
+	               'Common_URL': Common_URL,
+	               })
+
 '''============================================================================'''
+
 
 
 def LAMProcessData_UpdateCNCData(request):
@@ -3729,6 +4305,15 @@ def PostLAMProcessData_CNCdata(request):
 			if file.size != 0:
 				# _mac_add = request.POST.get('macaddress', None)
 				'''# 此处应改为现场电脑时间'''
+				try:
+					try:
+						_acqu_time = datetime.datetime.strptime(request.POST.get('acqu_time', str(datetime.datetime.now())), '%Y-%m-%d %H:%M:%S.%f')
+					except:
+						_acqu_time = datetime.datetime.strptime(
+							request.POST.get('acqu_time', str(datetime.datetime.now())), '%Y-%m-%d %H:%M:%S')
+				except:
+					logger.error('CNC PostData "acqu_time" Error:%s'%request.POST.get('acqu_time'))
+					_acqu_time = datetime.datetime.now()
 				_acqu_time = datetime.datetime.now()
 				# print('5')
 

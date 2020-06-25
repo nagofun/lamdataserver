@@ -1,0 +1,575 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ form.subtitle|upper }}</small>
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            主程序基本信息
+                        </div>
+                        <div class="panel-body">
+
+                            <form enctype="multipart/form-data" method="post" action="" id="id_form">{% csrf_token %}
+
+                                {% for field in form %}
+                                    {% if field.name in form.editform_fields %}
+                                <div class="form-group">
+                                    {% ifnotequal field.label 'HiddenInput'  %}<label>{{ field.label }}</label>{% endifnotequal %}
+                                    {{ field }}
+                                </div>
+                                    {% endif %}
+
+                                {% endfor %}
+
+
+
+                                <!--<button type="edit" class="btn btn-default">编辑</button>-->
+
+                                <button type="button" class="btn btn-success" onclick="Postdata();">运行</button>
+
+                                <button type="reset" class="btn btn-primary">重置</button>
+                            </form>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <!--   Kitchen Sink -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            主程序段结构
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover">
+
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        {% for field, width in form.ProgramStructure_previewfields %}
+                                        <th {% ifnotequal width '' %}width={{ width }}{% endifnotequal %}>{{ field }}</th>
+                                        {% endfor %}
+
+                                    </tr>
+                                    </thead>
+
+                                    <tbody id="id_tbody">
+                                    <!--{{ all_entries }}-->
+
+                                    </tbody>
+
+                                </table>
+                            </div>
+                            <div class="row">
+                                <div class="form-group">
+                                    <div class="col-lg-4">
+                                        {{ form.New_SubFunction_Type }}
+                                    </div>
+
+                                    <div class="col-lg-8">
+                                        <button type="button" class="btn btn-success" onclick="shownewpage('/LAMProcessData/PracticalTools/MakeMainProgramFile_8070/addStructure/'+document.getElementById('id_New_SubFunction_Type').value+'/');">新增结构</button>
+                                        <button type="button" class="btn btn-primary" onclick="InitAsTemplateCX();">零件成形模板</button>
+                                        <button type="button" class="btn btn-primary" onclick="InitAsTemplateLJ();">连接/修复模板</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- End  Kitchen Sink -->
+                </div>
+                <!-- /.panel -->
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+
+
+<!--    <script type="text/javascript" src="/assets/jQuery-Autocomplete-master/scripts/jquery.mockjax.js"></script>-->
+<!--    <script type="text/javascript" src="/assets/jQuery-Autocomplete-master/scripts/jquery-1.10.2.min.js"></script>-->
+<script type="text/javascript" src="/assets/jQuery-Autocomplete-master/src/jquery.autocomplete.js"></script>
+<link rel="stylesheet" href="/assets/jQuery-Autocomplete-master/content/styles.css" type="text/css">
+
+<!--    <script type="text/javascript" src="/assets/jQuery-Autocomplete-master/scripts/countries.js"></script>-->
+<!--    <script type="text/javascript" src="/assets/jQuery-Autocomplete-master/scripts/demo.js"></script>-->
+
+<script type="text/javascript">
+    var StructureParamDict = {};
+    var CurrentStructureID = 0;
+    var drawing_code_list = [
+        {% for i in form.drawing_code_list %}
+        { value: '{{ i|safe }}', data: '{{ i|safe }}' } {% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    var techinst_list = [
+        {% for i in form.technique_instruction_list %}
+        { value: '{{ i|safe }}', data: '{{ i|safe }}' } {% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+<!--    var worksection_list = [-->
+<!--        {% for i in form.worksection_code_list %}-->
+<!--        { value: '{{ i|safe }}', data: '{{ i|safe }}' } {% if not forloop.last %},{% endif %}-->
+<!--        {% endfor %}-->
+<!--    ];-->
+
+    $(".chosen-select").chosen({
+        no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+        search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+        allow_single_deselect:true, //是否允许取消选择
+    })
+
+    $('#id_Program_DrawingCode').autocomplete({
+        lookup: drawing_code_list,
+        autoFill:false,//自动填充
+        max:10,//列表条目数
+<!--        onSelect: function (suggestion) {-->
+<!--            alert('You selected: ' + suggestion.value + ', ' + suggestion.data);-->
+<!--        }-->
+    });
+    $('#id_Program_TechInstCode').autocomplete({
+        lookup: techinst_list,
+        autoFill:true,//自动填充
+        max:10,//列表条目数
+    });
+<!--    $('#id_Program_WorksectionCode').autocomplete({-->
+<!--        lookup: worksection_list,-->
+<!--        autoFill:true,//自动填充-->
+<!--        max:10,//列表条目数-->
+<!--    });-->
+
+    <!--  更改程序编号时，自动调整子程序路径  -->
+    function setSubFunctionPath(){
+
+        var prg_code = document.getElementById('id_Program_Code').value.replace(/^\s*|\s*$/g,"");
+        var sub_function_path = 'C:\\CNC8070\\USERS\\Prg\\'+prg_code+'\\SUB\\'
+        document.getElementById('id_Program_SubFunctionPath').value=sub_function_path
+
+        if(prg_code!=''){
+            NoticeInput('id_Program_SubFunctionPath','green')
+        }
+        else{
+            NoticeInput('id_Program_SubFunctionPath','red')
+        }
+
+    }
+        <!-- 增加table数据 -->
+        function refreshTableData(data)
+        {
+            var tbody=document.getElementById('id_tbody');
+            var rowNum=tbody.rows.length;
+            if(rowNum>0)
+            {
+                for(i=0;i<rowNum;i++)
+                {
+                    <!--table.deleteRow(i);-->
+                    tbody.deleteRow(i);
+                    rowNum=rowNum-1;
+                    i=i-1;
+                }
+            }
+            <!--alert(table.rows.length)-->
+            for(var ever in data) {
+                var row=tbody.insertRow(-1);
+                for(var item in data[ever]){
+                    if(data[ever][item][1] == 'hide'){continue}
+                    if(item!='remove'){
+                    var c1=row.insertCell(-1);
+                    c1.innerHTML=data[ever][item];
+                    }
+                }
+            }
+        }
+    window.addEventListener('message',function(e) {
+<!--        console.log(e)-->
+        d = e.data;  //e.data  里面有自己所传的所有参数  可以根据参数做自己的判断
+
+        <!-- ['函数类型','子函数名称', '说明',  '起始高度', '终止高度', '切片厚度', '起始子程序号', '提供轮廓扫描','暂停冷却', '操作']-->
+
+        if(d.edit_StructureID == '/'){
+            <!-- 新增 -->
+            tempStructure = [
+                CurrentStructureID,
+                d.StructureType,
+                d.FunctionName,
+                d.FunctionNote,
+                d.start_Z_value,
+                d.finish_Z_value,
+                d.thickness,
+                d.first_function_number,
+                d.if_contour,
+                d.delay_time,
+                [d.StructureCode, 'hide'],
+                '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+                <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+                ',
+    <!--            '<svg class="bi bi-pencil" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">\-->
+    <!--              <path fill-rule="evenodd" d="M11.293 1.293a1 1 0 0 1 1.414 0l2 2a1 1 0 0 1 0 1.414l-9 9a1 1 0 0 1-.39.242l-3 1a1 1 0 0 1-1.266-1.265l1-3a1 1 0 0 1 .242-.391l9-9zM12 2l2 2-9 9-3 1 1-3 9-9z"/>\-->
+    <!--              <path fill-rule="evenodd" d="M12.146 6.354l-2.5-2.5.708-.708 2.5 2.5-.707.708zM3 10v.5a.5.5 0 0 0 .5.5H4v.5a.5.5 0 0 0 .5.5H5v.5a.5.5 0 0 0 .5.5H6v-1.5a.5.5 0 0 0-.5-.5H5v-.5a.5.5 0 0 0-.5-.5H3z"/>\-->
+    <!--            </svg>\-->
+    <!--            <svg class="bi bi-x-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">\-->
+    <!--              <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\-->
+    <!--              <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>\-->
+    <!--              <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>\-->
+    <!--            </svg>\-->
+    <!--            <svg class="bi bi-arrow-up-circle-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">\-->
+    <!--              <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-10.646.354a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 6.207V11a.5.5 0 0 1-1 0V6.207L5.354 8.354z"/>\-->
+    <!--            </svg>\-->
+    <!--            <svg class="bi bi-arrow-down-circle-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">\-->
+    <!--              <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 5a.5.5 0 0 0-1 0v4.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V5z"/>\-->
+    <!--            </svg>',-->
+    <!--            '<svg class="bi bi-pencil" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.293 1.293a1 1 0 0 1 1.414 0l2 2a1 1 0 0 1 0 1.414l-9 9a1 1 0 0 1-.39.242l-3 1a1 1 0 0 1-1.266-1.265l1-3a1 1 0 0 1 .242-.391l9-9zM12 2l2 2-9 9-3 1 1-3 9-9z"/><path fill-rule="evenodd" d="M12.146 6.354l-2.5-2.5.708-.708 2.5 2.5-.707.708zM3 10v.5a.5.5 0 0 0 .5.5H4v.5a.5.5 0 0 0 .5.5H5v.5a.5.5 0 0 0 .5.5H6v-1.5a.5.5 0 0 0-.5-.5H5v-.5a.5.5 0 0 0-.5-.5H3z"/></svg>                                    <svg class="bi bi-x-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">                                      <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>                                      <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>                                      <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>                                    </svg>                                    <svg class="bi bi-chevron-double-up" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">                                      <path fill-rule="evenodd" d="M7.646 2.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 3.707 2.354 9.354a.5.5 0 1 1-.708-.708l6-6z"/>                                      <path fill-rule="evenodd" d="M7.646 6.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 7.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>                                    </svg>                                    <svg class="bi bi-chevron-double-down" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">                                      <path fill-rule="evenodd" d="M1.646 6.646a.5.5 0 0 1 .708 0L8 12.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>                                      <path fill-rule="evenodd" d="M1.646 2.646a.5.5 0 0 1 .708 0L8 8.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>                                    </svg>'-->
+            ]
+
+            StructureParamDict[CurrentStructureID] = tempStructure
+            CurrentStructureID +=1;
+<!--            StructureParamDict.push(tempStructure);-->
+        }
+        else{
+            <!-- 编辑 修改列表中元素 -->
+            structure_id = d.edit_StructureID;
+            _structure = StructureParamDict[structure_id];
+            _structure[2] = d.FunctionName
+            _structure[3] = d.FunctionNote
+            _structure[4] = d.start_Z_value
+            _structure[5] = d.finish_Z_value
+            _structure[6] = d.thickness
+            _structure[7] = d.first_function_number
+            _structure[8] = d.if_contour
+            _structure[9] = d.delay_time
+
+        }
+        refreshTableData(StructureParamDict);
+    });
+    <!-- 编辑结构 -->
+    function EditStructure(structure_id){
+        param = StructureParamDict[structure_id]
+        paramdict = {
+            'StructureCode': param[10][0],
+            'FunctionName': param[2],
+            'FunctionNote': param[3],
+            'StartZValue': param[4],
+            'FinishZValue': param[5],
+            'Thickness': param[6],
+            'FirstFunctionNumber': param[7],
+            'Function_Contour': param[8],
+            'DelayTime': param[9],
+        }
+        shownewpage('/LAMProcessData/PracticalTools/MakeMainProgramFile_8070/editStructure/'+param[10][0]+'/'+structure_id+'/');
+    }
+    <!--  删除结构  -->
+    function RemoveStructure(structure_id)
+    {
+         txt='请确认是否删除此记录: id='+structure_id;
+         <!--//利用对话框返回的值 （true 或者 false）-->
+         if (confirm(txt))
+         {
+            delete StructureParamDict[structure_id];
+            refreshTableData(StructureParamDict);
+         }
+    }
+    <!--  结构上移  -->
+    function MoveupStructure(structure_id){
+        _temp_id = -1;
+        for(var _id in StructureParamDict){
+            if( _id < structure_id){
+                if(_id>_temp_id){
+                    _temp_id = _id
+                }
+            }
+        }
+        if(_temp_id != -1){
+            <!--  交换内部信息中的ID  -->
+            StructureParamDict[structure_id][0] = _temp_id
+            StructureParamDict[structure_id][11] = '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+_temp_id+');">✎</button>\
+                <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+_temp_id+');">✘</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+_temp_id+');">↑</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+_temp_id+');">↓</button>\
+                '
+
+            StructureParamDict[_temp_id][0] = structure_id
+            StructureParamDict[_temp_id][11] = '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+structure_id+');">✎</button>\
+                <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+structure_id+');">✘</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+structure_id+');">↑</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+structure_id+');">↓</button>\
+                '
+
+            <!--  交换位置  -->
+            _temp_structure = StructureParamDict[structure_id]
+            StructureParamDict[structure_id] = StructureParamDict[_temp_id]
+            StructureParamDict[_temp_id] = _temp_structure
+            refreshTableData(StructureParamDict);
+        }
+    }
+    <!--  结构下移  -->
+    function MovedownStructure(structure_id){
+        _temp_id = 9999999999;
+        for(var _id in StructureParamDict){
+            if( _id > structure_id){
+                if(_id < _temp_id){
+                    _temp_id = _id
+                }
+            }
+        }
+        if(_temp_id != 9999999999){
+            <!--  交换内部信息中的ID  -->
+            StructureParamDict[structure_id][0] = _temp_id
+            StructureParamDict[structure_id][11] = '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+_temp_id+');">✎</button>\
+                <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+_temp_id+');">✘</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+_temp_id+');">↑</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+_temp_id+');">↓</button>\
+                '
+
+            StructureParamDict[_temp_id][0] = structure_id
+            StructureParamDict[_temp_id][11] = '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+structure_id+');">✎</button>\
+                <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+structure_id+');">✘</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+structure_id+');">↑</button>\
+                <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+structure_id+');">↓</button>\
+                '
+
+            <!--  交换位置  -->
+            _temp_structure = StructureParamDict[structure_id]
+            StructureParamDict[structure_id] = StructureParamDict[_temp_id]
+            StructureParamDict[_temp_id] = _temp_structure
+            refreshTableData(StructureParamDict);
+        }
+    }
+    <!-- 成形模板 -->
+    function InitAsTemplateCX(){
+        CurrentStructureID = 0
+        StructureParamDict = {}
+        <!-- 新增block填充 -->
+        tempStructure = [
+            CurrentStructureID,
+            '4周期(弓字步负搭接填充/回填负搭接填充)',
+            'Ngtvlap',
+            '填充block',
+            0,
+            100,
+            1,
+            3000,
+            'false',
+            '/',
+            [2, 'hide'],
+            '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+            <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+            ',
+        ]
+        StructureParamDict[CurrentStructureID] = tempStructure
+        CurrentStructureID +=1;
+
+        <!-- 新增delay -->
+        tempStructure = [
+            CurrentStructureID,
+            '1周期(暂停冷却)',
+            'Delay',
+            '暂停冷却',
+            0,
+            100,
+            '/',
+            '/',
+            '/',
+            '60',
+            [7, 'hide'],
+            '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+            <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+            ',
+        ]
+        StructureParamDict[CurrentStructureID] = tempStructure
+        CurrentStructureID +=1;
+
+        refreshTableData(StructureParamDict);
+    }
+
+    <!-- 坡口修复/成形连接模板 -->
+    function InitAsTemplateLJ(){
+        CurrentStructureID = 0
+        StructureParamDict = {}
+        <!-- 新增block填充 -->
+        tempStructure = [
+            CurrentStructureID,
+            '4周期(弓字步负搭接填充/回填负搭接填充)',
+            'Ngtvlap',
+            '填充block',
+            0,
+            100,
+            1,
+            '3000',
+            'false',
+            '/',
+            [2, 'hide'],
+            '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+            <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+            ',
+        ]
+        StructureParamDict[CurrentStructureID] = tempStructure
+        CurrentStructureID +=1;
+
+        <!-- 新增patch -->
+        tempStructure = [
+            CurrentStructureID,
+            'N周期(定期补偿成形)',
+            'Patch',
+            '定期补偿坡口开放侧面',
+            0,
+            100,
+            '1',
+            '4000',
+            '/',
+            '/',
+            [6, 'hide'],
+            '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+            <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+            ',
+        ]
+        StructureParamDict[CurrentStructureID] = tempStructure
+        CurrentStructureID +=1;
+
+
+        <!-- 新增smooth -->
+        tempStructure = [
+            CurrentStructureID,
+            '2周期(低功率扫坡口根部)',
+            'Smooth',
+            '关粉扫描坡口根部',
+            0,
+            100,
+            '1',
+            '5000',
+            '/',
+            '/',
+            [5, 'hide'],
+            '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+            <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+            ',
+        ]
+        StructureParamDict[CurrentStructureID] = tempStructure
+        CurrentStructureID +=1;
+
+        <!-- 新增outline -->
+        tempStructure = [
+            CurrentStructureID,
+            '1周期(轮廓线扫描)',
+            'outline',
+            '成形结束后，以smooth最大轮廓进行边界补偿',
+            99,
+            100,
+            '1',
+            '5099',
+            '/',
+            '/',
+            [8, 'hide'],
+            '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+            <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+            ',
+        ]
+        StructureParamDict[CurrentStructureID] = tempStructure
+        CurrentStructureID +=1;
+
+
+        <!-- 新增delay -->
+        tempStructure = [
+            CurrentStructureID,
+            '1周期(暂停冷却)',
+            'Delay',
+            '暂停冷却',
+            0,
+            100,
+            '/',
+            '/',
+            '/',
+            '60',
+            [7, 'hide'],
+            '<button type="button" class="btn btn-primary btn-sm" onclick="EditStructure('+CurrentStructureID+');">✎</button>\
+            <button type="button" class="btn btn-danger btn-sm" onclick="RemoveStructure('+CurrentStructureID+');">✘</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MoveupStructure('+CurrentStructureID+');">↑</button>\
+            <button type="button" class="btn btn-info btn-sm" onclick="MovedownStructure('+CurrentStructureID+');">↓</button>\
+            ',
+        ]
+        StructureParamDict[CurrentStructureID] = tempStructure
+        CurrentStructureID +=1;
+
+        refreshTableData(StructureParamDict);
+    }
+
+        function load(){
+            this;
+
+        }
+        function getObjectURL(file) {
+            var url = null;
+            if (window.createObjcectURL != undefined) {
+                url = window.createOjcectURL(file);
+            } else if (window.URL != undefined) {
+                url = window.URL.createObjectURL(file);
+            } else if (window.webkitURL != undefined) {
+                url = window.webkitURL.createObjectURL(file);
+            }
+            return url;
+        }
+        function Postdata(){
+            document.getElementById('id_SubFunction_Text').value=JSON.stringify(StructureParamDict);
+            postdata = {
+                'Program_FileCode':document.getElementById('id_Program_FileCode').value,
+                'Program_DrawingCode':document.getElementById('id_Program_DrawingCode').value,
+                'Program_TechInstCode':document.getElementById('id_Program_TechInstCode').value,
+                'Program_WorksectionCode':document.getElementById('id_Program_WorksectionCode').value,
+                'Program_Code':document.getElementById('id_Program_Code').value,
+                'Program_SubFunctionPath':document.getElementById('id_Program_SubFunctionPath').value,
+                'Program_Pace':document.getElementById('id_Program_Pace').value,
+                'Powder_Order':document.getElementById('id_Powder_Order').value,
+<!--                'Cooldown_Time':document.getElementById('id_Cooldown_Time').value,-->
+                'SubFunction_Text':JSON.stringify(StructureParamDict),
+            }
+            openPostWindow('{{ Common_URL.Back_URL_MakeMainProgramFile_8070 }}'+'MakeCode/', postdata);
+
+<!--            document.getElementById("progress_bar_headdiv").style.display="";-->
+<!--            document.getElementById("progress_bar_bodydiv").style.display="";-->
+<!--            var alertElements = document.getElementsByClassName("alert alert-success");-->
+<!--            for(let _e in alertElements){-->
+<!--                alertElements[_e].style.display='none';-->
+<!--            }-->
+<!--            var alertElements = document.getElementsByClassName("alert alert-danger");-->
+<!--            for(let _e in alertElements){-->
+<!--                alertElements[_e].style.display='none';-->
+<!--            }-->
+        }
+
+
+
+</script>
+{% endblock %}

@@ -2,7 +2,7 @@
 
 from django.contrib.auth.models import User
 from django.db import models
-from lamdataserver.settings import ANALYSE_CNCDATA_URL, ANALYSE_ACCUMULATEDATA_URL, MEDIA_DefectPicture_URL, MEDIA_ReviewSheet_URL
+from lamdataserver.settings import ANALYSE_CNCDATA_URL, ANALYSE_ACCUMULATEDATA_URL, MEDIA_DefectPicture_URL, MEDIA_ReviewSheet_URL,MEDIA_LAMOperationPicture_URL, MEDIA_DingDingRecordPicture_URL
 from django.db.models import Aggregate, CharField
 # from django.db.models.signals import pre_delete
 # from django.dispatch.dispatcher import receiver
@@ -696,7 +696,7 @@ class UTDefectInformation(models.Model):
     # 多个缺陷照片
     photos = models.ManyToManyField(DefectPicture, related_name='DefectPicture_UTDefectInfo')
     def __str__(self):
-        return '%s-%s (%.1f%+ddb)'%(self.defect_number,
+        return '%s-%s (φ%.1f%+ddb)'%(self.defect_number,
                                 self.get_defect_type_display(),
                                 self.equivalent_hole_diameter,
                                 self.radiation_equivalent)
@@ -1105,17 +1105,108 @@ class Process_Realtime_FineData_By_WorkSectionID_5(Process_Realtime_FineData_By_
 class Process_Realtime_FineData_By_WorkSectionID_6(Process_Realtime_FineData_By_WorkSectionID):
     pass
 
+class OperatePicture(models.Model):
+    picture = models.ImageField(verbose_name='照片', upload_to='.'+MEDIA_LAMOperationPicture_URL)
+
+class DingDingPicture(models.Model):
+    picture = models.ImageField(verbose_name='照片', upload_to='.'+MEDIA_DingDingRecordPicture_URL)
+
+# 瞬时事件
+class LAMProcess_TransientEvent(models.Model):
+    '''
+    修改成形参数
+    更换粉嘴
+    调整Z高度
+    调整零点坐标
+    其他
+    '''
+    # 获取的时间戳
+    acquisition_timestamp = models.PositiveIntegerField()
+    # 操作类型
+    defect_type = models.CharField(max_length=2,
+                                   choices=(
+                                       ('1', '修改全局变量'),
+                                       ('2', '调整Z高度'),
+                                       ('3', '调整零点坐标'),
+                                       ('4', '更换粉嘴'),
+                                       ('5', '清理粉嘴'),
+                                       ('6', '吹除积粉'),
+                                       ('7', '更换隔挡镜'),
+                                       ('0', '其他'),
+                                       # ('EditParam', '修改全局变量'),
+                                       # ('EditZvalue', '调整Z高度'),
+                                       # ('EditZero', '调整零点坐标'),
+                                       # ('ChangeNozzle', '更换粉嘴'),
+                                       # ('CleanNozzle', '清理粉嘴'),
+                                       # ('RemovePowder', '吹除积粉'),
+                                       # ('ChangeSeptalMirror ', '更换隔挡镜'),
+                                       # ('Others', '其他')
+                                   ),
+                                   verbose_name=u'操作类别')
+    # 概述
+    summary = models.CharField(max_length=200, blank=True)
+# 操作与事件是否分开？
+
+class LAMProcess_PeriodEvent(models.Model):
+    '''
+    局部手动减速处理
+    程序修复处理
+    氧含量超标，等待换气
+    设备故障
+    开箱处理
+    其他
+    '''
+    # 开始时间
+    start_timestamp = models.PositiveIntegerField()
+    # 结束时间
+    finish_timestamp = models.PositiveIntegerField(blank=True)
+    # 概述
+    summary = models.CharField(max_length=200, blank=True)
+    
+
+
+# 激光成形过程现场操作记录
 class LAMProcess_Worksection_Operate(models.Model):
     # 任务信息
     process_mission = models.ForeignKey(LAMProcessMission, on_delete=models.DO_NOTHING, null=True, blank=True)
     # 获取的时间戳
-    acquisition_timestamp = models.PositiveIntegerField(unique=True)
-    # 操作
-    operate_information = models.CharField(max_length=50, null=True)
+    acquisition_timestamp = models.PositiveIntegerField()
+    # 操作简述
+    operate_information = models.CharField(max_length=100, null=True)
+    # 瞬时、阶段性、周期性
+    # 瞬时事件时间戳
+    instant_timestamp = models.PositiveIntegerField()
+    
     # 操作者
     # https://www.cnblogs.com/wcwnina/p/9246228.html
     operator = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    # 多个照片
+    photos = models.ManyToManyField(OperatePicture, related_name='OperatePicture_LAMProcessOperation')
 
+# 钉钉日志  激光成形过程事件
+class LAMProcess_DingDingRecord(models.Model):
+    # 填报时间
+    acquisition_time = models.DateTimeField(verbose_name='时间')
+    # 获取的时间戳
+    acquisition_timestamp = models.PositiveIntegerField()
+    # 事件描述
+    description = models.TextField(null=True, blank=True, verbose_name='事件描述')
+    # 日志填报人
+    writer = models.CharField(max_length=30, null=True, blank=True, verbose_name='日志填报人')
+    # 汇报人
+    reporter = models.CharField(max_length=30, null=True, blank=True, verbose_name='汇报人')
+    # 设备
+    worksection_code = models.CharField(max_length=50, null=True, blank=True, verbose_name='成形工段编号')
+    # 零件编号
+    product_code = models.CharField(max_length=200, null=True, blank=True, verbose_name='零件编号')
+    # 工段实例
+    work_section = models.ForeignKey(Worksection, on_delete=models.CASCADE, null=True, blank=True, verbose_name='成形工段实例')
+    # 产品实例
+    product = models.ManyToManyField(LAMProduct, null=True, blank=True, verbose_name='零件实例')
+    # 评论信息
+    comment = models.TextField(null=True, blank=True, verbose_name='评论信息')
+    # 多个照片
+    photos = models.ManyToManyField(DingDingPicture, related_name='DingDingPicture_Record', verbose_name='照片')
 
 # 检出成形过程数据中不符合工艺参数包的记录
 class Process_Inspect_FineData_DiscordantRecords(models.Model):

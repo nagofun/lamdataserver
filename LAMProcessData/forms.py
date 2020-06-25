@@ -2769,17 +2769,6 @@ class ProductNonDestructiveTestForm_New(ModelForm):
 			'arrangement_date': widgets.TextInput(
 				attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
 		}
-		# labels = {
-		# 	'LAM_product': _('产品实例'),
-		# 	'RawStock': _('原材料实例'),
-		# 	'LAM_techinst_serial': _('工序'),
-		# 	'commission_date': _('开始日期'),
-		# 	'heat_treatment_state': _('热处理状态'),
-		# 	'mechanicaltest_tensile': _('拉伸测试'),
-		# 	'mechanicaltest_toughness': _('冲击测试'),
-		# 	'mechanicaltest_fracturetoughness': _('断裂韧性测试'),
-		# 	'chemicaltest': _('化学成分测试'),
-		# }
 		error_messages = ''
 	
 	def __init__(self, *args, **kwargs):
@@ -2974,8 +2963,6 @@ class ProductNonDestructiveTestForm_Edit(ModelForm):
 		self.fields['machining_state'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择加工状态..."})
 
-
-
 # 产品无损检测
 class ProductNonDestructiveTestForm_Browse(ModelForm):
 	title = '产品无损检测'
@@ -3020,7 +3007,212 @@ class ProductNonDestructiveTestForm_Browse(ModelForm):
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
 
 
-# 产品无损检测
+# 原材料无损检测 新建
+class RawStockNonDestructiveTestForm_New(ModelForm):
+	title = '原材料无损检测'
+	modelname = 'NonDestructiveTest_Mission'
+	previewtableTitle = '原材料检测任务'
+	previewtablefields = {'LAM_techinst_serial': _('下达任务工序'),
+	                      'arrangement_date': _('下达任务日期'),
+	                      'machining_state': _('机械加工状态'),
+	                      'heat_treatment_state': _('热处理状态'),
+	                      }
+	
+	class Meta:
+		model = NonDestructiveTest_Mission
+		fields = ['RawStock',
+		          'LAM_techinst_serial',
+		          'arrangement_date',
+		          'machining_state',
+		          'heat_treatment_state',
+		          # 'NDT_type',
+		          ]
+		# fields = "__all__"
+		widgets = {
+			'arrangement_date': widgets.TextInput(
+				attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
+		}
+		error_messages = ''
+	
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# 原材料类别列表
+		rawstock_category_list = RawStockCategory.objects.filter(available=True)
+		# 原材料按类别分类
+		rawstock_choice = [[_category.Category_name, [(_rawstock.id, _rawstock) for _rawstock in
+		                                            RawStock.objects.filter(
+			                                            (Q(rawstock_category=_category) & Q(available=True)))]] for
+		                  _category in rawstock_category_list]
+		self.fields['RawStock'].choices = rawstock_choice
+		
+		self.fields['RawStock'].widget.attrs.update(
+			{'onchange': 'loadTableData_RawStockMission(this.value)'})
+		
+		self.fields['RawStock'].queryset = RawStock.objects.filter(available=True)
+		
+		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
+		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
+			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemNonDestructiveTest=True))
+		
+		# 原始field
+		self.OriginalFields = ('RawStock',
+		                       'LAM_techinst_serial',
+		                       'arrangement_date',
+		                       'machining_state',
+		                       'heat_treatment_state',
+		                       )
+		
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+		'''检验工序'''
+		self.fields['LAM_techinst_serial'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
+		'''产品'''
+		self.fields['RawStock'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择原材料..."})
+		'''热处理状态'''
+		self.fields['heat_treatment_state'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
+		'''加工状态'''
+		self.fields['machining_state'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择加工状态..."})
+		'''检测类别'''
+	
+	# self.fields['NDT_type'].widget.attrs.update(
+	# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择检测类别..."})
+	
+	def is_valid_custom(self):
+		'''暂不做符合性检查'''
+		# try:
+		# 	_RawStock = RawStock.objects.get(id=self.data['RawStock'])
+		# 	_RawStockCate = _RawStock.rawstock_category
+		# 	_TechInst = LAM_TechInst_Serial.objects.get(id=self.data['LAM_techinst_serial']).technique_instruction
+		#
+		# 	if not (_Product in _TechInst.product.all() or _ProdCate in _TechInst.product_category.all()):
+		# 		self.error_messages = '该产品与选中工艺文件未关联'
+		# 		return False
+		#
+		# except:
+		# 	self.error_messages = '未知错误'
+		# 	return False
+		
+		return self.is_valid()
+
+
+# 原材料无损检测 编辑
+class RawStockNonDestructiveTestForm_Edit(ModelForm):
+	title = '原材料无损检测'
+	modelname = 'NonDestructiveTest_Mission'
+	# previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期'),
+	#                       'completion_date': _('完成任务日期')}
+	UTDefect_fields = [
+		'缺陷编号',
+		'缺陷类别',
+		'当量平底孔直径(mm)',
+		'辐射当量(db)',
+		'缺陷所在分区',
+		'加工数模内坐标X',
+		'加工数模内坐标Y',
+		'加工数模内坐标Z',
+		# '照片',
+	]
+	RTDefect_fields = [
+		'缺陷编号',
+		'缺陷类别',
+		'缺陷大小(mm)',
+		'缺陷所在分区',
+		'加工数模内坐标X',
+		'加工数模内坐标Y',
+		'加工数模内坐标Z',
+		# '照片',
+	]
+	PTDefect_fields = [
+		'缺陷编号',
+		'缺陷类别',
+		'缺陷所在分区',
+		'加工数模内坐标X',
+		'加工数模内坐标Y',
+		'加工数模内坐标Z',
+		# '照片',
+	]
+	MTDefect_fields = [
+		'缺陷编号',
+		'缺陷类别',
+		# '缺陷大小(mm)',
+		'缺陷所在分区',
+		'加工数模内坐标X',
+		'加工数模内坐标Y',
+		'加工数模内坐标Z',
+		# '照片',
+	]
+	
+	class Meta:
+		model = NonDestructiveTest_Mission
+		fields = ['RawStock',
+		          'LAM_techinst_serial',
+		          'arrangement_date',
+		          'machining_state',
+		          'heat_treatment_state',
+		          # 'NDT_type',
+		          ]
+		# fields = "__all__"
+		widgets = {
+			'arrangement_date': widgets.TextInput(
+				attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
+		}
+		
+		error_messages = ''
+	
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['RawStock'].disabled = True
+		self.fields['LAM_techinst_serial'].disabled = True
+		# self.fields['commission_date'].disabled = True
+		self.fields['machining_state'].disabled = True
+		self.fields['heat_treatment_state'].disabled = True
+		
+		# 原材料类别列表
+		rawstock_category_list = RawStockCategory.objects.filter(available=True)
+		# 原材料按类别分类
+		rawstock_choice = [[_category.Category_name, [(_rawstock.id, _rawstock) for _rawstock in
+		                                              RawStock.objects.filter(
+			                                              (Q(rawstock_category=_category) & Q(available=True)))]] for
+		                   _category in rawstock_category_list]
+		self.fields['RawStock'].choices = rawstock_choice
+		
+		self.fields['RawStock'].widget.attrs.update(
+			{'onchange': 'loadTableData_RawStockMission(this.value)'})
+		
+		self.fields['RawStock'].queryset = RawStock.objects.filter(available=True)
+		
+		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
+		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
+			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemNonDestructiveTest=True))
+		
+		# 原始field
+		self.OriginalFields = ('RawStock',
+		                       'LAM_techinst_serial',
+		                       'arrangement_date',
+		                       'machining_state',
+		                       'heat_treatment_state',
+		                       )
+		
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+		'''检验工序'''
+		self.fields['LAM_techinst_serial'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
+		'''产品'''
+		self.fields['RawStock'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择原材料..."})
+		'''热处理状态'''
+		self.fields['heat_treatment_state'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
+		'''加工状态'''
+		self.fields['machining_state'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择加工状态..."})
+
+# 原材料无损检测
 class RawStockNonDestructiveTestForm_Browse(ModelForm):
 	title = '原材料无损检测'
 	modelname = 'NonDestructiveTest_Mission'
@@ -3347,7 +3539,40 @@ class RawStockPhyChemTestForm_Browse(ModelForm):
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 
+class DingDingRecordsForm_Browse(ModelForm):
+	title = '钉钉激光成形日志上传'
+	modelname = 'LAMProcess_DingDingRecord'
+	
+	class Meta:
+		model = LAMProcess_DingDingRecord
+		fields = ['acquisition_time',
+		          'description',
+		          'writer',
+		          'reporter',
+		          'worksection_code',
+		          'product_code',
+		          'comment',]
+		# labels = {
+		# 	'acquisition_time': _('时间'),
+		# 	'description': _('事件描述'),
+		# 	'writer': _('记录人'),
+		# 	'reporter': _('汇报人'),
+		# 	'worksection_code': _('工段'),
+		# 	'product_code': _('产品编号'),
+		# 	'comment': _('评论'),
+		# }
+		#
+		error_messages = ''
+		
 
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# self.fields['available'].disabled = True
+		
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+			
+			
 #
 class BreakBlockResumptionForm(forms.Form):
 	name = 'BreakBlockResumptionForm'
@@ -3385,6 +3610,278 @@ class SShapeBreakForm(forms.Form):
 		self.defaultParams = ['1400', '1401', 'true', 'true']
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
+			
+class MainProgramFileForm(forms.Form):
+	name = 'MainProgramFileForm'
+	title = '生成主程序段'
+	subtitle = "Fagor CNC-8070"
+	Program_FileCode = forms.CharField(max_length=50, label='主程序段号')
+	Program_DrawingCode = forms.CharField(max_length=50, label='零件图号')
+	Program_TechInstCode = forms.CharField(max_length=50, label='工艺文件编号')
+	Program_WorksectionCode = forms.fields.MultipleChoiceField(
+								label="适用激光成形工段",
+								initial=[],
+								widget=forms.widgets.SelectMultiple()
+							)
+	# Program_WorksectionCode = forms.CharField(max_length=15, label='适用激光成形工段')
+	# Program_CNCSystem = forms.fields.ChoiceField(initial=1, choices=((1, 'CNC 8070'), (2, 'CNC 8055')), label='适用数控系统')
+	Program_Code = forms.CharField(max_length=50, label='数控程序编号')
+	Program_SubFunctionPath = forms.CharField(max_length=100, label='子程序路径')
+	Program_Pace = forms.CharField(max_length=50, label='步长/半步长(mm)')
+	Powder_Order = forms.fields.ChoiceField(initial=1, choices=(('M12/M13', 'M12/M13'), ('M60/M61', 'M60/M61')), label='粉路通断指令')
+	# Cooldown_Time = forms.DecimalField(max_digits=10, decimal_places=0, label='每层冷却时间(s)', initial=60)
+	# SubFunction_Text =forms.CharField(widget=forms.Textarea)
+	SubFunction_Text =forms.CharField(widget=forms.HiddenInput(),label='HiddenInput')
+	# SubFunction_Text =forms.CharField(widget=field.hidden_widget)
+	
+	New_SubFunction_Type = forms.fields.ChoiceField(initial=1,
+	                                                choices=(
+		                                                # (
+			                                            #     '连续函数',
+			                                                (
+				                                                (1, '8周期(弓字步正搭接填充)'),
+				                                                (2, '4周期(弓字步负搭接填充/回填负搭接填充)'),
+				                                                (3, '4周期(轮廓偏移填充)'),
+				                                                (4, '2周期(轮廓线扫描)'),
+				                                                (5, '2周期(低功率扫坡口根部)'),
+				                                                (6, 'N周期(定期补偿成形)'),
+				                                                (7, '1周期(暂停冷却)'),
+				                                                (8, '1周期(轮廓线扫描)'),
+			                                                )
+		                                                # ),
+			                                            # (
+				                                        #     '分段函数',
+			                                            #     (
+				                                        #         (11, '8周期（弓字步正搭接填充）'),
+				                                        #         (12, '4周期（弓字步负搭接填充/回填负搭接填充）'),
+				                                        #         (13, '4周期（轮廓偏移填充）'),
+				                                        #         (14, '2周期（轮廓线扫描）'),
+			                                            #     )
+			                                            # )
+		                                            ),
+	                                                label='小结构')
+
+	
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.drawing_code_list = list(map(lambda P: P.drawing_code, LAMProductCategory.objects.all().order_by('drawing_code')))
+		self.technique_instruction_list = list(map(lambda T:'%s %s_%d'%(T.instruction_code, T.version_code, T.version_number), LAMTechniqueInstruction.objects.all().order_by('instruction_code','version_code')))
+		# self.worksection_code_list = list(map(lambda W: W.code, Worksection.objects.all().order_by('code')))
+		worksection_code_list = Worksection.objects.filter(available=True)
+		self.fields['Program_WorksectionCode'].choices = ((_ws.code, str(_ws)) for _ws in worksection_code_list)
+		self.ProgramStructure_previewfields = [('函数类型',''),('子函数名称',''), ('说明',''),  ('起始高度',''), ('终止高度',''), ('切片厚度',''), ('起始子程序号',''), ('提供轮廓扫描',''), ('暂停冷却',''), ('操作','152px')]
+		
+		# self.defaultParams = ['1400', '1401', 'true', 'true']
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+		self.fields['Program_DrawingCode'].widget.attrs.update({'id': 'id_Program_DrawingCode'})
+		self.fields['Program_TechInstCode'].widget.attrs.update({'id': 'id_Program_TechInstCode'})
+		# self.fields['Program_WorksectionCode'].widget.attrs.update({'id': 'id_Program_WorksectionCode'})
+		self.fields['Program_WorksectionCode'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择适用激光成形工段"})
+		self.fields['Program_Code'].widget.attrs.update(
+			{'onchange': 'setSubFunctionPath();'})
+		self.fields['Powder_Order'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择粉路通断指令"})
+		self.fields['New_SubFunction_Type'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择结构类型"})
+		self.editform_fields = [
+			'Program_FileCode',
+			'Program_DrawingCode',
+		    'Program_TechInstCode',
+		    'Program_WorksectionCode',
+		    'Program_Code',
+		    'Program_SubFunctionPath',
+		    'Program_Pace',
+		    'Powder_Order',
+			# 'Cooldown_Time',
+			'SubFunction_Text',
+		]
+
+
+# 程序结构
+class MainProgram_8070_Function_Form(forms.Form):
+	
+	SubTitleDict = {
+	      '1':'8周期(弓字步正搭接填充)',
+	      '2':'4周期(弓字步负搭接填充/回填负搭接填充)',
+	      '3':'4周期(轮廓偏移填充)',
+	      '4':'2周期(轮廓线扫描)',
+	      '5':'2周期(低功率扫坡口根部)',
+	      '6':'N周期(定期补偿成形)',
+		  '7':'1周期(暂停冷却)',
+		  '8':'1周期(轮廓线扫描)',
+	      # '11': '8周期(弓字步正搭接填充)',
+	      # '12': '4周期(弓字步负搭接填充/回填负搭接填充)',
+	      # '13': '4周期(轮廓偏移填充)',
+	      # '14': '2周期(轮廓线扫描)',
+	}
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['FunctionName'] = forms.CharField(max_length=50, label='子函数名称')
+		self.fields['FunctionNote'] = forms.CharField(max_length=50, label='子函数说明')
+		
+		
+		
+		self.fields['FunctionName'].widget.attrs.update(
+			{'class': 'form-control'})
+		self.fields['FunctionNote'].widget.attrs.update(
+			{'class': 'form-control'})
+		
+		
+	def InitFields_By_StructureCode(self, StructureCode, operation, data = None):
+	
+	#       (1, '8周期（弓字步正搭接填充）'),
+	#       (2, '4周期（弓字步负搭接填充/回填负搭接填充）'),
+	#       (3, '4周期（轮廓偏移填充）'),
+	#       (4, '2周期（轮廓线扫描）'),
+	#       (5, '2周期（低功率扫坡口根部）'),
+	#       (6, 'N周期（定期补偿成形）'),
+	#       (7, '1周期(暂停冷却)'),
+	
+	
+		self.tableHeader = []
+		if operation=='new':
+			self.title = '新增结构'
+		elif operation == 'edit':
+			self.title = '编辑结构'
+		self.subtitle = MainProgram_8070_Function_Form.SubTitleDict[StructureCode]
+	
+		if StructureCode in ['1', '2', '3', '4', '5', '6', '8']:
+			# self.subtitle = '连续函数 ' + self.subtitle
+			self.MultipleItem = False
+			self.fields['StartZValue'] = forms.DecimalField(max_digits=10, decimal_places=0, label='起始高度(mm)')
+			self.fields['FinishZValue'] = forms.DecimalField(max_digits=10, decimal_places=0, label='终止高度(mm)')
+			self.fields['Thickness'] = forms.DecimalField(max_digits=3, decimal_places=3, label='切片厚度(mm)')
+			self.fields['FirstFunctionNumber'] = forms.DecimalField(max_digits=10, decimal_places=0, label='起始子程序号')
+			def addContourField():
+				self.fields['Function_Contour'] = forms.ChoiceField(initial='false',
+				                                                    choices=(('true', '是'), ('false', '否')),
+				                                                    label='提供轮廓扫描(P200)')
+			if StructureCode == '1':
+				# (1, '8周期（弓字步正搭接填充）'),
+				addContourField()
+				self.Function_name_initial = 'Pstvlap'
+				# self.fields['Block1_Track_1'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block1 Track 1 起始子程序号')
+				# self.fields['Block1_Track_3_Inv'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block1_Track_3_Inv 起始子程序号')
+				# self.fields['Block1_Track_1_Inv'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block1 Track 1 Inv 起始子程序号')
+				# self.fields['Block1_Track_3'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block1 Track 3 起始子程序号')
+				# self.fields['Block2_Track_1'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block2 Track 1 起始子程序号')
+				# self.fields['Block2_Track_3_Inv'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block2 Track 3 Inv 起始子程序号')
+				# self.fields['Block2_Track_1_Inv'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block2 Track 1 Inv 起始子程序号')
+				# self.fields['Block2_Track_3'] = forms.DecimalField(max_digits=10, decimal_places=0, label='Block2 Track 3 起始子程序号')
+				self.tableHeader.extend(
+					[
+						'起始高度(≥)',
+						'终止高度(<)',
+						'Block1 Track 1',
+						'Block1 Track 3 Inv',
+						'Block1 Track 1 Inv',
+						'Block1 Track 3',
+						'Block2 Track 1',
+						'Block2 Track 3 Inv',
+						'Block2 Track 1 Inv',
+						'Block2 Track 3',
+					])
+				self.FunColumnRange = range(8)
+				
+				
+			elif StructureCode == '2':
+				# (2, '4周期（弓字步负搭接填充/回填负搭接填充）'),
+				addContourField()
+				self.Function_name_initial = 'Ngtvlap'
+				self.tableHeader.extend(
+					[
+						'起始高度(≥)',
+						'终止高度(<)',
+						'Block1 Track 1+2',
+						'Block1 Track 3+4',
+						'Block2 Track 1+2',
+						'Block2 Track 3+4',
+					])
+				self.FunColumnRange = range(4)
+			elif StructureCode == '3':
+				# (3, '4周期（轮廓偏移填充）'),
+				self.Function_name_initial = 'OutlOffset'
+				self.tableHeader.extend(
+					[
+						'起始高度(≥)',
+						'终止高度(<)',
+						'Block1 W1 Forward',
+						'Block1 W1 Backward',
+						'Block2 W2 Forward',
+						'Block2 W2 Backward',
+					])
+				self.FunColumnRange = range(4)
+			elif StructureCode == '4':
+				# (4, '2周期（轮廓线扫描）'),
+				self.Function_name_initial = 'Outline'
+				self.tableHeader.extend(
+					[
+						'起始高度(≥)',
+						'终止高度(<)',
+						'Outline Forward',
+						'Outline Backward',
+					])
+				self.FunColumnRange = range(2)
+			
+			elif StructureCode == '5':
+				# (5, '2周期（低功率扫坡口根部）'),
+				self.Function_name_initial = 'Smooth'
+				self.tableHeader.extend(
+					[
+						'起始高度(≥)',
+						'终止高度(<)',
+						'Smooth Forward',
+						'Smooth Backward',
+					])
+				self.FunColumnRange = range(2)
+				
+			elif StructureCode == '6':
+				# (6, 'N周期（定期补偿成形）'),
+				self.Function_name_initial = 'Patch'
+				self.tableHeader.extend(
+					[
+						'起始高度(≥)',
+						'终止高度(<)',
+						'Patch1 Track 1+2',
+						'Patch1 Track 3+4',
+						'Patch2 Track 1+2',
+						'Patch2 Track 3+4',
+					])
+				self.FunColumnRange = range(4)
+			elif StructureCode == '8':
+				# 1周期(轮廓线扫描),
+				self.Function_name_initial = 'Outline'
+				self.tableHeader.extend(
+					[
+						'起始高度(≥)',
+						'终止高度(<)',
+						'Outline',
+					])
+				self.FunColumnRange = range(1)
+				
+		elif StructureCode == '7':
+			# (7, '1周期(暂停冷却)'),
+			self.Function_name_initial = 'Delay'
+			
+			self.tableHeader.extend(
+				[
+					'起始高度(≥)',
+					'终止高度(<)',
+					'暂停时间(s)',
+				])
+	
+			self.fields['StartZValue'] = forms.DecimalField(max_digits=10, decimal_places=0, label='起始高度(mm)')
+			self.fields['FinishZValue'] = forms.DecimalField(max_digits=10, decimal_places=0, label='终止高度(mm)')
+			self.fields['DelayTime'] = forms.DecimalField(max_digits=5, decimal_places=0, label='暂停时间(s)')
+		
+			
+			
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+			field.widget.attrs.update({'onchange': 'checkForm();'})
+	
 
 class LAMTechInstSerial_PDF_Form(forms.Form):
 	title = '工序实例 by PDF'
@@ -3513,3 +4010,5 @@ class RawStockFlow_Statistic_Form(forms.Form):
 		self.fields['filter_product_code'].widget.attrs.update({'class': 'form-control chosen-select', 'data-placeholder': "[可选]选择产品..."})
 		self.fields['filter_product_category'].widget.attrs.update({'class': 'form-control chosen-select', 'data-placeholder': "[可选]选择产品类别..."})
 		self.fields['filter_techinst_serial'].widget.attrs.update({'class': 'form-control chosen-select', 'data-placeholder': "[可选]选择工序..."})
+	
+	

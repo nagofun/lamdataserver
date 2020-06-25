@@ -1,0 +1,2186 @@
+2020-06-14 Sun 00:03:32 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:03:32 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:03:32 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:03:32 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:03:32 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:03:42.173920)" to job store "default"
+2020-06-14 Sun 00:03:32 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:03:32 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:03:32 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:03:32 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:03:32 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:03:42.173920 (in 9.998007 seconds)
+2020-06-14 Sun 00:03:32 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:03:32 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:03:42 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:03:42 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:03:42 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 10577.824759 seconds)
+2020-06-14 Sun 00:03:42 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:03:42.173920)" (scheduled at 2020-06-14 00:03:42.173920)
+2020-06-14 Sun 00:03:42 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:03:42.173920)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.OperationalError: (1048, "Column 'laser_power' cannot be null")
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    raise utils.IntegrityError(*tuple(e.args))
+django.db.utils.IntegrityError: (1048, "Column 'laser_power' cannot be null")
+2020-06-14 Sun 00:03:43 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:04:03 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 00:04:03 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 00:04:05 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:04:05 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:05 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:05 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:05 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:04:15.504964)" to job store "default"
+2020-06-14 Sun 00:04:05 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:04:05 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:04:05 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:04:05 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:04:05 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:04:15.504964 (in 9.998002 seconds)
+2020-06-14 Sun 00:04:05 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:04:05 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:04:15 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:04:15 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:04:15 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:04:15.504964)" (scheduled at 2020-06-14 00:04:15.504964)
+2020-06-14 Sun 00:04:15 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 10544.493135 seconds)
+2020-06-14 Sun 00:04:15 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:04:15.504964)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:04:16 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:04:20 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 00:04:20 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 00:04:26 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:04:26 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:26 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:26 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:26 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:04:36.870053)" to job store "default"
+2020-06-14 Sun 00:04:26 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:04:26 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:04:26 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:04:26 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:04:26 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:04:36.870053 (in 9.998014 seconds)
+2020-06-14 Sun 00:04:26 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:04:26 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:04:36 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:04:36 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:04:36 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 10523.111354 seconds)
+2020-06-14 Sun 00:04:36 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:04:36.870053)" (scheduled at 2020-06-14 00:04:36.870053)
+2020-06-14 Sun 00:04:37 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:04:36.870053)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:04:38 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:04:40 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 00:04:40 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 00:04:44 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:04:44 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:44 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:44 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:44 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:04:54.631895)" to job store "default"
+2020-06-14 Sun 00:04:44 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:04:44 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:04:44 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:04:44 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:04:44 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:04:54.631895 (in 9.997011 seconds)
+2020-06-14 Sun 00:04:44 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:04:44 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:04:45 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 00:04:45 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 00:04:52 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:04:52 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:52 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:52 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:04:52 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:05:02.439739)" to job store "default"
+2020-06-14 Sun 00:04:52 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:04:52 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:04:52 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:04:52 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:04:52 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:05:02.439739 (in 9.997008 seconds)
+2020-06-14 Sun 00:04:52 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:04:52 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:05:02 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:05:02 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:05:02 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 10497.559049 seconds)
+2020-06-14 Sun 00:05:02 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:05:02.439739)" (scheduled at 2020-06-14 00:05:02.439739)
+2020-06-14 Sun 00:05:02 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:05:02.439739)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:05:03 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:18:26 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:18:26 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:18:26 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:18:26 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:18:26 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:18:36.884338)" to job store "default"
+2020-06-14 Sun 00:18:26 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:18:26 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:18:26 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:18:26 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:18:26 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:18:36.884338 (in 9.998003 seconds)
+2020-06-14 Sun 00:18:26 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:18:26 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:18:36 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:18:36 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:18:36 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 9683.112738 seconds)
+2020-06-14 Sun 00:18:36 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:18:36.884338)" (scheduled at 2020-06-14 00:18:36.884338)
+2020-06-14 Sun 00:18:37 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:18:36.884338)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:18:38 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:22:18 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 00:22:18 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 00:22:22 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:22:22 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:22:22 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:22:22 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:22:22 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:22:32.190211)" to job store "default"
+2020-06-14 Sun 00:22:22 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:22:22 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:22:22 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:22:22 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:22:22 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:22:32.190211 (in 9.998037 seconds)
+2020-06-14 Sun 00:22:22 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:22:22 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:22:32 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:22:32 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:22:32 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:22:32.190211)" (scheduled at 2020-06-14 00:22:32.190211)
+2020-06-14 Sun 00:22:32 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 9447.807917 seconds)
+2020-06-14 Sun 00:22:32 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:22:32.190211)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:22:33 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:24:21 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:24:21 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:24:21 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:24:21 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:24:21 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:24:31.332967)" to job store "default"
+2020-06-14 Sun 00:24:21 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:24:21 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:24:21 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:24:21 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:24:21 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:24:31.332967 (in 9.998006 seconds)
+2020-06-14 Sun 00:24:21 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:24:21 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:24:31 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:24:31 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:24:31 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 9328.664958 seconds)
+2020-06-14 Sun 00:24:31 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:24:31.332967)" (scheduled at 2020-06-14 00:24:31.332967)
+2020-06-14 Sun 00:24:31 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:24:31.332967)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:24:32 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:29:54 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:29:54 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:29:54 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:29:54 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:29:54 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:30:04.597923)" to job store "default"
+2020-06-14 Sun 00:29:54 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:29:54 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:29:54 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:29:54 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:29:54 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:30:04.597923 (in 9.997048 seconds)
+2020-06-14 Sun 00:29:54 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:29:54 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:30:04 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:30:04 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:30:04 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 8995.401009 seconds)
+2020-06-14 Sun 00:30:04 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:30:04.597923)" (scheduled at 2020-06-14 00:30:04.597923)
+2020-06-14 Sun 00:30:04 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:30:04.597923)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:30:05 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:31:09 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 00:31:09 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 00:31:12 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:31:12 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:31:12 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:31:12 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:31:12 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:31:22.634523)" to job store "default"
+2020-06-14 Sun 00:31:12 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:31:12 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:31:12 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:31:12 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:31:12 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:31:22.634523 (in 9.997008 seconds)
+2020-06-14 Sun 00:31:12 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:31:12 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:31:22 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:31:22 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:31:22 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 8917.363867 seconds)
+2020-06-14 Sun 00:31:22 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:31:22.634523)" (scheduled at 2020-06-14 00:31:22.634523)
+2020-06-14 Sun 00:31:22 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:31:22.634523)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:31:23 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 00:31:28 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 00:31:28 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 00:31:30 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 00:31:30 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:31:30 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:31:30 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 00:31:30 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 00:31:40.893484)" to job store "default"
+2020-06-14 Sun 00:31:30 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-14 03:00:00)" to job store "default"
+2020-06-14 Sun 00:31:30 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 00:31:30 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 00:31:30 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:31:30 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 00:31:40.893484 (in 9.997010 seconds)
+2020-06-14 Sun 00:31:30 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 00:31:30 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 00:31:40 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 00:31:40 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 00:31:40 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 03:00:00 (in 8899.105461 seconds)
+2020-06-14 Sun 00:31:40 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:31:40.893484)" (scheduled at 2020-06-14 00:31:40.893484)
+2020-06-14 Sun 00:31:41 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 00:31:40.893484)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 00:31:42 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 16:59:29 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 16:59:29 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 16:59:29 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 16:59:29 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 16:59:29 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 16:59:39.413017)" to job store "default"
+2020-06-14 Sun 16:59:29 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 16:59:29 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 16:59:29 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 16:59:29 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 16:59:29 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 16:59:39.413017 (in 9.998038 seconds)
+2020-06-14 Sun 16:59:29 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 16:59:29 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 16:59:39 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 16:59:39 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 16:59:39 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 16:59:39.413017)" (scheduled at 2020-06-14 16:59:39.413017)
+2020-06-14 Sun 16:59:39 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 25220.585728 seconds)
+2020-06-14 Sun 16:59:39 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 16:59:39.413017)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 16:59:40 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:03:36 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 17:03:36 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 17:10:22 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:10:22 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:10:22 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:10:22 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:10:22 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:10:32.535251)" to job store "default"
+2020-06-14 Sun 17:10:22 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:10:22 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:10:22 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:10:22 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:10:22 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:10:32.535251 (in 9.998007 seconds)
+2020-06-14 Sun 17:10:22 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:10:22 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:10:32 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:10:32 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:10:32 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 24567.463335 seconds)
+2020-06-14 Sun 17:10:32 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:10:32.535251)" (scheduled at 2020-06-14 17:10:32.535251)
+2020-06-14 Sun 17:10:32 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:10:32.535251)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:10:33 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:10:33 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:10:34 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:10:34 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:10:35 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:11:21 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:11:35 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:11:35 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:11:35 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:11:35 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:11:35 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:11:45.729403)" to job store "default"
+2020-06-14 Sun 17:11:35 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:11:35 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:11:35 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:11:35 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:11:35 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:11:45.729403 (in 9.983521 seconds)
+2020-06-14 Sun 17:11:35 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:11:35 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:11:45 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:11:45 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:11:45 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 24494.269389 seconds)
+2020-06-14 Sun 17:11:45 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:11:45.729403)" (scheduled at 2020-06-14 17:11:45.729403)
+2020-06-14 Sun 17:11:46 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:11:45.729403)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:11:47 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:13:20 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 17:13:20 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 17:13:23 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:13:23 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:13:23 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:13:23 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:13:23 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:13:33.503509)" to job store "default"
+2020-06-14 Sun 17:13:23 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:13:23 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:13:23 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:13:23 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:13:23 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:13:33.503509 (in 9.997933 seconds)
+2020-06-14 Sun 17:13:23 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:13:23 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:13:33 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:13:33 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:13:33 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 24386.483728 seconds)
+2020-06-14 Sun 17:13:33 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:13:33.503509)" (scheduled at 2020-06-14 17:13:33.503509)
+2020-06-14 Sun 17:13:34 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:13:33.503509)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:13:34 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 17:13:34 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 17:13:34 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:13:40 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:13:40 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:13:40 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:13:40 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:13:40 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:13:50.207614)" to job store "default"
+2020-06-14 Sun 17:13:40 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:13:40 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:13:40 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:13:40 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:13:40 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:13:50.207614 (in 10.000000 seconds)
+2020-06-14 Sun 17:13:40 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:13:40 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:13:50 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:13:50 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:13:50 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 24369.779322 seconds)
+2020-06-14 Sun 17:13:50 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:13:50.207614)" (scheduled at 2020-06-14 17:13:50.207614)
+2020-06-14 Sun 17:13:50 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:13:50.207614)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:13:51 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:16:25 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 17:16:25 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 17:16:27 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:16:27 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:16:27 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:16:27 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:16:27 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:16:37.580040)" to job store "default"
+2020-06-14 Sun 17:16:27 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:16:27 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:16:27 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:16:27 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:16:27 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:16:37.580040 (in 9.982949 seconds)
+2020-06-14 Sun 17:16:27 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:16:27 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:16:37 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:16:37 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:16:37 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:16:37.580040)" (scheduled at 2020-06-14 17:16:37.580040)
+2020-06-14 Sun 17:16:37 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 24202.404845 seconds)
+2020-06-14 Sun 17:16:37 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:16:37.580040)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:16:38 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:16:39 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 17:16:39 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 17:16:42 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:16:42 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:16:42 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:16:42 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:16:42 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:16:52.269253)" to job store "default"
+2020-06-14 Sun 17:16:42 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:16:42 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:16:42 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:16:42 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:16:42 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:16:52.269253 (in 9.983138 seconds)
+2020-06-14 Sun 17:16:42 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:16:42 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:16:52 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:16:52 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:16:52 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:16:52.269253)" (scheduled at 2020-06-14 17:16:52.269253)
+2020-06-14 Sun 17:16:52 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 24187.722883 seconds)
+2020-06-14 Sun 17:16:52 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:16:52.269253)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:16:53 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:17:36 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 17:17:36 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 17:17:39 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:17:39 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:17:39 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:17:39 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:17:39 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:17:49.473209)" to job store "default"
+2020-06-14 Sun 17:17:39 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:17:39 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:17:39 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:17:39 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:17:39 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:17:49.473209 (in 10.000001 seconds)
+2020-06-14 Sun 17:17:39 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:17:39 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:17:49 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:17:49 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:17:49 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 24130.517460 seconds)
+2020-06-14 Sun 17:17:49 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:17:49.473209)" (scheduled at 2020-06-14 17:17:49.473209)
+2020-06-14 Sun 17:17:49 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:17:49.473209)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:17:50 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:25:55 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:25:56 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:25:57 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:25:57 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:25:58 log.py log_response 228 - WARNING - Not Found: /favicon.ico
+2020-06-14 Sun 17:27:15 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:27:15 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:27:15 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:27:15 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:27:15 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:27:25.685676)" to job store "default"
+2020-06-14 Sun 17:27:15 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:27:15 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:27:15 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:27:15 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:27:15 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:27:25.685676 (in 10.000000 seconds)
+2020-06-14 Sun 17:27:15 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:27:15 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:27:25 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:27:25 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:27:25 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 23554.290359 seconds)
+2020-06-14 Sun 17:27:25 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:27:25.685676)" (scheduled at 2020-06-14 17:27:25.685676)
+2020-06-14 Sun 17:27:26 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:27:25.685676)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:27:27 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:51:24 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:51:24 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:51:24 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:51:24 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:51:24 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:51:34.437058)" to job store "default"
+2020-06-14 Sun 17:51:24 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:51:24 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:51:24 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:51:24 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:51:24 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:51:34.437058 (in 10.000000 seconds)
+2020-06-14 Sun 17:51:24 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:51:24 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:51:34 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:51:34 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:51:34 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:51:34.437058)" (scheduled at 2020-06-14 17:51:34.437058)
+2020-06-14 Sun 17:51:34 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 22105.562303 seconds)
+2020-06-14 Sun 17:51:34 log.py log_response 228 - WARNING - Not Found: /LAMProcessData/PracticalTools/MakeMainProgramFile/addStructure/1/
+2020-06-14 Sun 17:51:34 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:51:34.437058)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:51:35 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 17:51:43 log.py log_response 228 - WARNING - Not Found: /LAMProcessData/PracticalTools/MakeMainProgramFile/addStructure/4/
+2020-06-14 Sun 17:56:48 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\urls.py changed, reloading.
+2020-06-14 Sun 17:56:48 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 17:56:51 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 17:56:51 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:56:51 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:56:51 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 17:56:51 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:57:01.572269)" to job store "default"
+2020-06-14 Sun 17:56:51 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 17:56:51 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 17:56:51 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 17:56:51 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:56:51 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 17:57:01.572269 (in 9.995013 seconds)
+2020-06-14 Sun 17:56:51 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 17:56:51 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 17:57:01 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 17:57:01 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 17:57:01 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 17:57:01.572269)" (scheduled at 2020-06-14 17:57:01.572269)
+2020-06-14 Sun 17:57:01 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 21778.413671 seconds)
+2020-06-14 Sun 17:57:01 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 17:57:01.572269)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5662, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 17:57:02 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 18:01:49 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2020-06-14 Sun 18:01:49 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 19:00:11 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 19:00:11 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 19:00:11 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 19:00:11 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 19:00:11 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 19:00:21.620660)" to job store "default"
+2020-06-14 Sun 19:00:11 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 19:00:11 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 19:00:11 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 19:00:11 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 19:00:11 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 19:00:21.620660 (in 9.996717 seconds)
+2020-06-14 Sun 19:00:11 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 19:00:11 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 19:00:21 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 19:00:21 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 19:00:21 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 17978.364644 seconds)
+2020-06-14 Sun 19:00:21 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 19:00:21.620660)" (scheduled at 2020-06-14 19:00:21.620660)
+2020-06-14 Sun 19:00:21 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 19:00:21.620660)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5705, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 19:00:22 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 19:09:07 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 19:09:07 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 19:09:09 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 19:09:09 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 19:09:09 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 19:09:09 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 19:09:09 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 19:09:19.622495)" to job store "default"
+2020-06-14 Sun 19:09:09 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 19:09:09 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 19:09:09 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 19:09:09 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 19:09:09 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 19:09:19.622495 (in 9.998421 seconds)
+2020-06-14 Sun 19:09:09 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 19:09:09 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 19:09:19 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 19:09:19 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 19:09:19 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 17440.375622 seconds)
+2020-06-14 Sun 19:09:19 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 19:09:19.622495)" (scheduled at 2020-06-14 19:09:19.622495)
+2020-06-14 Sun 19:09:19 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 19:09:19.622495)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5705, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 19:09:20 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 23:10:14 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 23:10:14 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 23:10:16 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 23:10:16 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:10:16 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:10:16 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:10:16 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:10:26.898486)" to job store "default"
+2020-06-14 Sun 23:10:16 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 23:10:16 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 23:10:16 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 23:10:16 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:10:16 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 23:10:26.898486 (in 9.998006 seconds)
+2020-06-14 Sun 23:10:16 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 23:10:16 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 23:10:26 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:10:26 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 23:10:26 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 2973.100247 seconds)
+2020-06-14 Sun 23:10:26 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:10:26.898486)" (scheduled at 2020-06-14 23:10:26.898486)
+2020-06-14 Sun 23:10:27 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:10:26.898486)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5705, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 23:10:28 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 23:10:51 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\forms.py changed, reloading.
+2020-06-14 Sun 23:10:51 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 23:10:53 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 23:10:53 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:10:53 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:10:53 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:10:53 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:11:03.956301)" to job store "default"
+2020-06-14 Sun 23:10:53 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 23:10:53 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 23:10:53 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 23:10:53 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:10:53 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 23:11:03.956301 (in 9.998044 seconds)
+2020-06-14 Sun 23:10:53 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 23:10:53 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 23:11:03 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:11:03 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 23:11:03 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 2936.041864 seconds)
+2020-06-14 Sun 23:11:03 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:11:03.956301)" (scheduled at 2020-06-14 23:11:03.956301)
+2020-06-14 Sun 23:11:04 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:11:03.956301)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5705, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 23:11:05 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 23:12:37 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2020-06-14 Sun 23:12:37 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 23:12:42 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 23:12:42 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:12:42 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:12:42 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:12:42 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:12:52.861831)" to job store "default"
+2020-06-14 Sun 23:12:42 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 23:12:42 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 23:12:42 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 23:12:42 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:12:42 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 23:12:52.861831 (in 9.997008 seconds)
+2020-06-14 Sun 23:12:42 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 23:12:42 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 23:12:52 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:12:52 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 23:12:52 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 2827.136904 seconds)
+2020-06-14 Sun 23:12:52 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:12:52.861831)" (scheduled at 2020-06-14 23:12:52.861831)
+2020-06-14 Sun 23:12:53 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:12:52.861831)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5704, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 23:12:54 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 23:16:49 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 23:16:49 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:16:49 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:16:49 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:16:49 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:16:59.743260)" to job store "default"
+2020-06-14 Sun 23:16:49 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 23:16:49 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 23:16:49 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 23:16:49 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:16:49 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 23:16:59.743260 (in 9.998010 seconds)
+2020-06-14 Sun 23:16:49 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 23:16:49 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 23:16:57 log.py log_response 228 - WARNING - Not Found: /LAMProcessData/PracticalTools/MakeMainProgramFile_8070/addStructure/1/
+2020-06-14 Sun 23:16:59 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:16:59 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 23:16:59 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 2580.255166 seconds)
+2020-06-14 Sun 23:16:59 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:16:59.743260)" (scheduled at 2020-06-14 23:16:59.743260)
+2020-06-14 Sun 23:17:00 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:16:59.743260)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5704, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 23:17:01 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 23:17:02 log.py log_response 228 - WARNING - Not Found: /LAMProcessData/PracticalTools/MakeMainProgramFile_8070/addStructure/1/
+2020-06-14 Sun 23:19:45 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\urls.py changed, reloading.
+2020-06-14 Sun 23:19:45 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 23:19:50 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 23:19:50 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:19:50 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:19:50 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:19:50 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:20:00.283937)" to job store "default"
+2020-06-14 Sun 23:19:50 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 23:19:50 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 23:19:50 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 23:19:50 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:19:50 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 23:20:00.283937 (in 9.996962 seconds)
+2020-06-14 Sun 23:19:50 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 23:19:50 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 23:20:00 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:20:00 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 23:20:00 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:20:00.283937)" (scheduled at 2020-06-14 23:20:00.283937)
+2020-06-14 Sun 23:20:00 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 2399.715010 seconds)
+2020-06-14 Sun 23:20:00 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:20:00.283937)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5704, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 23:20:01 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 23:20:24 autoreload.py trigger_reload 203 - INFO - E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py changed, reloading.
+2020-06-14 Sun 23:20:24 threadpool.py shutdown 111 - INFO - Shutting down thread pool
+2020-06-14 Sun 23:20:31 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 23:20:31 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:20:31 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:20:31 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:20:31 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:20:41.491948)" to job store "default"
+2020-06-14 Sun 23:20:31 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 23:20:31 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 23:20:31 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 23:20:31 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:20:31 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 23:20:41.491948 (in 9.998006 seconds)
+2020-06-14 Sun 23:20:31 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 23:20:31 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 23:20:41 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:20:41 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 23:20:41 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 2358.505578 seconds)
+2020-06-14 Sun 23:20:41 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:20:41.491948)" (scheduled at 2020-06-14 23:20:41.491948)
+2020-06-14 Sun 23:20:41 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:20:41.491948)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5704, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 23:20:42 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread
+2020-06-14 Sun 23:21:33 threadpool.py __init__ 52 - INFO - Started thread pool with 0 core threads and 20 maximum threads
+2020-06-14 Sun 23:21:33 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:21:33 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:21:33 scheduler.py add_job 287 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020-06-14 Sun 23:21:33 scheduler.py _real_add_job 262 - INFO - Added job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-14 23:21:43.797499)" to job store "default"
+2020-06-14 Sun 23:21:33 scheduler.py _real_add_job 262 - INFO - Added job "cleanup (trigger: cron[day_of_week='*', hour='3', minute='0', second='0'], next run at: 2020-06-15 03:00:00)" to job store "default"
+2020-06-14 Sun 23:21:33 scheduler.py _real_add_job 262 - INFO - Added job "OpenLog (trigger: cron[hour='0'], next run at: 2020-06-15 00:00:00)" to job store "default"
+2020-06-14 Sun 23:21:33 scheduler.py _main_loop 574 - INFO - Scheduler started
+2020-06-14 Sun 23:21:33 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:21:33 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-14 23:21:43.797499 (in 9.998004 seconds)
+2020-06-14 Sun 23:21:33 query_views.py <module> 63 - DEBUG - SendBefore_NotRecive : [<CNCProcessStatus: CNCProcessStatus object (2038721)>]
+2020-06-14 Sun 23:21:33 query_views.py <module> 64 - DEBUG - Waitfor_Recive : [2038721]
+2020-06-14 Sun 23:21:43 scheduler.py _main_loop 579 - DEBUG - Looking for jobs to run
+2020-06-14 Sun 23:21:43 threadpool.py _run_jobs 69 - DEBUG - Started worker thread
+2020-06-14 Sun 23:21:43 scheduler.py _main_loop 588 - DEBUG - Next wakeup is due at 2020-06-15 00:00:00 (in 2296.200628 seconds)
+2020-06-14 Sun 23:21:43 scheduler.py _run_job 509 - INFO - Running job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:21:43.797499)" (scheduled at 2020-06-14 23:21:43.797499)
+2020-06-14 Sun 23:21:44 scheduler.py _run_job 520 - ERROR - Job "regulartime_task (trigger: interval[1 day, 0:00:00], next run at: 2020-06-15 23:21:43.797499)" raised an exception
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+MySQLdb._exceptions.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Program Files\Python37\lib\site-packages\apscheduler\scheduler.py", line 512, in _run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\views.py", line 5704, in regulartime_task
+    RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+  File "E:\1-program\11-LAMDataServer\lamdataserver\LAMProcessData\process_realtime_finedata.py", line 193, in init_Tomorrow_rows
+    _model.objects.bulk_create(insert_data_list)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 474, in bulk_create
+    ids = self._batched_insert(objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1211, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\query.py", line 1186, in _insert
+    return query.get_compiler(using=using).execute_sql(return_id)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\models\sql\compiler.py", line 1332, in execute_sql
+    cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 99, in execute
+    return super().execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 76, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\utils.py", line 89, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    return self.cursor.execute(sql, params)
+  File "D:\Program Files\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 71, in execute
+    return self.cursor.execute(query, args)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 209, in execute
+    res = self._query(query)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\cursors.py", line 315, in _query
+    db.query(q)
+  File "D:\Program Files\Python37\lib\site-packages\MySQLdb\connections.py", line 239, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry '1592150400' for key 'LAMProcessData_process_r_acquisition_timestamp_a69ae90c_uniq'")
+2020-06-14 Sun 23:21:45 threadpool.py _run_jobs 94 - DEBUG - Exiting worker thread

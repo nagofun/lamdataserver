@@ -266,8 +266,8 @@ urlpatterns = [
 
     # 原材料无损检测
     path('InspectionRecords/NonDestructiveTest/RawStock/', views.OperateData_RawStockNonDestructiveTest),
-    # path('InspectionRecords/NonDestructiveTest/RawStock/add/', views.new_RawStockNonDestructiveTest),
-    # path('InspectionRecords/NonDestructiveTest/RawStock/edit/', views.edit_RawStockNonDestructiveTest),
+    path('InspectionRecords/NonDestructiveTest/RawStock/add/', views.new_RawStockNonDestructiveTest),
+    path('InspectionRecords/NonDestructiveTest/RawStock/edit/', views.edit_RawStockNonDestructiveTest),
 
 
 
@@ -291,8 +291,14 @@ urlpatterns = [
     # 分析成形制造过程-瞬时速率空间分布
     re_path('AnalyseLAMProcess/ScanningRate3D/$', views.AnalyseLAMProcess_ScanningRate3D),
     re_path('QueryData/AnalyseLAMProcess_ScanningRate3D/$', query_views.queryData_Analysedata_ScanningRate3D_By_MissionIDList),
-
-
+    # 激光成形日志上传 - 钉钉
+    re_path('AnalyseLAMProcess/DingDingRecords/Upload/$', views.AnalyseLAMProcess_DingDingRecords_Upload),
+    # 激光成形日志浏览 - 钉钉
+    re_path('AnalyseLAMProcess/DingDingRecords/Browse/$', views.AnalyseLAMProcess_DingDingRecords_Browse),
+    re_path('QueryData/AnalyseLAMProcess/DingDingRecords_by_ID/(?P<RecordID>(.+))/$',
+            query_views.queryData_GetDingDingRecordsByID),
+    re_path('QueryData/AnalyseLAMProcess/DingDingRecordPictures_by_ID/(?P<PictureID>(.+))/$',
+            query_views.queryData_GetDingDingRecordPicturesByID),
 
     # 弹出子窗口
     re_path('InspectionRecords/PhysicochemicalTest/AddTensile/(?P<MissionItemID>(.+))/$',
@@ -357,6 +363,15 @@ urlpatterns = [
             query_views.queryData_ProgressBarValue_PracticalTools_SShapeBreak_By_GUID),
     re_path('QueryData/ProgressBarValue/PracticalTools_BreakBlockResumption_By_GUID/(?P<GUID>(.+))/$',
             query_views.queryData_ProgressBarValue_PracticalTools_BreakBlockResumption_By_GUID),
+    # 生成主程序段并提供下载
+    path('PracticalTools/MakeMainProgramFile_8070/', views.PracticalTools_MakeMainProgramFile_8070),
+    #     新增结构  弹出子窗
+    re_path('PracticalTools/MakeMainProgramFile_8070/addStructure/(?P<StructureCode>(.+))/$', views.PracticalTools_MakeMainProgramFile_8070_AddStructure),
+    #     编辑结构  弹出子窗
+    re_path('PracticalTools/MakeMainProgramFile_8070/editStructure/(?P<StructureCode>(.+))/(?P<StructureID>(.+))/$', views.PracticalTools_MakeMainProgramFile_8070_EditStructure),
+    #     提交数据，生成G代码 弹出子窗
+    path('PracticalTools/MakeMainProgramFile_8070/MakeCode/', views.PracticalTools_MakeMainProgramFile_8070_MakeCode),
+    # /LAMProcessData/PracticalTools/MakeMainProgramFile/addStructure/
 
     # 下载文件
     re_path('DownLoadTempFile/(?P<tempfilepath>(.+))/$',
@@ -377,8 +392,8 @@ urlpatterns = [
     
     re_path('QueryData/PreviewTable/ProductNonDestructiveTestMission/(?P<ProductID>(.+))/$',
             query_views.queryData_ProductNonDestructiveTestMission_Preview),
-    # re_path('QueryData/PreviewTable/RawStockNonDestructiveTestMission/(?P<RawStockID>(.+))/$',
-    #         query_views.queryData_RawStockNonDestructiveTestMission_Preview),
+    re_path('QueryData/PreviewTable/RawStockNonDestructiveTestMission/(?P<RawStockID>(.+))/$',
+            query_views.queryData_RawStockNonDestructiveTestMission_Preview),
 
     # re_path('QueryData/LAMTechniqueInstruction_By_ProductCategory/(?P<ProductCategoryID>(.+))/$',
     #         query_views.queryData_LAMTechInst_By_ProdCate),

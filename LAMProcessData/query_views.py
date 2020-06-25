@@ -294,14 +294,30 @@ def queryData_ProductNonDestructiveTestMission_Preview(request, ProductID):
 
 @login_required
 @csrf_exempt
+def queryData_RawStockNonDestructiveTestMission_Preview(request, ProductID):
+	all_datadict = NonDestructiveTest_Mission.objects.filter(available=True, LAM_product=ProductID).order_by('arrangement_date')
+	Mission_dict = {
+		'id_%d' % data.id:
+			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
+			 'arrangement_date': str(data.arrangement_date),
+			 'machining_state': str(data.machining_state),
+			 'heat_treatment_state': str(data.heat_treatment_state),
+			}
+		for data in all_datadict
+	}
+	html = json.dumps(Mission_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
 def queryData_RawStockNonDestructiveTestMission_Preview(request, RawStockID):
 	all_datadict = NonDestructiveTest_Mission.objects.filter(available=True, RawStock=RawStockID).order_by('arrangement_date')
 	Mission_dict = {
 		'id_%d' % data.id:
 			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
 			 'arrangement_date': str(data.arrangement_date),
-			 # 'machining_state': str(data.machining_state),
-			 # 'heat_treatment_state': str(data.heat_treatment_state),
+			 'machining_state': str(data.machining_state),
+			 'heat_treatment_state': str(data.heat_treatment_state),
 			}
 		for data in all_datadict
 	}
@@ -1126,6 +1142,31 @@ def queryData_finedata_By_MissionID_timestamp(request, MissionItemID,startTimest
 	_dict = queryData_finedata_By_MissionID_with_certain_timestamp(MissionItemID, int(startTimestamp), int(finishTimestamp))
 	html = json.dumps(_dict, ensure_ascii=False)
 	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_GetDingDingRecordsByID(request, RecordID):
+	_obj =LAMProcess_DingDingRecord.objects.get(id=RecordID)
+	_dict = {
+		'acquisition_time' : str(_obj.acquisition_time),
+		'description':_obj.description,
+		'writer':_obj.writer,
+		'reporter':_obj.reporter,
+		'worksection_code':_obj.worksection_code,
+		'product_code':_obj.product_code,
+		'comment':_obj.comment,
+		'photos':[pho.id for pho in  _obj.photos.all()]
+	}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+@login_required
+@csrf_exempt
+def queryData_GetDingDingRecordPicturesByID(request, PictureID):
+	dingdingPic_obj = DingDingPicture.objects.get(id=PictureID)
+	pic_file = dingdingPic_obj.picture
+	# image_data = cv2.imread(BASE_DIR + path)
+	return HttpResponse(pic_file, content_type="image/png")
 
 @login_required
 @csrf_exempt
