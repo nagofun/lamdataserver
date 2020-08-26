@@ -122,6 +122,9 @@ urlpatterns = [
 	path('EditBasicInfomation/LAMTechniqueInstruction/add/', views.new_lamtechniqueinstruction),
     path('EditBasicInfomation/LAMTechniqueInstruction/edit/', views.edit_lamtechniqueinstruction),
     path('EditBasicInfomation/LAMTechniqueInstruction/delete/', views.del_lamtechniqueinstruction),
+    # re_path('QueryData/InspectLAMProcessRecords/Complete/(?P<MissionItemID>(.+))/$',
+    #         query_views.queryData_Inspect_Complete_MissionLAMProcessRecords),
+    
     # 激光成形工艺文件与产品类别的关联
     path('EditBasicInfomation/LAMProdCate_TechInst/', views.OperateData_lamprodcate_techinst),
 	path('EditBasicInfomation/LAMProdCate_TechInst/add/', views.new_lamprodcate_techinst),
@@ -210,6 +213,8 @@ urlpatterns = [
     path('ProcessRecords/LAMProcessMission/add/', views.new_lamprocessmission),
     path('ProcessRecords/LAMProcessMission/finish/', views.finish_lamprocessmission),
     path('ProcessRecords/LAMProcessMission/delete/', views.del_lamprocessmission),
+    # 根据零件编号列表查询可选工序
+    re_path('QueryData/LAMTechInstSerial_LAM_By_ProductCodeList/(?P<ProductIDList>(.+))/$', query_views.queryData_LAMSerial_By_ProductIDList),
 
     # 生产任务事后划分
     path('ProcessRecords/LAMProcessMission/CutRecordsByTime/', views.lamprocessmission_CutRecords_by_Time),
@@ -269,6 +274,8 @@ urlpatterns = [
     path('InspectionRecords/NonDestructiveTest/RawStock/add/', views.new_RawStockNonDestructiveTest),
     path('InspectionRecords/NonDestructiveTest/RawStock/edit/', views.edit_RawStockNonDestructiveTest),
 
+    # 根据零件编号列表查询可选检验工序
+    re_path('QueryData/LAMTechInstSerial_Test_By_ProductCodeList/(?P<ProductIDList>(.+))/$', query_views.queryData_TESTSerial_By_ProductIDList),
 
 
     # 检查成形记录
@@ -385,7 +392,7 @@ urlpatterns = [
     re_path('QueryData/PreviewTable/LAMProductMission/(?P<ProductID>(.+))/$',
             query_views.queryData_LAMProductMission_Preview),
 
-    re_path('QueryData/PreviewTable/ProductPhyChemTestMission/(?P<ProductID>(.+))/$',
+    re_path('QueryData/PreviewTable/ProductPhyChemTestMission/(?P<ProductIDList>(.+))/$',
             query_views.queryData_ProductPhyChemTestMission_Preview),
     re_path('QueryData/PreviewTable/RawStockPhyChemTestMission/(?P<RawStockID>(.+))/$',
             query_views.queryData_RawStockPhyChemTestMission_Preview),

@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script src="/assets/jquery_jExcel/dist/js/bossanova.uk.jexcel.v3.jexcel.js"></script>
+<script src="/assets/jquery_jExcel/dist/js/bossanova.uk.jsuites.v2.jsuites.js"></script>
+<link rel="stylesheet" href="/assets/jquery_jExcel/dist/css/bossanova.uk.jexcel.v3.jexcel.css" type="text/css"/>
+<link rel="stylesheet" href="/assets/jquery_jExcel/dist/css/bossanova.uk.jsuites.v2.jsuites.css" type="text/css"/>
+
+<!--<script src="https://bossanova.uk/jexcel/v3/jexcel.js"></script>-->
+<!--<script src="https://bossanova.uk/jsuites/v2/jsuites.js"></script>-->
+<!--<link rel="stylesheet" href="https://bossanova.uk/jsuites/v2/jsuites.css" type="text/css" />-->
+<!--<link rel="stylesheet" href="https://bossanova.uk/jexcel/v3/jexcel.css" type="text/css" />-->
+
+
+<div id="page-inner">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">
+                {{ form.title }}
+                <small>{{ operate|upper }}</small>
+            </h1>
+        </div>
+
+        <!-- /. ROW  -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            {{ operate|upper }}
+                        </div>
+                        <div class="panel-body">
+                            <!--<div class="row">-->
+                            <!--<div class="col-lg-6">-->
+                            <!--<form role="form" method="post" action="alert">{% csrf_token %}-->
+
+                            <!--<div class="form-group">-->
+                            <!--<label>ID </label>-->
+                            <!--<input type="text" name="item_id" class="form-control" placeholder="请输入待编辑的条目ID"-->
+                            <!--required="" id="id_id">-->
+                            <!--</div>-->
+                            <!--<button type="submit" class="btn btn-default" name="item_add" formaction='{{ baseURL }}/add'>新增</button>-->
+                            <!--<button type="submit" class="btn btn-default" name="item_edit" formaction='{{ baseURL }}/edit'>选中编辑</button>-->
+                            <!--<button type="submit" class="btn btn-default" name="item_delete" formaction='{{ baseURL }}/delete'>选中删除</button>-->
+                            <!--</form>-->
+                            <!--<label></label>-->
+                            <form role="form" method="post" action="">{% csrf_token %}
+                                <div class="form-group">
+
+                                    <label>条目ID</label>
+                                    <!--<input class="form-control">-->
+                                    <input class="form-control" id="disabledInput" type="text"
+                                           placeholder="{{ form.itemid }}" disabled="">
+
+
+                                    <!--<input type="text" name="name" maxlength="30" required="" id="id_name">-->
+                                    <!--<p class="help-block">Example block-level help text here.</p>-->
+                                </div>
+                                {% for field in form %}
+                                <div class="form-group">
+                                    <label>{{ field.label }}</label>
+                                    {{ field }}
+                                </div>
+                                {% endfor %}
+                                {% ifequal save_success|upper 'TRUE' %}
+                                <div class="alert alert-success">
+                                    <strong>保存成功！</strong>
+                                </div>
+                                {% endifequal %}
+                                {% ifequal save_success|upper 'FALSE' %}
+                                <div class="alert alert-danger">
+                                    <strong>保存失败！</strong>
+                                    {{ form.errors }}
+                                </div>
+                                {% endifequal %}
+                                {% ifequal form.modelname 'LAMTechniqueInstruction'%}
+                                <div id="WarningMsg" class="alert alert-warning" style="display:none">
+
+								</div>
+                                <div class="panel-heading">
+                                </div>
+                                {% endifequal %}
+                                <!--<button type="edit" class="btn btn-default">编辑</button>-->
+
+                                <button type="submit" class="btn btn-success" {% ifequal form.modelname 'LAMTechniqueInstruction' %} onclick="return CheckSeria();" {% endifequal %}>保存</button>
+
+                                <button type="reset" class="btn btn-primary">重置</button>
+                                <a href={{ Back_URL }}>
+                                    <button type="button" class="btn btn-primary" name="item_back" formaction=''>返回
+                                    </button>
+                                </a>
+                                <!--<a href="http://google.com" class="button">Continue</a>-->
+                            </form>
+
+                            <!--</div>-->
+
+                            <!--</div>-->
+                            <!--/.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            {{ form.excel_heading|upper }}
+                        </div>
+                        <div class="panel-body">
+                            <div id="spreadsheet" align="center" style="height:100%; with:100%;"></div>
+
+                            <div class="alert alert-success" id="alert_success_id" style="display:none">
+                                <strong>保存成功!</strong><br>{{ select_tech_inst_name }}识别上传成功。
+                            </div>
+                            <div class="alert alert-danger" id="alert_error_id" style="display:none">
+                                <strong>保存失败!</strong>
+                            </div>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+    </div>
+</div>
+    <script type="text/javascript">
+    $(".chosen-select").chosen({
+        no_results_text: "没有找到结果！",//搜索无结果时显示的提示
+        search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
+        allow_single_deselect:true, //是否允许取消选择
+    })
+    function load(){
+
+        {% if form.techinst_serial_queryset %}
+        data = [
+            {% for item in form.techinst_serial_queryset %}
+                [{{ item.serial_number }}, '{{ item.serial_worktype.id }}-{{ item.serial_worktype }}', '{{ item.serial_note }}', '{{ item.process_parameter.id }}-{{ item.process_parameter }}']{% if not forloop.last%},{% endif %}
+            {% endfor %}
+        ];
+        {% else %}
+        data=[[]];
+        {% endif %}
+
+        var excel_table = jexcel(document.getElementById('spreadsheet'),
+        {
+            data:data,
+            colHeaders: [{% for hd in form.excelhead_list %}'{{ hd }}'{% if not forloop.last%},{% endif %}{% endfor %}],
+            colWidths: [{% for wth in form.width_list %}'{{ wth }}'{% if not forloop.last%},{% endif %}{% endfor %}],
+            tableOverflow: true,
+            tableHeight: "800px",
+<!--            tableWidth: "1200px",-->
+            columns: [
+<!--                { type: 'numeric', mask:'#', {% ifequal form.EditMode 'true' %}readOnly:true,{% endifequal %}},-->
+                { type: 'numeric', mask:'#', },
+<!--                { type: 'dropdown', source:[{% for wt in form.worktype_list %}'{{ wt }}'{% if not forloop.last%},{% endif %}{% endfor %}], {% ifequal form.EditMode 'true' %}readOnly:true,{% endifequal %}},-->
+                { type: 'dropdown',autocomplete:true, source:[{% for wt in form.worktype_list %}'{{ wt }}'{% if not forloop.last%},{% endif %}{% endfor %}], },
+                { type: 'text',},
+                { type: 'dropdown', autocomplete:true,source:[{% for pm in form.LAMparameter_list %}'{{ pm }}'{% if not forloop.last%},{% endif %}{% endfor %}]},
+<!--                { type: 'dropdown', source:[{% for pm in form.LAMparameter_list %}{id:'{{ pm.0 }}', name: '{{ pm.1 }}'}{% if not forloop.last%},{% endif %}{% endfor %}]},-->
+
+
+            ],
+            {% ifequal form.EditMode 'true' %}
+                updateTable: function(el, cell, x, y, source, value, id) {
+                    if ( (x == 0 || x == 1) && y < {{ form.techinst_serial_queryset|length }}) {
+                        cell.classList.add('readonly');
+                    }
+                },
+            {% endifequal %}
+            contextMenu: function(obj, x, y, e) {
+             var items = [];
+
+             if (y == null) {
+<!--                 // Insert a new column-->
+<!--                 if (obj.options.allowInsertColumn == true) {-->
+<!--                     items.push({-->
+<!--                         title:obj.options.text.insertANewColumnBefore,-->
+<!--                         onclick:function() {-->
+<!--                             obj.insertColumn(1, parseInt(x), 1);-->
+<!--                         }-->
+<!--                     });-->
+<!--                 }-->
+<!--    -->
+<!--                 if (obj.options.allowInsertColumn == true) {-->
+<!--                     items.push({-->
+<!--                         title:obj.options.text.insertANewColumnAfter,-->
+<!--                         onclick:function() {-->
+<!--                             obj.insertColumn(1, parseInt(x), 0);-->
+<!--                         }-->
+<!--                     });-->
+<!--                 }-->
+<!--    -->
+<!--                 // Delete a column-->
+<!--                 if (obj.options.allowDeleteColumn == true) {-->
+<!--                     items.push({-->
+<!--                         title:obj.options.text.deleteSelectedColumns,-->
+<!--                         onclick:function() {-->
+<!--                             obj.deleteColumn(obj.getSelectedColumns().length ? undefined : parseInt(x));-->
+<!--                         }-->
+<!--                     });-->
+<!--                 }-->
+<!--    -->
+<!--                 // Rename column-->
+<!--                 if (obj.options.allowRenameColumn == true) {-->
+<!--                     items.push({-->
+<!--                         title:obj.options.text.renameThisColumn,-->
+<!--                         onclick:function() {-->
+<!--                             obj.setHeader(x);-->
+<!--                         }-->
+<!--                     });-->
+<!--                 }-->
+
+<!--                 // Sorting-->
+<!--                 if (obj.options.columnSorting == true) {-->
+<!--                     // Line-->
+<!--                     items.push({ type:'line' });-->
+
+<!--                     items.push({-->
+<!--                         title:obj.options.text.orderAscending,-->
+<!--                         onclick:function() {-->
+<!--                             obj.orderBy(x, 0);-->
+<!--                         }-->
+<!--                     });-->
+<!--                     items.push({-->
+<!--                         title:obj.options.text.orderDescending,-->
+<!--                         onclick:function() {-->
+<!--                             obj.orderBy(x, 1);-->
+<!--                         }-->
+<!--                     });-->
+<!--                 }-->
+             } else {
+                 // Insert new row
+                 if (obj.options.allowInsertRow == true) {
+                     items.push({
+                         title:obj.options.text.insertANewRowBefore,
+                         onclick:function() {
+                             obj.insertRow(1, parseInt(y), 1);
+                         }
+                     });
+
+                     items.push({
+                         title:obj.options.text.insertANewRowAfter,
+                         onclick:function() {
+                             obj.insertRow(1, parseInt(y));
+                         }
+                     });
+                 }
+<!--                // Delete a row-->
+<!--                 if (obj.options.allowDeleteRow == true) {-->
+<!--                     items.push({-->
+<!--                         title:obj.options.text.deleteSelectedRows,-->
+<!--                         onclick:function() {-->
+<!--                             obj.deleteRow(obj.getSelectedRows().length ? undefined : parseInt(y));-->
+<!--                         }-->
+<!--                     });-->
+<!--                 }-->
+
+                 if (x) {
+                     if (obj.options.allowComments == true) {
+                         items.push({ type:'line' });
+
+                         var title = obj.records[y][x].getAttribute('title') || '';
+
+                         items.push({
+                             title: title ? obj.options.text.editComments : obj.options.text.addComments,
+                             onclick:function() {
+                                 obj.setComments([ x, y ], prompt(obj.options.text.comments, title));
+                             }
+                         });
+
+                         if (title) {
+                             items.push({
+                                 title:obj.options.text.clearComments,
+                                 onclick:function() {
+                                     obj.setComments([ x, y ], '');
+                                 }
+                             });
+                         }
+                     }
+                 }
+             }
+
+             // Line
+             items.push({ type:'line' });
+
+             // Save
+             if (obj.options.allowExport) {
+                 items.push({
+                     title: obj.options.text.saveAs,
+                     shortcut: 'Ctrl + S',
+                     onclick: function () {
+                         obj.download();
+                     }
+                 });
+             }
+
+             // About
+             if (obj.options.about) {
+                 items.push({
+                     title:obj.options.text.about,
+                     onclick:function() {
+                         alert(obj.options.about);
+                     }
+                 });
+             }
+
+             return items;
+         }
+        });
+        tbody=document.getElementsByClassName('draggable')[0];
+    };
+    load();
+
+    function CheckSeria(){
+        document.getElementById("alert_success_id").style.display="none";
+        document.getElementById("alert_error_id").style.display="none";
+        tableInfo_array = [];
+        tableInfo = '[';
+        var dictKeys = [
+            'row',
+            'number',
+            'name',
+            'note',
+            'param',
+             ];
+        var number_list = [];
+        var errors = [];
+        data_permitted = true;
+
+        for (var i = 0; i < tbody.rows.length; i++) {    //遍历Table的所有Row
+            var rowInfo = [];
+
+            if((tbody.rows[i].cells[1].innerText != '' && tbody.rows[i].cells[2].innerText == '') || (tbody.rows[i].cells[1].innerText == '' && tbody.rows[i].cells[2].innerText != ''))
+            {
+                data_permitted = false;
+                errors.push('第'+(i+1)+'行: 工序号或工种信息不完整。');
+            }
+            if(isInArray(number_list, tbody.rows[i].cells[1].innerText)){
+                <!--若工序号重复，则不通过-->
+                data_permitted = false;
+                errors.push('第'+(i+1)+'行: 工序号重复。');
+            }
+            if(!data_permitted){
+                console.log(data_permitted)
+                document.getElementById("alert_error_id").style.display="";
+                document.getElementById("alert_error_id").innerHTML = "<strong>注意</strong><br>"
+                for(var e =0;e<errors.length;e++){
+                    document.getElementById("alert_error_id").innerHTML += errors[e]+'<br>';
+                }
+                return false;
+            }
+            if(tbody.rows[i].cells[1].innerText != ''){
+                number_list.push(tbody.rows[i].cells[1].innerText);
+            }
+
+            <!--开始收集本行数据-->
+            for (var j = 0; j < tbody.rows[i].cells.length; j++) {   //遍历Row中的每一列
+<!--                if(j==0){-->
+<!--                    var item = "['"+tbody.rows[i].cells[j].innerText+"'"-->
+<!--                }-->
+<!--                else if(j==tbody.rows[i].cells.length-1){-->
+<!--                    var item = "'"+tbody.rows[i].cells[j].innerText+"']"-->
+<!--                }-->
+<!--                else{-->
+<!--                    var item = "'"+tbody.rows[i].cells[j].innerText+"'"-->
+<!--                }-->
+<!--                rowInfo.push(item);-->
+
+                rowInfo.push(tbody.rows[i].cells[j].innerText);
+<!--                rowInfo.push(tbody.rows[i].cells[j].value);-->
+            }
+            tableInfo_array.push(rowInfo);
+            tableInfo+=rowInfo.toString()+','
+        }
+        tableInfo+=']'
+        console.log(tableInfo);
+        console.log(tableInfo_array);
+        document.getElementById("id_TechInst_SerialTable").value=JSON.stringify(tableInfo_array);
+    }
+    </script>
+    {% endblock %}

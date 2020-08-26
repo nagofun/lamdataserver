@@ -7,8 +7,8 @@ from django.utils.translation import gettext_lazy as _
 import datetime
 from django.db import connection
 # print('start forms.py')
-
-
+import json
+from pypinyin import lazy_pinyin
 
 # 厂房
 class WorkshopForm(ModelForm):
@@ -629,11 +629,13 @@ class PDFImageCodeForm(ModelForm):
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 
+
 # 激光成形工艺文件
-class LAMTechniqueInstructionForm(ModelForm):
+class LAMTechniqueInstruction_OperateForm(ModelForm):
 	title = '激光成形工艺文件'
 	modelname = 'LAMTechniqueInstruction'
-
+	
+	# TechInst_SerialTable = forms.CharField(widget=forms.HiddenInput(),label='HiddenInput')
 	class Meta:
 		model = LAMTechniqueInstruction
 		fields = "__all__"
@@ -648,14 +650,90 @@ class LAMTechniqueInstructionForm(ModelForm):
 			'filed': _('是否已归档'),
 			'available': _('是否激活'),
 		}
-		# widgets = {
-		#     'product': widgets.TextInput(
-		#         attrs={'class': 'product_select'}),
-		# }
+		
+		error_messages = ''
+	
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		
+		# self.width_list = [100, 200, 350, 300]
+		# # self.worktype_list = ['下料/领料', '激光成形', '检验']
+		# self.worktype_list = ['%d-%s' % (_wt.id, _wt.worktype_name) for _wt in
+		#                       LAMProductionWorkType.objects.filter(available=True)]
+		# self.LAMparameter_list = ['%d-%s' % (_pm.id, _pm.name) for _pm in
+		#                           LAMProcessParameters.objects.filter(available=True)]
+		# self.process_parameter_list = [str(param) for param in LAMProcessParameters.objects.filter(available=True)]
+		# self.fields['LAMProcess_serial_number'].disabled = True
+		# self.fields['LAMProcess_serial_note'].disabled = True
+		# product_choice =
+		# product_category_list = LAMProductCategory.objects.filter(available=True)
+		# product_choice = [[_category.product_name, [(_product.id, _product.product_code) for _product in
+		#                                             LAMProduct.objects.filter(
+		# 	                                            (Q(product_category=_category) & Q(available=True)))]] for
+		#                   _category in product_category_list]
+		# self.fields['available'].disabled = True
+		# self.fields['product'].choices = product_choice
+		# self.fields['TechInst_SerialTable'] = forms.CharField(widget=forms.HiddenInput(), label='')
+		
+		for field in self.fields.values():
+			field.widget.attrs.update({'class': 'form-control'})
+		# self.fields['product'].widget.attrs.update(
+		# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择产品..."})
+		# self.fields['product_category'].widget.attrs.update(
+		# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择产品类别..."})
+
+
+# 激光成形工艺文件
+class LAMTechniqueInstructionForm(ModelForm):
+	title = '激光成形工艺文件'
+	modelname = 'LAMTechniqueInstruction'
+	# TechInst_SerialTable = forms.CharField(widget=forms.HiddenInput(),label='HiddenInput')
+	class Meta:
+		model = LAMTechniqueInstruction
+		fields = "__all__"
+		labels = {
+			'instruction_code': _('文件编号'),
+			'instruction_name': _('文件名称'),
+			'version_code': _('版本'),
+			'version_number': _('版次'),
+			'product_category': _('产品类别有效范围'),
+			'product': _('产品有效范围'),
+			'temporary': _('是否为临时文件'),
+			'filed': _('是否已归档'),
+			'available': _('是否激活'),
+		}
+		widgets = {
+			'TechInst_SerialTable': widgets.TextInput(attrs={'class': 'form-control', 'placeholder': '工序详情数据'}),
+
+		}
+		# fields = ['instruction_code', 'instruction_name', 'version_code', 'version_number', 'product_category',
+		#           'product', 'temporary', 'filed', 'available', 'TechInst_SerialTable']
+		
 		error_messages = ''
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+		if 'instance' in kwargs:
+			techinst_obj = kwargs['instance']
+			self.EditMode = 'true'
+			self.NewMode = 'false'
+			qset = (
+					Q(technique_instruction=techinst_obj) &
+					Q(available=True)
+			)
+			self.techinst_serial_queryset = LAM_TechInst_Serial.objects.filter(qset).order_by('serial_number')
+		else:
+			self.EditMode = 'false'
+			self.NewMode = 'true'
+			self.techinst_serial_queryset = None
+		
+		self.excel_heading = '工序'
+		self.excelhead_list = ['工序号', '工种', '概述', '激光成形参数包']
+		self.width_list = [100,200,350,300]
+		# self.worktype_list = ['下料/领料', '激光成形', '检验']
+		self.worktype_list = ['%d-%s(%s)'%(_wt.id, _wt.worktype_name, ''.join(map(lambda x:x[0], lazy_pinyin(_wt.worktype_name)))) for _wt in LAMProductionWorkType.objects.filter(available=True)]
+		self.LAMparameter_list = ['%d-%s(%s)'%(_pm.id, _pm.name, ''.join(map(lambda x:x[0], lazy_pinyin(_pm.name)))) for _pm in LAMProcessParameters.objects.filter(available=True)]
+		# self.process_parameter_list = [str(param) for param in LAMProcessParameters.objects.filter(available=True)]
 		# self.fields['LAMProcess_serial_number'].disabled = True
 		# self.fields['LAMProcess_serial_note'].disabled = True
 		# product_choice =
@@ -664,13 +742,50 @@ class LAMTechniqueInstructionForm(ModelForm):
 		self.fields['available'].disabled = True
 		self.fields['product'].choices = product_choice
 		# self.fields['product']=forms.MultipleChoiceField(choices=product_choice, label='产品有效范围')
+		self.fields['TechInst_SerialTable'] = forms.CharField(widget=forms.HiddenInput(),label='')
+		
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 		self.fields['product'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder':"选择产品..."})
 		self.fields['product_category'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品类别..."})
-
+	def setNewMode(self):
+		self.NewMode = 'true'
+	def setEditMode(self):
+		self.EditMode = 'true'
+	def save_custom(self):
+		techinst_obj = self.save()
+		serial_list = json.loads(self.data['TechInst_SerialTable'])
+		for _serial_info in serial_list:
+			if _serial_info[1] == '': continue
+			qset = (
+					Q(technique_instruction=techinst_obj) &
+					Q(serial_number=int(_serial_info[1])) &
+					Q(available=True)
+			)
+			_param = LAMProcessParameters.objects.get(id=_serial_info[4].split('-')[0]) if '-' in _serial_info[4] else None
+			_note = _serial_info[3]
+			_number = int(_serial_info[1])
+			_worktype = LAMProductionWorkType.objects.get(id=_serial_info[2].split('-')[0])
+			try:
+				_serial = LAM_TechInst_Serial.objects.get(qset)
+				_serial.serial_note =_note
+				_serial.process_parameter = _param
+				_serial.save()
+			except:
+				new_serial = LAM_TechInst_Serial.objects.create(
+					technique_instruction = techinst_obj,
+					serial_number = _number,
+					serial_worktype = _worktype,
+					serial_note = _note,
+					serial_content = '',
+					available = True,
+					process_parameter = _param,
+				)
+				new_serial.save()
+		
+		
 
 # 基础工序实例
 class LAMTechInstSerialForm(ModelForm):
@@ -689,12 +804,12 @@ class LAMTechInstSerialForm(ModelForm):
 		          'serial_note',
 		          'serial_content',
 		          'process_parameter',
-		          'selectable_Scheduling',
-		          'selectable_LAM',
-		          'selectable_HeatTreatment',
-		          'selectable_PhyChemNonDestructiveTest',
-		          'selectable_RawStockSendRetrieve',
-		          'selectable_Weighing',
+		          # 'selectable_Scheduling',
+		          # 'selectable_LAM',
+		          # 'selectable_HeatTreatment',
+		          # 'selectable_PhyChemNonDestructiveTest',
+		          # 'selectable_RawStockSendRetrieve',
+		          # 'selectable_Weighing',
 		          ]
 		# widgets = {
 		#     'technique_instruction': widgets.TextInput(attrs={'class': 'form-control', 'list':"techinst_list"}),
@@ -709,12 +824,12 @@ class LAMTechInstSerialForm(ModelForm):
 			'serial_note': _('工序概述'),
 			'serial_content': _('工序内容'),
 			'process_parameter':_('激光成形参数包'),
-			'selectable_Scheduling': _('是否可被调度模块选择'),
-			'selectable_LAM': _('是否可被激光成形模块选择'),
-			'selectable_HeatTreatment': _('是否可被热处理模块选择'),
-			'selectable_PhyChemNonDestructiveTest': _('是否可被检验模块选择'),
-			'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
-			'selectable_Weighing': _('是否可被称重模块选择'),
+			# 'selectable_Scheduling': _('是否可被调度模块选择'),
+			# 'selectable_LAM': _('是否可被激光成形模块选择'),
+			# 'selectable_HeatTreatment': _('是否可被热处理模块选择'),
+			# 'selectable_PhyChemNonDestructiveTest': _('是否可被检验模块选择'),
+			# 'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
+			# 'selectable_Weighing': _('是否可被称重模块选择'),
 			# 'available': _('是否激活'),
 		}
 		error_messages = ''
@@ -827,12 +942,12 @@ class LAMTechInstSerialForm_Edit(ModelForm):
 		    'serial_note',
 		    'serial_content',
 		    'process_parameter',
-			'selectable_Scheduling',
-			'selectable_LAM',
-			'selectable_HeatTreatment',
-			'selectable_PhyChemNonDestructiveTest',
-			'selectable_RawStockSendRetrieve',
-			'selectable_Weighing'
+			# 'selectable_Scheduling',
+			# 'selectable_LAM',
+			# 'selectable_HeatTreatment',
+			# 'selectable_PhyChemNonDestructiveTest',
+			# 'selectable_RawStockSendRetrieve',
+			# 'selectable_Weighing'
 		]
 
 		# fields = "__all__"
@@ -843,12 +958,12 @@ class LAMTechInstSerialForm_Edit(ModelForm):
 			'serial_note': _('工序概述'),
 			'serial_content': _('工序内容'),
 			'process_parameter':_('激光成形参数包'),
-			'selectable_Scheduling': _('是否可被调度模块选择'),
-			'selectable_LAM': _('是否可被激光成形模块选择'),
-			'selectable_HeatTreatment': _('是否可被热处理模块选择'),
-			'selectable_PhyChemNonDestructiveTest': _('是否可被检验模块选择'),
-			'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
-			'selectable_Weighing': _('是否可被称重模块选择'),
+			# 'selectable_Scheduling': _('是否可被调度模块选择'),
+			# 'selectable_LAM': _('是否可被激光成形模块选择'),
+			# 'selectable_HeatTreatment': _('是否可被热处理模块选择'),
+			# 'selectable_PhyChemNonDestructiveTest': _('是否可被检验模块选择'),
+			# 'selectable_RawStockSendRetrieve': _('是否可被库房模块选择'),
+			# 'selectable_Weighing': _('是否可被称重模块选择'),
 			# 'available': _('是否激活'),
 		}
 		error_messages = ''
@@ -1350,9 +1465,10 @@ class LAMProcessMissionForm_Edit(ModelForm):
 		# 已有工艺文件
 		techinst_list = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by('instruction_code', '-version_code', '-version_number')
 		# 工序按工艺文件分类
-		techinst_serial_choice = [[str(_techinst), [(_serial.id, "%d-%s %s"%(_serial.serial_number, _serial.serial_worktype, _serial.serial_note)) for _serial in
+		techinst_serial_choice = [[str(_techinst), [(_serial.id, "%s-%s %s"%(_serial.serial_number, _serial.serial_worktype, _serial.serial_note)) for _serial in
 		                                            LAM_TechInst_Serial.objects.filter(
-			                                            (Q(technique_instruction=_techinst) & Q(available=True)))]] for _techinst in techinst_list]
+			                                            (Q(technique_instruction=_techinst) & Q(available=True) & Q(serial_worktype__selectable_LAM=True) ))
+		                                            ]] for _techinst in techinst_list]
 		
 		# 辅助选择数据集
 		# self.techinst_datalist = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
@@ -1414,11 +1530,11 @@ class LAMProcessMissionForm_Edit(ModelForm):
 			field.widget.attrs.update({'class': 'form-control'})
 		
 		self.fields['LAM_product'].choices = product_choice
-		self.fields['LAM_product'].widget.attrs.update(
-			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品..."})
 		# self.fields['LAM_product'].widget.attrs.update(
-		# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择产品...",
-		# 	 'onchange': 'loadTableData_ProductMission(this.value)'})
+		# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择产品..."})
+		self.fields['LAM_product'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品...",
+			 'onchange': 'load_TechinstSerial_By_ProductCodes(this.id)'})
 		self.fields['LAM_techinst_serial'].choices = techinst_serial_choice
 		self.fields['LAM_techinst_serial'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择工序..."})
@@ -2240,7 +2356,7 @@ class ProductPhyChemTestForm_New(ModelForm):
 	title = '产品理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
 	previewtableTitle = '产品检测任务'
-	previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期')}
+	previewtablefields = {'LAM_product':_('产品'),'LAM_techinst_serial': _('工序'), 'arrangement_date': _('下达任务日期'), 'heat_treatment_state': _('热处理状态')}
 
 	class Meta:
 		model = PhysicochemicalTest_Mission
@@ -2281,59 +2397,22 @@ class ProductPhyChemTestForm_New(ModelForm):
 		self.fields['LAM_product'].widget.attrs.update(
 			{'onchange': 'loadTableData_ProductMission(this.value)'})
 
-		# 辅助选择数据集
-		# self.techinst_datalist = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
-		# 	'instruction_code', '-version_code', '-version_number')
-		# # print(self.techinst_datalist)
-		# self.worktype_datalist = LAMProductionWorkType.objects.filter(Q(available=True))
-		# self.productcode_datalist = LAMProduct.objects.filter(available=True)
-
 		self.fields['LAM_product'].queryset = LAMProduct.objects.filter(available=True)
 
 		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
-		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
-			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemNonDestructiveTest=True))
-		# self.fields['work_section'].queryset = Worksection.objects.filter(available=True)
-		# self.fields['completion_date'].disabled = True
-		# self.fields['available'].disabled = True
-
-		# 辅助选择下拉菜单及文本框
-		# self.fields['product_category'] = forms.ModelChoiceField(label='产品类别',
-		#                                                          queryset=LAMProductCategory.objects.filter(
-		#                                                              available=True),
-		#                                                          empty_label='请选择产品类别',
-		#                                                          required=False)
-		# self.fields['product_code'] = forms.CharField(label='零件编号',
-		#                                               max_length=50,
-		#                                               required=False)
-		# self.fields['technique_instruction'] = forms.ModelChoiceField(label='工艺文件',
-		#                                                               queryset=self.techinst_datalist,
-		#                                                               empty_label='请选择工艺文件',
-		#                                                               required=False)
-		# self.fields['work_type'] = forms.ModelChoiceField(label='工序',
-		#                                                   queryset=self.worktype_datalist,
-		#                                                   empty_label='请选择工序',
-		#                                                   required=False)
-
-		# 更新属性
-		# 产品类别
-		# self.fields['product_category'].widget.attrs.update(
-		#     {'onchange': 'load_LAMTechInstandProduct_By_ProductCategory(this.value);'})
-		# 工艺文件
-		# self.fields['technique_instruction'].widget.attrs.update(
-		# 	{'onchange': 'load_WorkType_By_LAMTechInst(this.value);'})
-		# 工序
-		# self.fields['work_type'].widget.attrs.update(
-		# 	{'onchange': 'refresh_techinst_serial();'})
-
-		# self.fields['product_code'].widget.attrs.update(
-		# 	{'list': 'product_code_list', 'onblur': 'refresh_product();'})
-
-		# 辅助选择field
-		# self.AuxiliarySelection = ('product_category',
-		#                            'technique_instruction',
-		#                            'work_type',
-		#                            'product_code')
+		# 已有工艺文件
+		techinst_list = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
+			'instruction_code', '-version_code', '-version_number')
+		
+		# 工序按工艺文件分类
+		techinst_serial_choice = [[str(_techinst), [
+			(_serial.id, "%s-%s %s" % (_serial.serial_number, _serial.serial_worktype, _serial.serial_note)) for _serial
+			in
+			LAM_TechInst_Serial.objects.filter(
+				(Q(technique_instruction=_techinst) & Q(available=True) & Q(serial_worktype__selectable_PhyChemNonDestructiveTest = True)))
+			# if _serial.serial_worktype.selectable_PhyChemNonDestructiveTest
+			]] for _techinst in techinst_list]
+		
 		# 原始field
 		self.OriginalFields = ('LAM_product',
 		                       'LAM_techinst_serial',
@@ -2344,12 +2423,16 @@ class ProductPhyChemTestForm_New(ModelForm):
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 		'''检验工序'''
+		self.fields['LAM_techinst_serial'].choices = techinst_serial_choice
 		self.fields['LAM_techinst_serial'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
 		'''产品'''
 		self.fields['LAM_product'].widget.attrs.update(
-			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品..."})
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品...",
+			 'onchange': 'load_TechinstSerial_By_ProductCodes(this.id)'})
 		'''热处理状态'''
+		self.fields['heat_treatment_state'].choices = [(state.id, str(state)) for state in
+		                                               HeatTreatmentState.objects.filter(available=True)]
 		self.fields['heat_treatment_state'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
 
@@ -2773,6 +2856,7 @@ class ProductNonDestructiveTestForm_New(ModelForm):
 	
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+		
 		# 产品类别列表
 		product_category_list = LAMProductCategory.objects.filter(available=True)
 		# 产品按类别分类
@@ -2783,40 +2867,119 @@ class ProductNonDestructiveTestForm_New(ModelForm):
 		self.fields['LAM_product'].choices = product_choice
 		
 		self.fields['LAM_product'].widget.attrs.update(
-			{'onchange': 'loadTableData_ProductMission(this.value)'})
-	
+			{'onchange': 'loadTableData_ProductMission(this.value);'})
 		
 		self.fields['LAM_product'].queryset = LAMProduct.objects.filter(available=True)
 		
 		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
-		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
-			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemNonDestructiveTest=True))
+		# 已有工艺文件
+		techinst_list = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
+			'instruction_code', '-version_code', '-version_number')
 		
-		# 原始field
-		self.OriginalFields = ('LAM_product',
-							'LAM_techinst_serial',
-							'arrangement_date',
-							'machining_state',
-							'heat_treatment_state',
-		)
+		# 工序按工艺文件分类
+		techinst_serial_choice = [[str(_techinst), [
+			(_serial.id, "%s-%s %s" % (_serial.serial_number, _serial.serial_worktype, _serial.serial_note)) for _serial
+			in
+			LAM_TechInst_Serial.objects.filter(
+				(Q(technique_instruction=_techinst) & Q(available=True) & Q(
+					serial_worktype__selectable_PhyChemNonDestructiveTest=True)))
+			# if _serial.serial_worktype.selectable_PhyChemNonDestructiveTest
+		]] for _techinst in techinst_list]
+		
+		# # 原始field
+		# self.OriginalFields = ('LAM_product',
+		#                        'LAM_techinst_serial',
+		#                        'commission_date',
+		#                        'heat_treatment_state',
+		#                        )
 		
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 		'''检验工序'''
+		self.fields['LAM_techinst_serial'].choices = techinst_serial_choice
 		self.fields['LAM_techinst_serial'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
 		'''产品'''
 		self.fields['LAM_product'].widget.attrs.update(
-			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品..."})
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品...",
+			 'onchange': 'load_TechinstSerial_By_ProductCodes(this.id)'})
 		'''热处理状态'''
+		self.fields['heat_treatment_state'].choices = [(state.id, str(state)) for state in HeatTreatmentState.objects.filter(available=True)]
 		self.fields['heat_treatment_state'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
 		'''加工状态'''
+		self.fields['machining_state'].choices = [(state.id, str(state)) for state in MachiningState.objects.filter(available=True)]
 		self.fields['machining_state'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择加工状态..."})
-		'''检测类别'''
-		# self.fields['NDT_type'].widget.attrs.update(
-		# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择检测类别..."})
+		
+# 		# 产品类别列表
+# 		product_category_list = LAMProductCategory.objects.filter(available=True)
+# 		# 产品按类别分类
+# 		product_choice = [[_category.product_name, [(_product.id, _product.product_code) for _product in
+# 		                                            LAMProduct.objects.filter(
+# 			                                            (Q(product_category=_category) & Q(available=True)))]] for
+# 		                  _category in product_category_list]
+# 		self.fields['LAM_product'].choices = product_choice
+#
+# 		self.fields['LAM_product'].widget.attrs.update(
+# 			{'onchange': 'loadTableData_ProductMission(this.value)'})
+#
+# 		self.fields['LAM_product'].queryset = LAMProduct.objects.filter(available=True)
+#
+# 		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
+# 		# 已有工艺文件
+# 		techinst_list = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
+# 			'instruction_code', '-version_code', '-version_number')
+#
+# 		# 工序按工艺文件分类
+# 		techinst_serial_choice = [[str(_techinst), [
+# 			(_serial.id, "%s-%s %s" % (_serial.serial_number, _serial.serial_worktype, _serial.serial_note)) for _serial
+# 			in
+# 			LAM_TechInst_Serial.objects.filter(
+# 				(Q(technique_instruction=_techinst) & Q(available=True) & Q(
+# 					serial_worktype__selectable_PhyChemNonDestructiveTest=True)))
+# 			# if _serial.serial_worktype.selectable_PhyChemNonDestructiveTest
+# 		]] for _techinst in techinst_list]
+#
+# 		'''检验工序'''
+# 		self.fields['LAM_techinst_serial'].choices = techinst_serial_choice
+# 		self.fields['LAM_techinst_serial'].widget.attrs.update(
+# 			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
+# 		'''产品'''
+# 		self.fields['LAM_product'].widget.attrs.update(
+# 			{'class': 'form-control chosen-select', 'data-placeholder': "选择产品...",
+# 			 'onchange': 'load_TechinstSerial_By_ProductCodes(this.id);'})
+# # ---------------------------------------------------------------
+#
+#
+# 		# self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
+# 		# 	Q(available=True) & Q(technique_instruction__filed=False) & Q(serial_worktype__selectable_PhyChemNonDestructiveTest = True))
+#
+# 		# 原始field
+# 		self.OriginalFields = ('LAM_product',
+# 							'LAM_techinst_serial',
+# 							'arrangement_date',
+# 							'machining_state',
+# 							'heat_treatment_state',
+# 		)
+#
+# 		for field in self.fields.values():
+# 			field.widget.attrs.update({'class': 'form-control'})
+# 		'''检验工序'''
+# 		self.fields['LAM_techinst_serial'].widget.attrs.update(
+# 			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
+# 		'''产品'''
+# 		# self.fields['LAM_product'].widget.attrs.update(
+# 		# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择产品..."})
+# 		'''热处理状态'''
+# 		self.fields['heat_treatment_state'].widget.attrs.update(
+# 			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
+# 		'''加工状态'''
+# 		self.fields['machining_state'].widget.attrs.update(
+# 			{'class': 'form-control chosen-select', 'data-placeholder': "选择加工状态..."})
+# 		'''检测类别'''
+# 		# self.fields['NDT_type'].widget.attrs.update(
+# 		# 	{'class': 'form-control chosen-select', 'data-placeholder': "选择检测类别..."})
 	
 	def is_valid_custom(self):
 		

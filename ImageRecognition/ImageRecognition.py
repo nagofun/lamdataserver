@@ -667,7 +667,10 @@ def getCutImg(image, regionCoordinate):
 	cutimageCoordinate = regionCoordinate
 	IdentifyRegion_Image = image[cutimageCoordinate[1]:cutimageCoordinate[3],
 	                       cutimageCoordinate[0]:cutimageCoordinate[2]]
-	grayImage = cv2.cvtColor(IdentifyRegion_Image, cv2.COLOR_BGR2GRAY)
+	try:
+		grayImage = cv2.cvtColor(IdentifyRegion_Image, cv2.COLOR_BGR2GRAY)
+	except:
+		grayImage = IdentifyRegion_Image
 	ret2, thresh = cv2.threshold(grayImage, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 	del IdentifyRegion_Image
 	del grayImage

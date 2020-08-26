@@ -250,14 +250,32 @@ def queryData_LAMProductMission_Preview(request, ProductID):
 
 @login_required
 @csrf_exempt
-def queryData_ProductPhyChemTestMission_Preview(request, ProductID):
-	all_datadict = PhysicochemicalTest_Mission.objects.filter(available=True, LAM_product=ProductID).order_by('commission_date')
+def queryData_ProductPhyChemTestMission_Preview(request, ProductIDList):
+	# 20200825 edit here
+	# 根据idlist列出不同产品的无损检测任务列表？共同的无损检测任务列表？
+	ProductIDList=ProductIDList.split(',')
+	qset = (
+			Q(available=True) &
+			Q(LAM_product__id__in=ProductIDList)
+	)
+	all_datadict = PhysicochemicalTest_Mission.objects.filter(qset)
+	# Mission_dict = {}
+	# for ProductID in ProductIDList:
+	# 	all_datadict = PhysicochemicalTest_Mission.objects.filter(available=True, LAM_product=ProductID).order_by('commission_date')
+
 	Mission_dict = {
 		'id_%d' % data.id:
-			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
-			 'commission_date': str(data.commission_date),
+			{
+				'LAM_product': ', '.join(map(str, data.LAM_product.all())),
+				'LAM_techinst_serial': str(data.LAM_techinst_serial),
+			    'commission_date': str(data.commission_date),
+			    'heat_treatment_state':str(data.heat_treatment_state),
 			}
 		for data in all_datadict
+		if
+			all(map(lambda p: str(p.id) in ProductIDList, data.LAM_product.all()))
+		and
+			all(   map(lambda pid:  pid in [str(_p.id) for _p in data.LAM_product.all()],   ProductIDList )  )
 	}
 	html = json.dumps(Mission_dict, ensure_ascii=False)
 	return HttpResponse(html, content_type='application/json')
@@ -1119,6 +1137,88 @@ def queryData_Analysedata_ScanningRate3D_By_MissionIDList(request):
 	t2=time.time()
 	# print('Finish queryData_Analysedata_ScanningRate3D_By_MissionIDList, Cost:%.4f'%(t2-t1))
 	return HttpResponse(html, content_type='application/json')
+
+
+
+@login_required
+@csrf_exempt
+def queryData_LAMSerial_By_ProductIDList(request, ProductIDList):
+	ProductIDList = json.loads(ProductIDList)
+	LAMTechInst_list = []
+	def get_one_product_techinst(product_id):
+		product_obj = LAMProduct.objects.get(id=product_id)
+		qset = (
+				Q(available=True) &
+				Q(filed=False) &
+				(
+						Q(product=product_obj) |
+						Q(product_category=product_obj.product_category)
+				)
+		)
+		return set(LAMTechniqueInstruction.objects.filter(qset))
+	def fun_and(a, b):
+		return a&b
+	
+	if len(ProductIDList)>0:
+		techinst_list = list(reduce( fun_and ,map(get_one_product_techinst, ProductIDList)))
+	else:
+		techinst_list = list(LAMTechniqueInstruction.objects.filter((Q(available=True) & Q(filed=False))))
+	# 20200807 edit here
+	_dict = {
+		techinst.id : (
+			str(techinst),
+			[
+				(serial.id, '%s-%s %s'%(serial.serial_number, str(serial.serial_worktype), str(serial.serial_note)) )
+				for serial in techinst.Techinst_Serial.all() if serial.serial_worktype.selectable_LAM
+			]
+		)
+	for techinst in techinst_list}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+
+
+@login_required
+@csrf_exempt
+def queryData_TESTSerial_By_ProductIDList(request, ProductIDList):
+	ProductIDList = json.loads(ProductIDList)
+	LAMTechInst_list = []
+	def get_one_product_techinst(product_id):
+		product_obj = LAMProduct.objects.get(id=product_id)
+		qset = (
+				Q(available=True) &
+				Q(filed=False) &
+				(
+						Q(product=product_obj) |
+						Q(product_category=product_obj.product_category)
+				)
+		)
+		return set(LAMTechniqueInstruction.objects.filter(qset))
+	def fun_and(a, b):
+		return a&b
+	
+	if len(ProductIDList)>0:
+		techinst_list = list(reduce( fun_and ,map(get_one_product_techinst, ProductIDList)))
+	else:
+		techinst_list = list(LAMTechniqueInstruction.objects.filter((Q(available=True) & Q(filed=False))))
+	# 20200807 edit here
+	_dict = {
+		techinst.id : (
+			str(techinst),
+			[
+				(serial.id, '%s-%s %s'%(serial.serial_number, str(serial.serial_worktype), str(serial.serial_note)) )
+				for serial in techinst.Techinst_Serial.all() if serial.serial_worktype.selectable_PhyChemNonDestructiveTest
+			]
+		)
+	for techinst in techinst_list}
+	html = json.dumps(_dict, ensure_ascii=False)
+	return HttpResponse(html, content_type='application/json')
+
+
+
+
+
+
 
 @login_required
 @csrf_exempt

@@ -542,6 +542,8 @@ Common_URL['Query_RawStockNonDestructiveTestMission_Preview'] = Common_URL['Proc
 # Common_URL['Query_LAMTechInst_By_ProductCategory'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechniqueInstruction_By_ProductCategory/'
 
 Common_URL['Query_LAMTechniqueInstruction_By_ProductCode'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechniqueInstruction_By_ProductCode/'
+Common_URL['Query_LAMTechInstSerial_LAM_By_ProductCodeList'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechInstSerial_LAM_By_ProductCodeList/'
+Common_URL['Query_LAMTechInstSerial_Test_By_ProductCodeList'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechInstSerial_Test_By_ProductCodeList/'
 Common_URL['Query_WorkType_By_LAMTechInst'] = Common_URL['ProcessPath'] + 'QueryData/WorkType_By_LAMTechInst/'
 Common_URL['Query_WorkType_By_LAMTechInst_filter_LAM'] = Common_URL['ProcessPath'] + 'QueryData/WorkType_By_LAMTechInst_filter_LAM/'
 Common_URL['Query_WorkType_By_LAMTechInst_filter_PhyChemTest'] = Common_URL['ProcessPath'] + 'QueryData/WorkType_By_LAMTechInst_filter_PhyChemTest/'
@@ -782,6 +784,9 @@ def BasicInformation_New(request, ModelForm, modelname, TableType='common', isva
 		templateFileName = 'EditForm_BasicInformation.html'
 	elif TableType == 'advanced':
 		templateFileName = 'EditForm_BasicInformation_InputSelect_Tables.html'
+	elif TableType == 'TechInst_Excel':
+		_form_inst.setNewMode()
+		templateFileName = 'EditForm_TechInst_Excel.html'
 	return render(request, templateFileName,
 				  {'form': _form_inst,
 				   'operate': '新建',
@@ -806,6 +811,7 @@ def BasicInformation_Edit(request, Model, ModelForm, modelname, TableType='commo
 	if request.method != 'POST':
 		# 如果不是post,创建一个表单，并用instance=article当前数据填充表单
 		_form_inst = ModelForm(instance=_model_inst)
+		
 		_form_inst.itemid = item_id
 	else:
 		# 如果是post,instance=article当前数据填充表单，并用data=request.POST获取到表单里的内容
@@ -834,6 +840,8 @@ def BasicInformation_Edit(request, Model, ModelForm, modelname, TableType='commo
 		templateFileName = 'EditForm_BasicInformation.html'
 	elif TableType == 'advanced':
 		templateFileName = 'EditForm_BasicInformation_InputSelect_Tables.html'
+	elif TableType == 'TechInst_Excel':
+		templateFileName = 'EditForm_TechInst_Excel.html'
 	# elif TableType == 'subWindow_table':
 	# 	templateFileName = 'SubWindow_SimpleForm.html'
 	# elif TableType == 'subWindow_table_with_label':
@@ -1704,17 +1712,35 @@ def OperateData_lamtechniqueinstruction(request):
 		'filed',
 		'available',
 	]
-	return BasicInformation_OperateData(request, Model=LAMTechniqueInstruction, ModelForm=LAMTechniqueInstructionForm,
+	# return BasicInformation_OperateData(request, Model=LAMTechniqueInstruction, ModelForm=LAMTechniqueInstructionForm,
+	# 									TableType='advanced', attlist=attlist)
+	return BasicInformation_OperateData(request, Model=LAMTechniqueInstruction, ModelForm=LAMTechniqueInstruction_OperateForm,
 										TableType='advanced', attlist=attlist)
 
 @permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
 def new_lamtechniqueinstruction(request):
-	return BasicInformation_New(request, ModelForm=LAMTechniqueInstructionForm, modelname='lamtechniqueinstruction')
+	def saveTechInstSerial(form):
+		serial_list = json.loads(request.POST['TechInst_SerialTable'])
+		techinst_obj = LAMTechniqueInstruction.objects.get(id=form.save().id)
+		for _serial_info in serial_list:
+			new_serial = LAM_TechInst_Serial.objects.create(
+				technique_instruction=techinst_obj,
+				serial_number=int(_serial_info[1]),
+				serial_worktype=LAMProductionWorkType.objects.get(id=_serial_info[2].split('-')[0]),
+				serial_note=_serial_info[3],
+				serial_content='',
+				available=True,
+				process_parameter=LAMProcessParameters.objects.get(id=_serial_info[4].split('-')[0]),
+			)
+			new_serial.save()
+		# 20200718 night edit here
+		pass
+	return BasicInformation_New(request, ModelForm=LAMTechniqueInstructionForm, modelname='lamtechniqueinstruction', TableType='TechInst_Excel', customfunction=saveTechInstSerial)
 
 @permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
 def edit_lamtechniqueinstruction(request):
 	return BasicInformation_Edit(request, Model=LAMTechniqueInstruction, ModelForm=LAMTechniqueInstructionForm,
-								 modelname='lamtechniqueinstruction')
+								 modelname='lamtechniqueinstruction', TableType='TechInst_Excel', SaveMethod = 'custom')
 
 @permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
 def del_lamtechniqueinstruction(request):
@@ -4252,7 +4278,10 @@ def PostLAMProcessData_CNCdata(request):
 		cutimageCoordinate = regionCoordinate
 		IdentifyRegion_Image = image[cutimageCoordinate[1]:cutimageCoordinate[3],
 							   cutimageCoordinate[0]:cutimageCoordinate[2]]
-		grayImage = cv2.cvtColor(IdentifyRegion_Image, cv2.COLOR_BGR2GRAY)
+		try:
+			grayImage = cv2.cvtColor(IdentifyRegion_Image, cv2.COLOR_BGR2GRAY)
+		except:
+			grayImage = IdentifyRegion_Image
 		ret2, thresh = cv2.threshold(grayImage, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 		del IdentifyRegion_Image
 		del grayImage
@@ -4268,6 +4297,11 @@ def PostLAMProcessData_CNCdata(request):
 		return re
 	def matchDeviceCode(device):
 		return device["DeviceCode"].upper() == DeviceCode.upper()
+	
+	def LoadScreen_from_Str(np_str):
+		np_json = json.loads(np_str)
+		re_img = np.array(np_json).astype('uint8')
+		return re_img
 	# def checkImage(image, Device):
 	# 	if not Device:
 	# 		pass
@@ -4299,10 +4333,18 @@ def PostLAMProcessData_CNCdata(request):
 
 		# print(request.POST.get('macaddress', None))
 		# print(request.DATA.get('data', None))
-		file = request.FILES.get('file', None)
+		try:
+			file = request.FILES.get('file', None)
+		except:
+			file = None
+		np_str = request.POST.get('np_str', None)
+		
 		# print(file)
-		if file:
-			if file.size != 0:
+		# if file:
+		# 	if file.size != 0:
+		
+		if np_str:
+			if len(np_str) != 0:
 				# _mac_add = request.POST.get('macaddress', None)
 				'''# 此处应改为现场电脑时间'''
 				try:
@@ -4322,17 +4364,28 @@ def PostLAMProcessData_CNCdata(request):
 				# worksection = Worksection.objects.get(cnc_computer=computer)
 				worksection = getWorksectionByCNCMacAddress(request.POST.get('macaddress', None))
 				DeviceCode = worksection.code
+				# cv2.imshow('result.jpg', LoadScreen_from_Str(np_str))
+				# cv2.waitKey(0)
+				# cv2.destroyAllWindows()
+				# cv2.waitKey(1)
 				Device = filter(matchDeviceCode, ImageSectionInfo_dict).__next__()
 
-				image1 = np.asarray(bytearray(file.read()), dtype='uint8')
-				if image1 is None:
-					logger.error('Image is None Type')
-				image = cv2.imdecode(image1, cv2.IMREAD_COLOR)
+				
+				if file:
+					# 以文件传递图片
+					image1 = np.asarray(bytearray(file.read()), dtype='uint8')
+					if image1 is None:
+						logger.error('Image is None Type')
+					image = cv2.imdecode(image1, cv2.IMREAD_COLOR)
+				elif np_str:
+					# 以json字符串格式传递图片
+					image = LoadScreen_from_Str(np_str)
 				if_auto_exec_intr, if_exec_intr, if_interrupt_intr = ImageRecognition.checkImage(image, Device)
 				# image = cv2.imread(path)
 				# RecognitionImage(image, DeviceCode, 'eng')
 				# print('6')
-				file.name = '%s %s.png' % (worksection.code, str(_acqu_time).replace(':', '')[:20])
+				if file:
+					file.name = '%s %s.png' % (worksection.code, str(_acqu_time).replace(':', '')[:20])
 				_timestamp = int(time.mktime(_acqu_time.timetuple()))
 				_status = CNCProcessStatus(work_section=worksection,
 										   acquisition_time=_acqu_time,
@@ -4345,11 +4398,13 @@ def PostLAMProcessData_CNCdata(request):
 				if if_exec_intr:
 					'''此处应更改，记录手动界面'''
 					# 若截图为执行状态，则保留文件，否则跳过
-					_status.screen_image = file
+					if file:
+						_status.screen_image = file
 					realtime_recognition = ImageRecognition.realtimeRecognizeImage(image, DeviceCode)
 
 					try:
 						_status.ZValue = float(realtime_recognition['ZValue'])
+						# print(realtime_recognition)
 						# 更新近期实时记录
 						RealtimeRecord.Realtime_Records.addRecords(worksection.id, 'cncstatus', _timestamp, float(_status.ZValue))
 						# 更新精细数据表
@@ -4372,13 +4427,15 @@ def PostLAMProcessData_CNCdata(request):
 				# 							  int(_acqu_time.strftime('%Y%m%d')),
 				# 							  'cncstatus',
 				# 							  _status.id)
-				'''保存至实时截图路径'''
-				filepath = '.' + settings.REAL_TIME_SCREEN_URL + '/' + str(worksection.code) + '.png'
-				# print(filepath)
-				_file = open(filepath, 'wb+')
-				for chunk in file.chunks():
-					_file.write(chunk)
-				_file.close()
+				
+				# '''保存至实时截图路径'''
+				# filepath = '.' + settings.REAL_TIME_SCREEN_URL + '/' + str(worksection.code) + '.png'
+				# # print(filepath)
+				# _file = open(filepath, 'wb+')
+				# for chunk in file.chunks():
+				# 	_file.write(chunk)
+				# _file.close()
+				
 				# logger.info('Save Success!')
 				# WriteLog('info','Save Success!')
 				return HttpResponse('Save Success!')
@@ -4795,12 +4852,26 @@ def lamprocessmission_CutRecords_by_Time(request):
 		mission = LAMProcessMission.objects.get(id=mission_id)
 
 		_PostData = request.POST.copy()
-		try:
-			start_datetime = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:%M")
-			finish_datetime = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:%M")
-		except:
-			start_datetime = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:%M:%S")
-			finish_datetime = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:%M:%S")
+		print(_PostData['process_start_time'])
+		print(_PostData['process_finish_time'])
+		if len(_PostData['process_start_time'])>=19:
+			start_datetime = datetime.datetime.strptime(str(_PostData['process_start_time']), "%Y-%m-%dT%H:%M:%S")
+		else:
+			start_datetime = datetime.datetime.strptime(str(_PostData['process_start_time']), "%Y-%m-%dT%H:%M")
+		if len(_PostData['process_finish_time'])>=19:
+			finish_datetime = datetime.datetime.strptime(str(_PostData['process_finish_time']), "%Y-%m-%dT%H:%M:%S")
+		else:
+			finish_datetime = datetime.datetime.strptime(str(_PostData['process_finish_time']), "%Y-%m-%dT%H:%M")
+		# try:
+		# 	try:
+		# 		start_datetime = datetime.datetime.strptime(str(_PostData['process_start_time']), "%Y-%m-%dT%H:%M")
+		# 		finish_datetime = datetime.datetime.strptime(str(_PostData['process_finish_time']), "%Y-%m-%dT%H:%M")
+		# 	except:
+		# 		start_datetime = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:00")
+		# 		finish_datetime = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:00")
+		# except:
+		# 	start_datetime = datetime.datetime.strptime(str(_PostData['process_start_time']), "%Y-%m-%dT%H:%M:%S")
+		# 	finish_datetime = datetime.datetime.strptime(str(_PostData['process_finish_time']), "%Y-%m-%dT%H:%M:%S")
 		# _form_inst.data['process_start_time'] = datetime.datetime.strptime(_PostData['process_start_time'], "%Y-%m-%dT%H:%M:%S")
 		# _form_inst.data['process_finish_time'] = datetime.datetime.strptime(_PostData['process_finish_time'], "%Y-%m-%dT%H:%M:%S")
 
@@ -6151,11 +6222,22 @@ cache.clear()
 '''启动定时任务'''
 '''pip install apscheduler==2.1.2'''
 sched = Scheduler()
+# 20200817 本函数不需要执行，更换了存储数据表
 # 每天执行1次
 # @sched.interval_schedule(days=1,start_date=datetime.datetime.fromtimestamp(float(time.time())+20))
 @sched.interval_schedule(days=1, start_date=datetime.datetime.fromtimestamp(float(time.time())+10))
 def regulartime_task():
 	RT_FineData.Realtime_FineData.init_Tomorrow_rows()
+
+# @sched.interval_schedule(seconds=1, start_date=datetime.datetime.fromtimestamp(float(time.time())+10))
+# # 	pass
+
+# 每秒钟访问一次远程数据库，抓取成形过程数据
+@sched.interval_schedule(seconds=1)
+def getDataFromRemoteDataBase():
+	# print(time.time())
+	# RT_FineData.Realtime_FineData.add_processRecord()
+	pass
 
 # 清理缓存目录
  # 设置为每日凌晨03:00:00时执行一次调度程序

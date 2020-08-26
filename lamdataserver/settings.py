@@ -86,6 +86,9 @@ TEMPLATES = [
         },
     },
 ]
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880*10  #ƒ¨»œ…Ë÷√Œ™5M
+
 APP_PATH = os.path.dirname(os.path.dirname(__file__))
 STATIC_URL = '/assets/'
 TEMPLATE_DIRS = ('lamdataserver/templates/moban1342/',)
@@ -139,6 +142,14 @@ DATABASES = {
         'HOST':'127.0.0.1',
         'PORT':'3306'
     }
+}
+
+REAL_DATABASE = {
+    'NAME': 'opctags',
+    'USER': 'root',
+    'PASSWORD': '1234QWER',
+    'HOST': '192.168.1.117',
+    'PORT': '3306',
 }
 
 # localhost

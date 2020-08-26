@@ -85,6 +85,8 @@ class Worksection(models.Model):
     desktop_computer = models.ForeignKey(Computer, related_name='desktop_computer', on_delete=models.CASCADE, null=True)
     # CNC计算机
     cnc_computer = models.ForeignKey(Computer, related_name='cnc_computer', on_delete=models.CASCADE, null=True)
+    # 数据库中表的名称
+    realtime_tablename = models.CharField(max_length=20)
     # 是否有效
     available = models.BooleanField(default=True)
 
@@ -268,7 +270,6 @@ class LAMTechniqueInstruction(models.Model):
     product_category = models.ManyToManyField(LAMProductCategory,  blank=True)
     # 有效范围：产品实例
     product = models.ManyToManyField(LAMProduct,  blank=True)
-
     # 是否临时
     temporary = models.BooleanField(default=False)
     # 是否归档
@@ -280,7 +281,7 @@ class LAMTechniqueInstruction(models.Model):
     # 是否有效
     available = models.BooleanField(default=True)
     class Meta:
-        unique_together = ['instruction_code', 'version_code', 'version_number']
+        unique_together = ['instruction_code', 'version_code', 'version_number', 'available']
     def __str__(self):
         return "%s %s/%d %s"%(self.instruction_code, self.version_code, self.version_number, self.instruction_name)
 
@@ -304,6 +305,18 @@ class LAMProductionWorkType(models.Model):
     worktype_name = models.CharField(max_length=50, unique=True)
     # 是否有效
     available = models.BooleanField(default=True)
+    # # 是否可被调度模块选择
+    # selectable_Scheduling = models.BooleanField(default=True)
+    # 是否可被激光成形模块选择
+    selectable_LAM = models.BooleanField(default=False, verbose_name='激光成形')
+    # # 是否可被热处理模块选择
+    # selectable_HeatTreatment = models.BooleanField(default=False)
+    # 是否可被检验模块选择
+    selectable_PhyChemNonDestructiveTest = models.BooleanField(default=False, verbose_name='检验')
+    # 是否可被库房模块选择
+    selectable_RawStockSendRetrieve = models.BooleanField(default=False, verbose_name='库房')
+    # # 是否可被称重模块选择
+    # selectable_Weighing = models.BooleanField(default=False)
     def __str__(self):
         return "%s"%(self.worktype_name)
 
@@ -340,7 +353,7 @@ class PDFImageCode(models.Model):
 # 激光成形工序实例
 class LAM_TechInst_Serial(models.Model):
     # 工艺文件
-    technique_instruction = models.ForeignKey(LAMTechniqueInstruction, on_delete=models.CASCADE)
+    technique_instruction = models.ForeignKey(LAMTechniqueInstruction, on_delete=models.CASCADE, related_name='Techinst_Serial')
     # 工序号
     serial_number = models.PositiveIntegerField()
     # 工序名
@@ -353,21 +366,21 @@ class LAM_TechInst_Serial(models.Model):
     available = models.BooleanField(default=True)
     # 选定成形参数包
     process_parameter = models.ForeignKey(LAMProcessParameters, on_delete=models.CASCADE, null=True, blank=True)
-    # 是否可被调度模块选择
-    selectable_Scheduling = models.BooleanField(default=True)
-    # 是否可被激光成形模块选择
-    selectable_LAM = models.BooleanField(default=False)
-    # 是否可被热处理模块选择
-    selectable_HeatTreatment = models.BooleanField(default=False)
-    # 是否可被检验模块选择
-    selectable_PhyChemNonDestructiveTest = models.BooleanField(default=False)
-    # 是否可被库房模块选择
-    selectable_RawStockSendRetrieve = models.BooleanField(default=False)
-    # 是否可被称重模块选择
-    selectable_Weighing = models.BooleanField(default=False)
+    # # 是否可被调度模块选择
+    # selectable_Scheduling = models.BooleanField(default=True)
+    # # 是否可被激光成形模块选择
+    # selectable_LAM = models.BooleanField(default=False)
+    # # 是否可被热处理模块选择
+    # selectable_HeatTreatment = models.BooleanField(default=False)
+    # # 是否可被检验模块选择
+    # selectable_PhyChemNonDestructiveTest = models.BooleanField(default=False)
+    # # 是否可被库房模块选择
+    # selectable_RawStockSendRetrieve = models.BooleanField(default=False)
+    # # 是否可被称重模块选择
+    # selectable_Weighing = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ['technique_instruction', 'serial_number']
+        unique_together = ['technique_instruction', 'serial_number', 'available']
     def __str__(self):
         return "%s [%d-%s-%s]"%(self.technique_instruction,self.serial_number, self.serial_worktype, self.serial_note)
 
@@ -1065,6 +1078,150 @@ class Process_CNCData_Layer_Mission(models.Model):
     # 存储数据 包含X_value, Y_value, Z_value, ScanSpd 等
     data_file = models.FileField(upload_to='.'+ANALYSE_CNCDATA_URL, null=True)
 
+
+class Process_Realtime_LastStatusData(models.Model):
+    # 工段
+    work_section = models.OneToOneField(Worksection, on_delete=models.DO_NOTHING, unique=True)
+    # 获取的时间戳
+    acquisition_timestamp = models.PositiveIntegerField()
+    # 运行程序名
+    program_name = models.CharField(max_length=20, null=True)
+    # 数控机床状态
+    CNC_State = models.IntegerField(null=True, blank=True)
+
+    CNC_G11 = models.BooleanField(null=True, blank=True)
+    CNC_G12 = models.BooleanField(null=True, blank=True)
+    CNC_G73 = models.BooleanField(null=True, blank=True)
+    CNC_G158 = models.BooleanField(null=True, blank=True)
+    # CNC_G159 = models.BooleanField(null=True, blank=True)
+    CNC_M12 = models.BooleanField(null=True, blank=True)
+    CNC_M13 = models.BooleanField(null=True, blank=True)
+    # CNC_M60 = models.BooleanField(null=True, blank=True)
+    # CNC_M61 = models.BooleanField(null=True, blank=True)
+    CNC_M20 = models.BooleanField(null=True, blank=True)
+    CNC_M21 = models.BooleanField(null=True, blank=True)
+    CNC_P101 = models.FloatField(null=True, blank=True)
+    CNC_P102 = models.FloatField(null=True, blank=True)
+    CNC_P103 = models.FloatField(null=True, blank=True)
+    CNC_P104 = models.FloatField(null=True, blank=True)
+    CNC_P105 = models.FloatField(null=True, blank=True)
+    CNC_P109 = models.FloatField(null=True, blank=True)
+    CNC_P110 = models.FloatField(null=True, blank=True)
+    CNC_P111 = models.FloatField(null=True, blank=True)
+    CNC_P113 = models.FloatField(null=True, blank=True)
+    CNC_P114 = models.FloatField(null=True, blank=True)
+    CNC_P115 = models.FloatField(null=True, blank=True)
+    CNC_P136 = models.FloatField(null=True, blank=True)
+    CNC_P137 = models.FloatField(null=True, blank=True)
+    CNC_P138 = models.FloatField(null=True, blank=True)
+    CNC_P139 = models.FloatField(null=True, blank=True)
+    CNC_P191 = models.FloatField(null=True, blank=True)
+    CNC_P196 = models.FloatField(null=True, blank=True)
+    CNC_P197 = models.FloatField(null=True, blank=True)
+    CNC_P198 = models.FloatField(null=True, blank=True)
+    CNC_P199 = models.FloatField(null=True, blank=True)
+    # 偏置坐标系零点
+    X_G54 = models.FloatField(null=True, blank=True)
+    Y_G54subP = models.FloatField(null=True, blank=True)
+    Z_G54subP = models.FloatField(null=True, blank=True)
+
+    X_G55subP = models.FloatField(null=True, blank=True)
+    Y_G55subP = models.FloatField(null=True, blank=True)
+    Z_G55subP = models.FloatField(null=True, blank=True)
+
+    X_G56subP = models.FloatField(null=True, blank=True)
+    Y_G56subP = models.FloatField(null=True, blank=True)
+    Z_G56subP = models.FloatField(null=True, blank=True)
+
+    X_G57subP = models.FloatField(null=True, blank=True)
+    Y_G57subP = models.FloatField(null=True, blank=True)
+    Z_G57subP = models.FloatField(null=True, blank=True)
+
+    X_G58subP = models.FloatField(null=True, blank=True)
+    Y_G58subP = models.FloatField(null=True, blank=True)
+    Z_G58subP = models.FloatField(null=True, blank=True)
+
+    X_G59subP = models.FloatField(null=True, blank=True)
+    Y_G59subP = models.FloatField(null=True, blank=True)
+    Z_G59subP = models.FloatField(null=True, blank=True)
+    # # 工件坐标
+    # X_OBJ = models.FloatField(null=True)
+    # Y_OBJ = models.FloatField(null=True)
+    # Z_OBJ = models.FloatField(null=True)
+    # # 机械坐标
+    # X_P = models.FloatField(null=True)
+    # Y_P = models.FloatField(null=True)
+    # Z_P = models.FloatField(null=True)
+    pass
+
+class Process_StatusData_Changes(models.Model):
+    field_name = models.CharField(max_length=20, null=True)
+    status_before = models.CharField(max_length=20, null=True)
+    status_after = models.CharField(max_length=20, null=True)
+
+class Process_Realtime_FineData_By_YearMonth(models.Model):
+    # 工段
+    work_section = models.ForeignKey(Worksection, on_delete=models.DO_NOTHING)
+    # 获取的时间戳
+    acquisition_timestamp = models.PositiveIntegerField()
+    # 获取的时间str
+    acquisition_datetime = models.DateTimeField(null=True, blank=True)
+    # 氧含量
+    oxygen_value = models.FloatField(default=-1)
+    # 激光功率
+    laser_power = models.IntegerField(null=True)
+    # 机床工件坐标
+    X_value = models.FloatField(null=True)
+    Y_value = models.FloatField(null=True)
+    Z_value = models.FloatField(null=True)
+    # 机床机械坐标
+    X_P_value = models.FloatField(null=True)
+    Y_P_value = models.FloatField(null=True)
+    Z_P_value = models.FloatField(null=True)
+    # 数控机床状态
+    CNC_State = models.IntegerField(null=True)
+    # 层提升高度
+    CNC_P191 = models.FloatField(null=True)
+    # 扫描速率
+    ScanningRate_value = models.FloatField(null=True)
+    # 进给率
+    FeedRate_value = models.IntegerField(null=True)
+    # 头气流量L/min
+    processing_end_flow = models.FloatField(null=True, blank=True)
+    # 状态的变更
+    status_changes = models.ManyToManyField(Process_StatusData_Changes)
+
+
+
+    class Meta:
+        abstract = True
+        index_together = ['work_section', 'acquisition_timestamp', 'CNC_State', ]
+
+class Process_Realtime_FineData_202001(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202002(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202003(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202004(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202005(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202006(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202007(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202008(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202009(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202010(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202011(Process_Realtime_FineData_By_YearMonth):
+    pass
+class Process_Realtime_FineData_202012(Process_Realtime_FineData_By_YearMonth):
+    pass
+
 class Process_Realtime_FineData_By_WorkSectionID(models.Model):
     # 获取的时间戳
     acquisition_timestamp = models.PositiveIntegerField(unique=True)
@@ -1087,6 +1244,9 @@ class Process_Realtime_FineData_By_WorkSectionID(models.Model):
     if_exec_intr = models.BooleanField(null=True, blank=True)
     # 是否在运行程序过程中断
     if_interrupt_intr = models.BooleanField(null=True, blank=True)
+    # 头气流量L/min
+    working_point_flow = models.FloatField(null=True, blank=True)
+    
 
     class Meta:
         abstract = True
@@ -1172,7 +1332,7 @@ class LAMProcess_Worksection_Operate(models.Model):
     # 获取的时间戳
     acquisition_timestamp = models.PositiveIntegerField()
     # 操作简述
-    operate_information = models.CharField(max_length=100, null=True)
+    operate_information = models.TextField(null=True, blank=True, verbose_name='事件描述')
     # 瞬时、阶段性、周期性
     # 瞬时事件时间戳
     instant_timestamp = models.PositiveIntegerField()

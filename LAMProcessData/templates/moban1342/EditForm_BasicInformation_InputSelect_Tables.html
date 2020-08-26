@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+待增加动态显示已有的相关任务情况<br>
+--产品无损检测已实现<br>
+
 <!--<script src="jquery.min.js"></script>-->
 <!--<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>-->
 <!--<script type="text/javascript" src="/assets/js/jquery.min.js"></script>-->
@@ -207,8 +210,64 @@ function load()
                 </div>
                 <!-- /.panel -->
                 <!--{{ form.modelname }}-->
+                <!-- 基本函数 -->
+                <script type="text/javascript">
+                function load_TechinstSerial_By_ProductCodes_basic(select_id, query_url)
+                {
+                    var ProductCodeList = $('#'+select_id).val();
+                    console.log(ProductCodeList);
+                    <!--根据选择的产品列表来筛选可用的技术文件-->
+                    jsonstr = JSON.stringify(ProductCodeList);
+
+                    $.get(
+                        <!--查询激光成形工序-->
+                        query_url+jsonstr+'/',
+                        {'ProductCodeList':jsonstr},
+                        function(data, textStatus)
+                        {
+                            console.log(data);
+                            select_obj=document.getElementById('id_LAM_techinst_serial');
+                            $("#id_LAM_techinst_serial").empty();
+                            $.each(data, function (index, e) {
+                                var grp = document.createElement("OPTGROUP");
+                                grp.setAttribute("label", e[0]);
+                                for(i=0;i<e[1].length;i++){
+                                    opt = document.createElement("option");
+                                    opt.value = e[1][i][0];
+                                    opt.text = e[1][i][1];
+                                    grp.appendChild(opt)
+                                }
+                                select_obj.add(grp);
+                            });
+                            $("#id_LAM_techinst_serial").trigger("chosen:updated");
+                            $("#id_LAM_techinst_serial").chosen();
+                        }
+                    );
+                }
+                </script>
+<!--                理化检测任务-->
                 {% ifequal form.modelname 'PhysicochemicalTest_Mission' %}
                 <script type="text/javascript">
+                function loadTableData_ProductMission(productID)
+                    {
+
+                        $.get(
+                            '{{ Common_URL.Query_ProductPhyChemTestMission_Preview }}'+productID+'/',
+                            {'ProductID':productID},
+                            function(data, textStatus)
+                            {
+                                this;
+                                refreshTableData(data);
+
+                            }
+                        );
+                    }
+                function load_TechinstSerial_By_ProductCodes(select_id)
+                {
+                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_ProductCodeList }}');
+                    loadTableData_ProductMission( $('#'+select_id).val());
+
+                }
 <!--                    function load_WorkType_By_LAMTechInst(LAMTechInstID)-->
 <!--                    {-->
 <!--                        if(LAMTechInstID=='')-->
@@ -321,20 +380,7 @@ function load()
 
 
 
-                    function loadTableData_ProductMission(productID)
-                    {
 
-                        $.get(
-                            '{{ Common_URL.Query_ProductPhyChemTestMission_Preview }}'+productID+'/',
-                            {'ProductID':productID},
-                            function(data, textStatus)
-                            {
-                                this;
-                                refreshTableData(data);
-
-                            }
-                        );
-                    }
                     function loadTableData_RawStockMission(productID)
                     {
 
@@ -352,6 +398,7 @@ function load()
                 </script>
                 {% endifequal %}
 
+<!--                无损检测任务-->
                 {% ifequal form.modelname 'NonDestructiveTest_Mission' %}
                 <script type="text/javascript">
 
@@ -383,12 +430,27 @@ function load()
                             }
                         );
                     }
+                function load_TechinstSerial_By_ProductCodes(select_id)
+                {
+                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_ProductCodeList }}');
+                    loadTableData_ProductMission( $('#'+select_id).val());
+                }
+                function load()
+                {
+                    load_TechinstSerial_By_ProductCodes('id_LAM_product');
+                }
                 </script>
                 {% endifequal %}
 
+                <!--产品激光成形任务-->
                 {% ifequal form.modelname 'LAMProcessMission'%}
                 <script type="text/javascript">
+                function load_TechinstSerial_By_ProductCodes(select_id)
+                {
+                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_LAM_By_ProductCodeList }}');
+                }
 
+                <!-- ----------------------------------------------------------------------------- -->
                     function load_WorkType_By_LAMTechInst(LAMTechInstID)
                     {
                         if(LAMTechInstID=='')
@@ -531,7 +593,6 @@ function load()
                 </script>
                 {% endifequal %}
 
-
                 {% if form.previewtablefields %}
                 <!--仅对工序实例化有效-->
                 <div class="col-lg-6">
@@ -620,12 +681,14 @@ function load()
     </div>
 </div>
 <script type="text/javascript">
+    console.log('before chosen');
     $(".chosen-select").chosen({
         no_results_text: "没有找到结果！",//搜索无结果时显示的提示
         search_contains:true,   //关键字模糊搜索，设置为false，则只从开头开始匹配
         allow_single_deselect:true, //是否允许取消选择
     })
-
+<!--    $("#id_machining_state").val(1);-->
+    console.log('after chosen');
 </script>
 
 {% endblock %}
