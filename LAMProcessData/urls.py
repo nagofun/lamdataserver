@@ -275,7 +275,8 @@ urlpatterns = [
     path('InspectionRecords/NonDestructiveTest/RawStock/edit/', views.edit_RawStockNonDestructiveTest),
 
     # 根据零件编号列表查询可选检验工序
-    re_path('QueryData/LAMTechInstSerial_Test_By_ProductCodeList/(?P<ProductIDList>(.+))/$', query_views.queryData_TESTSerial_By_ProductIDList),
+    re_path('QueryData/LAMTechInstSerial_Test_By_ProductList/(?P<ProductIDList>(.+))/$', query_views.queryData_TESTSerial_By_ProductIDList),
+    # re_path('QueryData/LAMTechInstSerial_Test_By_RawStockList/(?P<RawStockIDList>(.+))/$', query_views.queryData_TESTSerial_By_RawStockIDList),
 
 
     # 检查成形记录
@@ -362,6 +363,7 @@ urlpatterns = [
             views.ViewAllMTDefectPictures),
     
     # 编程小工具
+    path('PracticalTools/ThisMonthPassword/', views.PracticalTools_ThisMonthPassword),
     # 复位后自上次已成形的分块继续成形
     path('PracticalTools/BreakBlockResumption/', views.PracticalTools_BreakBlockResumption),
     # 负搭接弓字步拆分输出
@@ -389,9 +391,11 @@ urlpatterns = [
             query_views.queryData_LAMTechInst_Preview),
     re_path('QueryData/PreviewTable/LAMTechniqueInstruction_SerialDetails/(?P<TechInstID>(.+))/$',
             query_views.queryData_LAMTechInst_SerialDetails),
-    re_path('QueryData/PreviewTable/LAMProductMission/(?P<ProductID>(.+))/$',
+    # 激光成形任务新增  任务预览
+    re_path('QueryData/PreviewTable/LAMProductMission/(?P<ProductIDList>(.+))/$',
             query_views.queryData_LAMProductMission_Preview),
 
+    # 产品无损检测任务新增  任务预览
     re_path('QueryData/PreviewTable/ProductPhyChemTestMission/(?P<ProductIDList>(.+))/$',
             query_views.queryData_ProductPhyChemTestMission_Preview),
     re_path('QueryData/PreviewTable/RawStockPhyChemTestMission/(?P<RawStockID>(.+))/$',

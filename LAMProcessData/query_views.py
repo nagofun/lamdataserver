@@ -227,26 +227,48 @@ def queryData_LAMProcessParameterTechInstSerial_Refresh(request):
 
 @login_required
 @csrf_exempt
-def queryData_LAMProductMission_Preview(request, ProductID):
-	LAMProduct_obj = LAMProduct.objects.get(id = ProductID)
-	
-	all_datadict = LAMProduct_obj.Product_LAMProcessMission.all().order_by('arrangement_date')
-	# all_datadict = LAMProcessMission.objects.filter(available=True, LAM_product=ProductID).order_by('arrangement_date')
+def queryData_LAMProductMission_Preview(request, ProductIDList):
+	ProductIDList = ProductIDList.split(',')
+	qset = (
+			Q(available=True) &
+			Q(LAM_product__id__in=ProductIDList)
+	)
+	all_datadict = LAMProcessMission.objects.filter(qset)
 	Mission_dict = {
 		'id_%d' % data.id:
-			{'LAMProduct':LAMProduct_obj.product_code,
-			 'LAM_techinst_serial': str(data.LAM_techinst_serial),
-			 'arrangement_date': str(data.arrangement_date),
-			 'completion_date': str(data.completion_date) if str(data.completion_date) else ' '}
+			{
+				'LAM_product': ', '.join(map(str, data.LAM_product.all())),
+				'LAM_techinst_serial': str(data.LAM_techinst_serial),
+				'arrangement_date': str(data.arrangement_date),
+				'completion_date': str(data.completion_date),
+			}
 		for data in all_datadict
+		if
+		all(map(lambda p: str(p.id) in ProductIDList, data.LAM_product.all()))
+		and
+		all(map(lambda pid: pid in [str(_p.id) for _p in data.LAM_product.all()], ProductIDList))
 	}
-	# print(TechInst_dict)
 	html = json.dumps(Mission_dict, ensure_ascii=False)
-	# html = dict_to_xml('TechInst', TechInst_dict)
-	# print(html)
-	# response.setContentType("text/html;charset=utf-8¡±);
-	# return HttpResponse(TechInst_dict, content_type='application/json')
 	return HttpResponse(html, content_type='application/json')
+	# LAMProduct_obj = LAMProduct.objects.get(id = ProductID)
+	#
+	# all_datadict = LAMProduct_obj.Product_LAMProcessMission.all().order_by('arrangement_date')
+	# # all_datadict = LAMProcessMission.objects.filter(available=True, LAM_product=ProductID).order_by('arrangement_date')
+	# Mission_dict = {
+	# 	'id_%d' % data.id:
+	# 		{'LAMProduct':LAMProduct_obj.product_code,
+	# 		 'LAM_techinst_serial': str(data.LAM_techinst_serial),
+	# 		 'arrangement_date': str(data.arrangement_date),
+	# 		 'completion_date': str(data.completion_date) if str(data.completion_date) else ' '}
+	# 	for data in all_datadict
+	# }
+	# # print(TechInst_dict)
+	# html = json.dumps(Mission_dict, ensure_ascii=False)
+	# # html = dict_to_xml('TechInst', TechInst_dict)
+	# # print(html)
+	# # response.setContentType("text/html;charset=utf-8¡±);
+	# # return HttpResponse(TechInst_dict, content_type='application/json')
+	# return HttpResponse(html, content_type='application/json')
 
 @login_required
 @csrf_exempt
@@ -259,10 +281,6 @@ def queryData_ProductPhyChemTestMission_Preview(request, ProductIDList):
 			Q(LAM_product__id__in=ProductIDList)
 	)
 	all_datadict = PhysicochemicalTest_Mission.objects.filter(qset)
-	# Mission_dict = {}
-	# for ProductID in ProductIDList:
-	# 	all_datadict = PhysicochemicalTest_Mission.objects.filter(available=True, LAM_product=ProductID).order_by('commission_date')
-
 	Mission_dict = {
 		'id_%d' % data.id:
 			{
@@ -275,7 +293,7 @@ def queryData_ProductPhyChemTestMission_Preview(request, ProductIDList):
 		if
 			all(map(lambda p: str(p.id) in ProductIDList, data.LAM_product.all()))
 		and
-			all(   map(lambda pid:  pid in [str(_p.id) for _p in data.LAM_product.all()],   ProductIDList )  )
+			all(map(lambda pid:  pid in [str(_p.id) for _p in data.LAM_product.all()], ProductIDList))
 	}
 	html = json.dumps(Mission_dict, ensure_ascii=False)
 	return HttpResponse(html, content_type='application/json')
@@ -288,6 +306,7 @@ def queryData_RawStockPhyChemTestMission_Preview(request, RawStockID):
 		'id_%d' % data.id:
 			{'LAM_techinst_serial': str(data.LAM_techinst_serial),
 			 'commission_date': str(data.commission_date),
+			 'heat_treatment_state': str(data.heat_treatment_state),
 			}
 		for data in all_datadict
 	}
@@ -1177,6 +1196,21 @@ def queryData_LAMSerial_By_ProductIDList(request, ProductIDList):
 	return HttpResponse(html, content_type='application/json')
 
 
+# @login_required
+# @csrf_exempt
+# def queryData_TESTSerial_By_RawStockIDList(request, RawStockIDList):
+# 	RawStockIDList = json.loads(RawStockIDList)
+# 	def get_one_rowstock_techinst(rowstock_id):
+# 		rowstock_obj = RawStock.objects.get(id=rowstock_id)
+# 		qset = (
+# 				Q(available=True) &
+# 				Q(filed=False) &
+# 				(
+# 						Q(product=product_obj) |
+# 						Q(product_category=product_obj.product_category)
+# 				)
+# 		)
+# 		return set(LAMTechniqueInstruction.objects.filter(qset))
 
 @login_required
 @csrf_exempt

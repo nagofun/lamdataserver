@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-待增加动态显示已有的相关任务情况<br>
---产品无损检测已实现<br>
 
 <!--<script src="jquery.min.js"></script>-->
 <!--<script type="text/javascript" src="/assets/js/jquery-1.11.0.min.js"></script>-->
@@ -16,7 +14,19 @@ function load()
         var techid=document.getElementById("id_technique_instruction").value;
         loadTableData(techid);
     {% endifequal %}
-
+    {% ifequal form.isProduct 'True' %}
+    <!--产品检测任务-->
+        load_TechinstSerial_By_ProductCodes('id_LAM_product');
+    {% endifequal %}
+    {% ifequal form.isProduct 'False' %}
+    <!--原材料检测任务-->
+    loadTableData_RawStockMission( $('#'+'id_RawStock').val());
+<!--        load_TechinstSerial_By_RawStockCodes('id_RawStock');-->
+    {% endifequal %}
+    {% ifequal form.modelname 'LAMProcessMission' %}
+    <!--激光成形任务-->
+        load_TechinstSerial_By_ProductCodes('id_LAM_product');
+    {% endifequal %}
 }
 
 </script>
@@ -215,7 +225,7 @@ function load()
                 function load_TechinstSerial_By_ProductCodes_basic(select_id, query_url)
                 {
                     var ProductCodeList = $('#'+select_id).val();
-                    console.log(ProductCodeList);
+<!--                    console.log(ProductCodeList);-->
                     <!--根据选择的产品列表来筛选可用的技术文件-->
                     jsonstr = JSON.stringify(ProductCodeList);
 
@@ -225,7 +235,7 @@ function load()
                         {'ProductCodeList':jsonstr},
                         function(data, textStatus)
                         {
-                            console.log(data);
+<!--                            console.log(data);-->
                             select_obj=document.getElementById('id_LAM_techinst_serial');
                             $("#id_LAM_techinst_serial").empty();
                             $.each(data, function (index, e) {
@@ -249,11 +259,70 @@ function load()
                 {% ifequal form.modelname 'PhysicochemicalTest_Mission' %}
                 <script type="text/javascript">
                 function loadTableData_ProductMission(productID)
+                {
+                    if(productID.length==0){
+                        refreshTableData([]);
+                        return;
+                    }
+                    $.get(
+                        '{{ Common_URL.Query_ProductPhyChemTestMission_Preview }}'+productID+'/',
+                        {'ProductID':productID},
+                        function(data, textStatus)
+                        {
+                            this;
+                            refreshTableData(data);
+                        }
+                    );
+                }
+                function loadTableData_RawStockMission(productID)
+                {
+                    $.get(
+                        '{{ Common_URL.Query_RawStockPhyChemTestMission_Preview }}'+productID+'/',
+                        {'ProductID':productID},
+                        function(data, textStatus)
+                        {
+                            this;
+                            refreshTableData(data);
+                        }
+                    );
+                }
+                function load_TechinstSerial_By_ProductCodes(select_id)
+                {
+                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_ProductList }}');
+                    loadTableData_ProductMission( $('#'+select_id).val());
+
+                }
+<!--                function load_TechinstSerial_By_RawStockCodes(select_id)-->
+<!--                {-->
+<!--                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_RawStockList }}');-->
+<!--                    loadTableData_RawStockMission( $('#'+select_id).val());-->
+<!--                }-->
+                </script>
+                {% endifequal %}
+
+<!--                无损检测任务-->
+                {% ifequal form.modelname 'NonDestructiveTest_Mission' %}
+                <script type="text/javascript">
+
+                    function loadTableData_ProductMission(productID)
+                    {
+                        $.get(
+                            '{{ Common_URL.Query_ProductNonDestructiveTestMission_Preview }}'+productID+'/',
+                            {'ProductID':productID},
+                            function(data, textStatus)
+                            {
+                                this;
+                                refreshTableData(data);
+
+                            }
+                        );
+                    }
+                    function loadTableData_RawStockMission(rawstockID)
                     {
 
                         $.get(
-                            '{{ Common_URL.Query_ProductPhyChemTestMission_Preview }}'+productID+'/',
-                            {'ProductID':productID},
+                            '{{ Common_URL.Query_RawStockNonDestructiveTestMission_Preview }}'+rawstockID+'/',
+                            {'RawStockID':rawstockID},
                             function(data, textStatus)
                             {
                                 this;
@@ -264,10 +333,49 @@ function load()
                     }
                 function load_TechinstSerial_By_ProductCodes(select_id)
                 {
-                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_ProductCodeList }}');
+                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_ProductList }}');
                     loadTableData_ProductMission( $('#'+select_id).val());
 
                 }
+<!--                function load_TechinstSerial_By_RawStockCodes(select_id)-->
+<!--                {-->
+<!--                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_RawStockList }}');-->
+<!--                    loadTableData_RawStockMission( $('#'+select_id).val());-->
+<!--                }-->
+
+                </script>
+                {% endifequal %}
+
+                <!--产品激光成形任务-->
+                {% ifequal form.modelname 'LAMProcessMission'%}
+                <script type="text/javascript">
+                function loadTableData_ProductMission(productID)
+                {
+                    if(productID.length==0){
+                        refreshTableData([]);
+                        return;
+                    }
+                    $.get(
+                        '{{ Common_URL.Query_LAMProductMission_Preview }}'+productID+'/',
+                        {'ProductID':productID},
+                        function(data, textStatus)
+                        {
+                            this;
+                            refreshTableData(data);
+                        }
+                    );
+                }
+                function load_TechinstSerial_By_ProductCodes(select_id)
+                {
+                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_LAM_By_ProductCodeList }}');
+                    loadTableData_ProductMission( $('#'+select_id).val());
+                }
+<!--                function load()-->
+<!--                {-->
+<!--                    load_TechinstSerial_By_ProductCodes('id_LAM_product');-->
+<!--                }-->
+
+                <!-- ----------------------------------------------------------------------------- -->
 <!--                    function load_WorkType_By_LAMTechInst(LAMTechInstID)-->
 <!--                    {-->
 <!--                        if(LAMTechInstID=='')-->
@@ -276,7 +384,7 @@ function load()
 <!--                        }-->
 <!--                        &lt;!&ndash;根据工艺文件更新工序实例&ndash;&gt;-->
 <!--                        $.get(-->
-<!--                            '{{ Common_URL.Query_WorkType_By_LAMTechInst_filter_PhyChemTest }}'+LAMTechInstID+'/',-->
+<!--                            '{{ Common_URL.Query_WorkType_By_LAMTechInst }}'+LAMTechInstID+'/',-->
 <!--                            {'LAMTechInstID':LAMTechInstID},-->
 <!--                            function(data, textStatus)-->
 <!--                            {-->
@@ -292,7 +400,7 @@ function load()
 <!--                            }-->
 <!--                        );-->
 <!--                    }-->
-                    <!--根据工艺文件、工序等信息刷新form中“下达任务工序”条目-->
+<!--                    &lt;!&ndash;根据工艺文件、工序等信息刷新form中“下达任务工序”条目&ndash;&gt;-->
 <!--                    function refresh_techinst_serial()-->
 <!--                    {-->
 <!--                        &lt;!&ndash;辅助选择工序&ndash;&gt;-->
@@ -350,231 +458,48 @@ function load()
 <!--                        );-->
 
 <!--                    }-->
-
-<!--                    function refresh_rawstock()-->
+<!--                    function loadTableData_ProductMission(productID)-->
 <!--                    {-->
-<!--                        if(document.getElementById('id_RawStock_batchnumber').value=='')-->
-<!--                        {-->
-<!--                            return;-->
-<!--                        }-->
-<!--                        &lt;!&ndash;根据辅助选择中原材料批号条目刷新form中“原材料实例”条目&ndash;&gt;-->
-<!--                        $.get(-->
-<!--                            '{{ Common_URL.Query_RawStockID_By_RawStockBatchNumber }}'+document.getElementById('id_RawStock_batchnumber').value+'/',-->
-<!--                            {'RawStockBatchNumber':document.getElementById('id_RawStock_batchnumber').value},-->
-<!--                            function(data, textStatus)-->
-<!--                            {-->
-<!--                                this;-->
-<!--                                &lt;!&ndash;辅助选择工序&ndash;&gt;-->
-<!--                                &lt;!&ndash;var select_productcode_obj=document.getElementById('id_product_code');&ndash;&gt;-->
-<!--                                &lt;!&ndash;form表单中的工序&ndash;&gt;-->
-<!--                                var select_RawStock_obj=document.getElementById('id_RawStock');-->
-
-<!--                                select_RawStock_obj.value = data['rawstockid'];-->
-<!--                                loadTableData_RawStockMission(data['rawstockid']);-->
-<!--&lt;!&ndash;                                ?????&ndash;&gt;-->
-<!--                                NoticeInput('id_RawStock','blue');-->
+<!--                        &lt;!&ndash;已选择&ndash;&gt;-->
+<!--&lt;!&ndash;                        var select_LAMproduct_code = $('select.chosen-select').val()&ndash;&gt;-->
+<!--                        select_LAMproduct_code = new Array();-->
+<!--                        var select_LAMproduct_obj=document.getElementById('id_LAM_product');-->
+<!--                        for(var i=0;i<select_LAMproduct_obj.options.length;i++){-->
+<!--                            if(select_LAMproduct_obj.options[i].selected){-->
+<!--                                select_LAMproduct_code.push(select_LAMproduct_obj.options[i].value);// 收集选中项-->
 <!--                            }-->
-<!--                        );-->
-<!--                    }-->
+<!--                        }-->
+<!--&lt;!&ndash;                        先清空表格&ndash;&gt;-->
+<!--                        var tbody=document.getElementById('tbd');-->
+<!--                        var rowNum=tbody.rows.length;-->
+<!--                        if(rowNum>0)-->
+<!--                        {-->
+<!--                            for(i=0;i<rowNum;i++)-->
+<!--                            {-->
+<!--                                &lt;!&ndash;table.deleteRow(i);&ndash;&gt;-->
+<!--                                tbody.deleteRow(i);-->
+<!--                                rowNum=rowNum-1;-->
+<!--                                i=i-1;-->
+<!--                            }-->
+<!--                        }-->
+<!--                        for(var num in select_LAMproduct_code){-->
+<!--                            productid = select_LAMproduct_code[num]-->
+<!--                            $.get(-->
+<!--                                '{{ Common_URL.Query_LAMProductMission_Preview }}'+productid+'/',-->
+<!--                                {'ProductID':productid},-->
+<!--                                function(data, textStatus)-->
+<!--                                {-->
+<!--                                    for(var ever in data) {-->
+<!--                                        var row=tbody.insertRow(-1);-->
+<!--                                        for(var item in data[ever]){-->
+<!--                                            var c1=row.insertCell(-1);-->
+<!--                                            c1.innerHTML=data[ever][item];-->
+<!--                                        }-->
+<!--                                    }-->
 
-
-
-
-
-                    function loadTableData_RawStockMission(productID)
-                    {
-
-                        $.get(
-                            '{{ Common_URL.Query_RawStockPhyChemTestMission_Preview }}'+productID+'/',
-                            {'ProductID':productID},
-                            function(data, textStatus)
-                            {
-                                this;
-                                refreshTableData(data);
-
-                            }
-                        );
-                    }
-                </script>
-                {% endifequal %}
-
-<!--                无损检测任务-->
-                {% ifequal form.modelname 'NonDestructiveTest_Mission' %}
-                <script type="text/javascript">
-
-                    function loadTableData_ProductMission(productID)
-                    {
-
-                        $.get(
-                            '{{ Common_URL.Query_ProductNonDestructiveTestMission_Preview }}'+productID+'/',
-                            {'ProductID':productID},
-                            function(data, textStatus)
-                            {
-                                this;
-                                refreshTableData(data);
-
-                            }
-                        );
-                    }
-                    function loadTableData_RawStockMission(rawstockID)
-                    {
-
-                        $.get(
-                            '{{ Common_URL.Query_RawStockNonDestructiveTestMission_Preview }}'+rawstockID+'/',
-                            {'RawStockID':rawstockID},
-                            function(data, textStatus)
-                            {
-                                this;
-                                refreshTableData(data);
-
-                            }
-                        );
-                    }
-                function load_TechinstSerial_By_ProductCodes(select_id)
-                {
-                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_Test_By_ProductCodeList }}');
-                    loadTableData_ProductMission( $('#'+select_id).val());
-                }
-                function load()
-                {
-                    load_TechinstSerial_By_ProductCodes('id_LAM_product');
-                }
-                </script>
-                {% endifequal %}
-
-                <!--产品激光成形任务-->
-                {% ifequal form.modelname 'LAMProcessMission'%}
-                <script type="text/javascript">
-                function load_TechinstSerial_By_ProductCodes(select_id)
-                {
-                    load_TechinstSerial_By_ProductCodes_basic(select_id, '{{ Common_URL.Query_LAMTechInstSerial_LAM_By_ProductCodeList }}');
-                }
-
-                <!-- ----------------------------------------------------------------------------- -->
-                    function load_WorkType_By_LAMTechInst(LAMTechInstID)
-                    {
-                        if(LAMTechInstID=='')
-                        {
-                            return;
-                        }
-                        <!--根据工艺文件更新工序实例-->
-                        $.get(
-                            '{{ Common_URL.Query_WorkType_By_LAMTechInst }}'+LAMTechInstID+'/',
-                            {'LAMTechInstID':LAMTechInstID},
-                            function(data, textStatus)
-                            {
-                                this;
-                                var select_obj=document.getElementById('id_work_type');
-                                select_obj.options.length=0;
-                                for(var ever in data) {
-                                    select_obj.options.add(new Option(data[ever]['worktype'],data[ever]['id']));
-                                }
-                                <!--shake_by_id("id_work_type");-->
-
-                                refresh_techinst_serial();
-                            }
-                        );
-                    }
-                    <!--根据工艺文件、工序等信息刷新form中“下达任务工序”条目-->
-                    function refresh_techinst_serial()
-                    {
-                        <!--辅助选择工序-->
-                        var select_worktype_obj=document.getElementById('id_work_type');
-                        <!--form表单中的工序-->
-                        var select_techinst_serial_obj=document.getElementById('id_LAM_techinst_serial');
-
-                        select_techinst_serial_obj.value = select_worktype_obj.value;
-                        <!--shake_by_id("id_LAM_techinst_serial");-->
-                        NoticeInput('id_LAM_techinst_serial','blue');
-                    }
-
-
-                    function refresh_product()
-                    {
-                        if(document.getElementById('id_product_code').value=='')
-                        {
-                            return;
-                        }
-                        <!--根据辅助选择中零件编号条目刷新form中“零件编号”条目-->
-                        $.get(
-                            '{{ Common_URL.Query_ProductID_By_ProductCode }}'+getValue_from_datalist('id_product_code', 'product_code_list')+'/',
-                            {'ProductCode':document.getElementById('id_product_code').value},
-                            function(data, textStatus)
-                            {
-                                this;
-                                <!--辅助选择工序-->
-                                <!--var select_productcode_obj=document.getElementById('id_product_code');-->
-                                <!--form表单中的工序-->
-                                var select_LAMproduct_obj=document.getElementById('id_LAM_product');
-
-                                select_LAMproduct_obj.value = data['productid'];
-                                loadTableData_ProductMission(data['productid']);
-                                <!--shake_by_id("id_LAM_product");-->
-                                NoticeInput('id_LAM_product','blue');
-
-                            }
-                        );
-
-                        <!--根据辅助选择中零件编号条目刷新辅助选择中“工艺文件”及“工序”条目-->
-                        $.get(
-                            '{{ Common_URL.Query_LAMTechniqueInstruction_By_ProductCode }}'+document.getElementById('id_product_code').value+'/',
-                            {'ProductCode':document.getElementById('id_product_code').value},
-                            function(data, textStatus)
-                            {
-                                this;
-                                var select_obj=document.getElementById('id_technique_instruction');
-                                select_obj.options.length=0;
-                                for(var ever in data) {
-                                    select_obj.options.add(new Option(data[ever]['lamtechniqueinstruction'],data[ever]['id']));
-                                }
-                                load_WorkType_By_LAMTechInst(select_obj.value);
-                                <!--shake_by_id("id_technique_instruction");-->
-                            }
-                        );
-
-                    }
-                    function loadTableData_ProductMission(productID)
-                    {
-                        <!--已选择-->
-<!--                        var select_LAMproduct_code = $('select.chosen-select').val()-->
-                        select_LAMproduct_code = new Array();
-                        var select_LAMproduct_obj=document.getElementById('id_LAM_product');
-                        for(var i=0;i<select_LAMproduct_obj.options.length;i++){
-                            if(select_LAMproduct_obj.options[i].selected){
-                                select_LAMproduct_code.push(select_LAMproduct_obj.options[i].value);// 收集选中项
-                            }
-                        }
-<!--                        先清空表格-->
-                        var tbody=document.getElementById('tbd');
-                        var rowNum=tbody.rows.length;
-                        if(rowNum>0)
-                        {
-                            for(i=0;i<rowNum;i++)
-                            {
-                                <!--table.deleteRow(i);-->
-                                tbody.deleteRow(i);
-                                rowNum=rowNum-1;
-                                i=i-1;
-                            }
-                        }
-                        for(var num in select_LAMproduct_code){
-                            productid = select_LAMproduct_code[num]
-                            $.get(
-                                '{{ Common_URL.Query_LAMProductMission_Preview }}'+productid+'/',
-                                {'ProductID':productid},
-                                function(data, textStatus)
-                                {
-                                    for(var ever in data) {
-                                        var row=tbody.insertRow(-1);
-                                        for(var item in data[ever]){
-                                            var c1=row.insertCell(-1);
-                                            c1.innerHTML=data[ever][item];
-                                        }
-                                    }
-
-                                }
-                            );
-                        }
+<!--                                }-->
+<!--                            );-->
+<!--                        }-->
 
 
 
@@ -588,7 +513,7 @@ function load()
 
 <!--                            }-->
 <!--                        );-->
-                    }
+<!--                    }-->
 
                 </script>
                 {% endifequal %}

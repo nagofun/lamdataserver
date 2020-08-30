@@ -38,6 +38,7 @@ from django.views.generic import View
 import os
 from tempfile import TemporaryFile, NamedTemporaryFile
 import shutil
+import hashlib
 import datetime
 import time
 import re
@@ -526,6 +527,7 @@ del _allWorksection_list
 
 
 # 编程小工具
+Common_URL['Back_URL_ThisMonthPassword'] = Common_URL['PracticalTools'] + 'ThisMonthPassword/'
 Common_URL['Back_URL_BreakBlockResumption'] = Common_URL['PracticalTools'] + 'BreakBlockResumption/'
 Common_URL['Back_URL_SShapeBreak'] = Common_URL['PracticalTools'] + 'SShapeBreak/'
 Common_URL['Back_URL_MakeMainProgramFile_8070'] = Common_URL['PracticalTools'] + 'MakeMainProgramFile_8070/'
@@ -543,7 +545,8 @@ Common_URL['Query_RawStockNonDestructiveTestMission_Preview'] = Common_URL['Proc
 
 Common_URL['Query_LAMTechniqueInstruction_By_ProductCode'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechniqueInstruction_By_ProductCode/'
 Common_URL['Query_LAMTechInstSerial_LAM_By_ProductCodeList'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechInstSerial_LAM_By_ProductCodeList/'
-Common_URL['Query_LAMTechInstSerial_Test_By_ProductCodeList'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechInstSerial_Test_By_ProductCodeList/'
+Common_URL['Query_LAMTechInstSerial_Test_By_ProductList'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechInstSerial_Test_By_ProductList/'
+Common_URL['Query_LAMTechInstSerial_Test_By_RawStockList'] = Common_URL['ProcessPath'] + 'QueryData/LAMTechInstSerial_Test_By_RawStockList/'
 Common_URL['Query_WorkType_By_LAMTechInst'] = Common_URL['ProcessPath'] + 'QueryData/WorkType_By_LAMTechInst/'
 Common_URL['Query_WorkType_By_LAMTechInst_filter_LAM'] = Common_URL['ProcessPath'] + 'QueryData/WorkType_By_LAMTechInst_filter_LAM/'
 Common_URL['Query_WorkType_By_LAMTechInst_filter_PhyChemTest'] = Common_URL['ProcessPath'] + 'QueryData/WorkType_By_LAMTechInst_filter_PhyChemTest/'
@@ -3541,6 +3544,19 @@ def AnalyseLAMProcess_DingDingRecords_Browse(request):
 	               'Browse_fields':Browse_fields,
 	               'all_entries':all_entries_dict,
 	               'form':_form_inst,
+	               })
+
+
+@permission_required('LAMProcessData.Technique', login_url=Common_URL['403'])
+def PracticalTools_ThisMonthPassword(request):
+	
+	thismonth_str = datetime.datetime.now().strftime('%Y%m')
+	md5key = thismonth_str + 'c,h.e/n;b-o=' + thismonth_str
+	md5code = hashlib.md5(md5key.encode()).hexdigest()
+	
+	return render(request, "PracticalTools_ThisMonthPassword.html",
+	              {'md5code': md5code,
+	               'Common_URL': Common_URL,
 	               })
 
 

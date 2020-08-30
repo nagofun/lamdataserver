@@ -1430,8 +1430,8 @@ class LAMProcessMissionForm_Edit(ModelForm):
 	title = '生产任务实例'
 	modelname = 'LAMProcessMission'
 	previewtableTitle = '产品任务'
-	# previewtablefields = {'LAM_product': _('零件实例'),'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期'),
-	#                       'completion_date': _('完成任务日期')}
+	previewtablefields = {'LAM_product': _('零件实例'),'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期'),
+	                      'completion_date': _('完成任务日期')}
 
 	class Meta:
 		model = LAMProcessMission
@@ -2316,45 +2316,12 @@ class MechanicalTest_ChemicalForm(ModelForm):
 
 # 产品理化检测
 class ProductPhyChemTestForm_New(ModelForm):
-	# title = '产品理化检测'
-	# modelname = 'PhysicochemicalTest_Mission'
-	#
-	# class Meta:
-	# 	model = PhysicochemicalTest_Mission
-	# 	fields = ['LAM_product',
-	# 	          'LAM_techinst_serial',
-	# 	          'commission_date',
-	# 	          'heat_treatment_state',
-	# 	          ]
-	# 	widgets = {
-	# 		'commission_date': widgets.TextInput(
-	# 			attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
-	# 	}
-	# 	labels = {
-	# 		'LAM_product': _('产品实例'),
-	# 		'RawStock': _('原材料实例'),
-	# 		'LAM_techinst_serial': _('工序'),
-	# 		'commission_date': _('开始日期'),
-	# 		'heat_treatment_state': _('热处理状态'),
-	# 		'mechanicaltest_tensile': _('拉伸测试'),
-	# 		'mechanicaltest_toughness': _('冲击测试'),
-	# 		'chemicaltest': _('化学成分测试'),
-	# 	}
-	# 	error_messages = ''
-	#
-	# def __init__(self, *args, **kwargs):
-	# 	super().__init__(*args, **kwargs)
-	# 	# self.fields['LAM_product'].disabled = True
-	# 	# self.fields['LAM_techinst_serial'].disabled = True
-	# 	# self.fields['commission_date'].disabled = True
-	# 	# self.fields['heat_treatment_state'].disabled = True
-	#
-	# 	for field in self.fields.values():
-	# 		field.widget.attrs.update({'class': 'form-control'})
+
 # # 激光成形生产任务_编辑
 # class LAMProcessMissionForm_Edit(ModelForm):
 	title = '产品理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
+	isProduct = 'True'
 	previewtableTitle = '产品检测任务'
 	previewtablefields = {'LAM_product':_('产品'),'LAM_techinst_serial': _('工序'), 'arrangement_date': _('下达任务日期'), 'heat_treatment_state': _('热处理状态')}
 
@@ -2414,11 +2381,11 @@ class ProductPhyChemTestForm_New(ModelForm):
 			]] for _techinst in techinst_list]
 		
 		# 原始field
-		self.OriginalFields = ('LAM_product',
-		                       'LAM_techinst_serial',
-		                       'commission_date',
-		                       'heat_treatment_state',
-		                       )
+		# self.OriginalFields = ('LAM_product',
+		#                        'LAM_techinst_serial',
+		#                        'commission_date',
+		#                        'heat_treatment_state',
+		#                        )
 
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
@@ -2471,6 +2438,7 @@ class ProductPhyChemTestForm_New(ModelForm):
 class ProductPhyChemTestForm_Edit(ModelForm):
 	title = '产品理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
+	isProduct = 'True'
 	# previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期'),
 	#                       'completion_date': _('完成任务日期')}
 	tensile_fields = [
@@ -2551,7 +2519,7 @@ class ProductPhyChemTestForm_Edit(ModelForm):
 class ProductPhyChemTestForm_Browse(ModelForm):
 	title = '产品理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
-
+	isProduct = 'True'
 	class Meta:
 		model = PhysicochemicalTest_Mission
 		fields = ['LAM_product',
@@ -2830,6 +2798,7 @@ class NonDestructiveTest_MTDefectForm(ModelForm):
 class ProductNonDestructiveTestForm_New(ModelForm):
 
 	title = '产品无损检测'
+	isProduct = 'True'
 	modelname = 'NonDestructiveTest_Mission'
 	previewtableTitle = '产品检测任务'
 	previewtablefields = {'LAM_techinst_serial': _('下达任务工序'),
@@ -3016,6 +2985,7 @@ class ProductNonDestructiveTestForm_New(ModelForm):
 # 产品无损检测 编辑
 class ProductNonDestructiveTestForm_Edit(ModelForm):
 	title = '产品无损检测'
+	isProduct = 'True'
 	modelname = 'NonDestructiveTest_Mission'
 	# previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期'),
 	#                       'completion_date': _('完成任务日期')}
@@ -3129,6 +3099,7 @@ class ProductNonDestructiveTestForm_Edit(ModelForm):
 # 产品无损检测
 class ProductNonDestructiveTestForm_Browse(ModelForm):
 	title = '产品无损检测'
+	isProduct = 'True'
 	modelname = 'NonDestructiveTest_Mission'
 
 	class Meta:
@@ -3173,6 +3144,7 @@ class ProductNonDestructiveTestForm_Browse(ModelForm):
 # 原材料无损检测 新建
 class RawStockNonDestructiveTestForm_New(ModelForm):
 	title = '原材料无损检测'
+	isProduct = 'False'
 	modelname = 'NonDestructiveTest_Mission'
 	previewtableTitle = '原材料检测任务'
 	previewtablefields = {'LAM_techinst_serial': _('下达任务工序'),
@@ -3206,16 +3178,40 @@ class RawStockNonDestructiveTestForm_New(ModelForm):
 		                                            RawStock.objects.filter(
 			                                            (Q(rawstock_category=_category) & Q(available=True)))]] for
 		                  _category in rawstock_category_list]
-		self.fields['RawStock'].choices = rawstock_choice
+		'''原材料按类型分组显示'''
+		rawstock_list = RawStock.objects.filter(available=True)
+		rawstock_display_dict = {}
+		for stock in rawstock_list:
+			key = '%s-%s' % (str(stock.material), str(stock.rawstock_category))
+			if key not in rawstock_display_dict:
+				rawstock_display_dict[key] = [(stock.id, stock)]
+			else:
+				rawstock_display_dict[key].append((stock.id, stock))
+		rawstock_data = [[key, values] for key, values in rawstock_display_dict.items()]
+		self.fields['RawStock'].choices = rawstock_data
 		
 		self.fields['RawStock'].widget.attrs.update(
 			{'onchange': 'loadTableData_RawStockMission(this.value)'})
 		
-		self.fields['RawStock'].queryset = RawStock.objects.filter(available=True)
+		# self.fields['RawStock'].queryset = RawStock.objects.filter(available=True)
 		
 		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
+		# 已有工艺文件
+		techinst_list = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
+			'instruction_code', '-version_code', '-version_number')
+		
+		# 工序按工艺文件分类
+		techinst_serial_choice = [[str(_techinst), [
+			(_serial.id, "%s-%s %s" % (_serial.serial_number, _serial.serial_worktype, _serial.serial_note)) for _serial
+			in
+			LAM_TechInst_Serial.objects.filter(
+				(Q(technique_instruction=_techinst) & Q(available=True) & Q(
+					serial_worktype__selectable_PhyChemNonDestructiveTest=True)))
+			# if _serial.serial_worktype.selectable_PhyChemNonDestructiveTest
+		]] for _techinst in techinst_list]
+		
 		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
-			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemNonDestructiveTest=True))
+			Q(available=True) & Q(technique_instruction__filed=False) & Q(serial_worktype__selectable_PhyChemNonDestructiveTest=True))
 		
 		# 原始field
 		self.OriginalFields = ('RawStock',
@@ -3228,15 +3224,22 @@ class RawStockNonDestructiveTestForm_New(ModelForm):
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 		'''检验工序'''
+		self.fields['LAM_techinst_serial'].choices = techinst_serial_choice
 		self.fields['LAM_techinst_serial'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
 		'''产品'''
 		self.fields['RawStock'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择原材料..."})
 		'''热处理状态'''
+		self.fields['heat_treatment_state'].choices = [(state.id, str(state)) for state in
+		                                               HeatTreatmentState.objects.filter(available=True)]
+		
 		self.fields['heat_treatment_state'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
 		'''加工状态'''
+		self.fields['machining_state'].choices = [(state.id, str(state)) for state in
+		                                          MachiningState.objects.filter(available=True)]
+		
 		self.fields['machining_state'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择加工状态..."})
 		'''检测类别'''
@@ -3265,6 +3268,7 @@ class RawStockNonDestructiveTestForm_New(ModelForm):
 # 原材料无损检测 编辑
 class RawStockNonDestructiveTestForm_Edit(ModelForm):
 	title = '原材料无损检测'
+	isProduct = 'False'
 	modelname = 'NonDestructiveTest_Mission'
 	# previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期'),
 	#                       'completion_date': _('完成任务日期')}
@@ -3378,6 +3382,7 @@ class RawStockNonDestructiveTestForm_Edit(ModelForm):
 # 原材料无损检测
 class RawStockNonDestructiveTestForm_Browse(ModelForm):
 	title = '原材料无损检测'
+	isProduct = 'False'
 	modelname = 'NonDestructiveTest_Mission'
 	
 	class Meta:
@@ -3420,41 +3425,12 @@ class RawStockNonDestructiveTestForm_Browse(ModelForm):
 
 # 原材料理化检测
 class RawStockPhyChemTestForm_New(ModelForm):
-	# title = '原材料理化检测'
-	# modelname = 'PhysicochemicalTest_Mission'
-	#
-	# class Meta:
-	# 	model = PhysicochemicalTest_Mission
-	# 	fields = ['RawStock',
-	# 	          'LAM_techinst_serial',
-	# 	          'commission_date',
-	# 	          'heat_treatment_state',
-	# 	          ]
-	# 	widgets = {
-	# 		'commission_date': widgets.TextInput(
-	# 			attrs={'type': 'date', 'value': str(datetime.date.today()), 'placeholder': '请选择开始日期'}),
-	# 	}
-	# 	labels = {
-	# 		'LAM_product': _('产品实例'),
-	# 		'RawStock': _('原材料实例'),
-	# 		'LAM_techinst_serial': _('工序'),
-	# 		'commission_date': _('开始日期'),
-	# 		'heat_treatment_state': _('热处理状态'),
-	# 		'mechanicaltest_tensile': _('拉伸测试'),
-	# 		'mechanicaltest_toughness': _('冲击测试'),
-	# 		'chemicaltest': _('化学成分测试'),
-	# 	}
-	# 	error_messages = ''
-	#
-	# def __init__(self, *args, **kwargs):
-	# 	super().__init__(*args, **kwargs)
-	#
-	# 	for field in self.fields.values():
-	# 		field.widget.attrs.update({'class': 'form-control'})
+	
 	title = '原材料理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
+	isProduct = 'False'
 	previewtableTitle = '原材料检测任务'
-	previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期')}
+	previewtablefields = {'LAM_techinst_serial': _('工序'), 'arrangement_date': _('下达任务日期'), 'heat_treatment_state': _('热处理状态')}
 
 	class Meta:
 		model = PhysicochemicalTest_Mission
@@ -3500,77 +3476,42 @@ class RawStockPhyChemTestForm_New(ModelForm):
 		
 		# 20200405 此处应清理无用的js函数
 		# 辅助选择数据集
-		self.techinst_datalist = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
+		# 已有工艺文件
+		techinst_list = LAMTechniqueInstruction.objects.filter(Q(available=True) & Q(filed=False)).order_by(
 			'instruction_code', '-version_code', '-version_number')
-		# print(self.techinst_datalist)
-		# self.worktype_datalist = LAMProductionWorkType.objects.filter(Q(available=True))
-		# self.productcode_datalist = LAMProduct.objects.filter(available=True)
-		# self.RawStockBatchNumber_datalist = RawStock.objects.filter(available=True)
-
-		# self.fields['RawStock'].queryset = RawStock.objects.filter(available=True)
-
-		# NotFiledTechInst = LAMTechniqueInstruction.objects.filter(Q(filed=False) & Q(available=True))
-		# 检验可选择的工序
-		self.fields['LAM_techinst_serial'].queryset = LAM_TechInst_Serial.objects.filter(
-			Q(available=True) & Q(technique_instruction__filed=False) & Q(selectable_PhyChemNonDestructiveTest=True))
-		# self.fields['work_section'].queryset = Worksection.objects.filter(available=True)
-		# self.fields['completion_date'].disabled = True
-		# self.fields['available'].disabled = True
-
-		# 辅助选择下拉菜单及文本框
-		# self.fields['product_category'] = forms.ModelChoiceField(label='产品类别',
-		#                                                          queryset=LAMProductCategory.objects.filter(
-		#                                                              available=True),
-		#                                                          empty_label='请选择产品类别',
-		#                                                          required=False)
-		# self.fields['RawStock_batchnumber'] = forms.CharField(label='原材料批号',
-		#                                               max_length=50,
-		#                                               required=False)
-		# self.fields['technique_instruction'] = forms.ModelChoiceField(label='工艺文件',
-		#                                                               queryset=self.techinst_datalist,
-		#                                                               empty_label='请选择工艺文件',
-		#                                                               required=False)
-		# self.fields['work_type'] = forms.ModelChoiceField(label='工序',
-		#                                                   queryset=self.worktype_datalist,
-		#                                                   empty_label='请选择工序',
-		#                                                   required=False)
-
-		# 更新属性
-		# 产品类别
-		# self.fields['product_category'].widget.attrs.update(
-		#     {'onchange': 'load_LAMTechInstandProduct_By_ProductCategory(this.value);'})
-		# 工艺文件
-		# self.fields['technique_instruction'].widget.attrs.update(
-		# 	{'onchange': 'load_WorkType_By_LAMTechInst(this.value);'})
-		# # 工序
-		# self.fields['work_type'].widget.attrs.update(
-		# 	{'onchange': 'refresh_techinst_serial();'})
-
-		# self.fields['RawStock_batchnumber'].widget.attrs.update(
-		# 	{'list': 'RawStock_BatchNumber_list', 'onblur': 'refresh_rawstock();'})
-
-		# 辅助选择field
-		# self.AuxiliarySelection = ('product_category',
-		#                            'technique_instruction',
-		#                            'work_type',
-		#                            'RawStock_batchnumber')
+		
+		# 工序按工艺文件分类
+		techinst_serial_choice = [[str(_techinst), [
+			(_serial.id, "%s-%s %s" % (_serial.serial_number, _serial.serial_worktype, _serial.serial_note)) for _serial
+			in
+			LAM_TechInst_Serial.objects.filter(
+				(Q(technique_instruction=_techinst) & Q(available=True) & Q(
+					serial_worktype__selectable_PhyChemNonDestructiveTest=True)))
+			# if _serial.serial_worktype.selectable_PhyChemNonDestructiveTest
+		]] for _techinst in techinst_list]
+		
 		# 原始field
-		self.OriginalFields = ('RawStock',
-		                       'LAM_techinst_serial',
-		                       'commission_date',
-		                       'heat_treatment_state',
-		                       )
+		# self.OriginalFields = ('RawStock',
+		#                        'LAM_techinst_serial',
+		#                        'commission_date',
+		#                        'heat_treatment_state',
+		#                        )
 
 		for field in self.fields.values():
 			field.widget.attrs.update({'class': 'form-control'})
 		'''原材料'''
-
 		self.fields['RawStock'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择原材料..."})
 		'''检验工序'''
+		self.fields['LAM_techinst_serial'].choices = techinst_serial_choice
 		self.fields['LAM_techinst_serial'].widget.attrs.update(
 			{'class': 'form-control chosen-select', 'data-placeholder': "选择检验工序..."})
-
+		'''热处理状态'''
+		self.fields['heat_treatment_state'].choices = [(state.id, str(state)) for state in
+		                                               HeatTreatmentState.objects.filter(available=True)]
+		self.fields['heat_treatment_state'].widget.attrs.update(
+			{'class': 'form-control chosen-select', 'data-placeholder': "选择热处理状态..."})
+	
 	def is_valid_custom(self):
 
 		# try:
@@ -3592,6 +3533,7 @@ class RawStockPhyChemTestForm_New(ModelForm):
 class RawStockPhyChemTestForm_Edit(ModelForm):
 	title = '原材料理化检测'
 	modelname = 'PhysicochemicalTest_Mission'
+	isProduct = 'False'
 	# previewtablefields = {'LAM_techinst_serial': _('下达任务工序'), 'arrangement_date': _('下达任务日期'),
 	#                       'completion_date': _('完成任务日期')}
 	tensile_fields = [
